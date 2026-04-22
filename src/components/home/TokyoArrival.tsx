@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { startShibuyaBgm, type BgmController } from "@/lib/audio/shibuyaBgm";
+import {
+  startTokyoArrivalChime,
+  type ChimeController,
+} from "@/lib/audio/tokyoArrivalChime";
 
 const CONFETTI_PALETTE = ["#C8102E", "#E8B94A", "#6B8E4E", "#F08080", "#D4A373", "#FFFFFF"];
 
@@ -20,7 +23,7 @@ const CONFETTI_PIECES = Array.from({ length: 28 }, (_, i) => {
   };
 });
 
-interface ShibuyaIncidentProps {
+interface TokyoArrivalProps {
   /** Fires after the sequence finishes (or user taps to skip). Always called exactly once. */
   onComplete: () => void;
 }
@@ -29,37 +32,37 @@ const DURATION_MS = 4500;
 const FADE_OUT_MS = 400;
 
 /**
- * "시부야 도착!" — a short, warm travel-arrival cinematic.
+ * "도쿄 도착!" — a short, warm travel-arrival cinematic.
  *
  * Timeline (≈4.5 s):
  *   0.0 – 0.8  sunset gradient fades in
  *   0.5 – 1.2  amber skyline rises from below
- *   1.2 – 2.0  red 「渋谷」 hanko stamp drops from above with a chime
- *   2.0 – 3.0  confetti bursts, 「시부야 도착!」 lands
+ *   1.2 – 2.0  red 「東京」 hanko stamp drops from above with a chime
+ *   2.0 – 3.0  confetti bursts, 「도쿄 도착!」 lands
  *   3.0 – 4.5  sub-line + graceful fade-out
  */
-export function ShibuyaIncident({ onComplete }: ShibuyaIncidentProps) {
+export function TokyoArrival({ onComplete }: TokyoArrivalProps) {
   const [closing, setClosing] = useState(false);
   const doneRef = useRef(false);
-  const bgmRef = useRef<BgmController | null>(null);
+  const chimeRef = useRef<ChimeController | null>(null);
 
   const finish = () => {
     if (doneRef.current) return;
     doneRef.current = true;
-    bgmRef.current?.stop();
+    chimeRef.current?.stop();
     setClosing(true);
     window.setTimeout(onComplete, FADE_OUT_MS);
   };
 
   useEffect(() => {
-    bgmRef.current = startShibuyaBgm();
+    chimeRef.current = startTokyoArrivalChime();
     const timer = window.setTimeout(finish, DURATION_MS);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       window.clearTimeout(timer);
       document.body.style.overflow = prevOverflow;
-      bgmRef.current?.stop();
+      chimeRef.current?.stop();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -67,7 +70,7 @@ export function ShibuyaIncident({ onComplete }: ShibuyaIncidentProps) {
   return (
     <div
       role="dialog"
-      aria-label="시부야 도착"
+      aria-label="도쿄 도착"
       aria-live="polite"
       onClick={finish}
       className={[
@@ -113,7 +116,7 @@ export function ShibuyaIncident({ onComplete }: ShibuyaIncidentProps) {
         }}
       />
 
-      {/* 渋谷 hanko stamp — drops from above, thunks down */}
+      {/* 東京 hanko stamp — drops from above, thunks down */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div
           className="hanko animate-[arrival-stamp-drop_0.6s_cubic-bezier(0.3,1.5,0.4,1)_both]"
@@ -126,7 +129,7 @@ export function ShibuyaIncident({ onComplete }: ShibuyaIncidentProps) {
             transform: "rotate(-8deg)",
           }}
         >
-          渋谷
+          東京
         </div>
       </div>
 
@@ -145,7 +148,7 @@ export function ShibuyaIncident({ onComplete }: ShibuyaIncidentProps) {
             textShadow: "0 2px 0 rgba(255,255,255,0.6), 0 6px 20px rgba(200,80,40,0.25)",
           }}
         >
-          시부야 <span style={{ color: "#C8102E" }}>도착!</span>
+          도쿄 <span style={{ color: "#C8102E" }}>도착!</span>
         </div>
       </div>
 
@@ -173,7 +176,7 @@ export function ShibuyaIncident({ onComplete }: ShibuyaIncidentProps) {
             opacity: 0,
           }}
         >
-          ようこそ · 渋谷
+          ようこそ · 東京
         </div>
       </div>
 

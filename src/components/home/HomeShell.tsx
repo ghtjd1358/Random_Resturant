@@ -6,13 +6,13 @@ import { DiceButton } from "./DiceButton";
 import { PickCard } from "./PickCard";
 import { LocationBanner } from "./LocationBanner";
 import { FiltersPanel } from "./FiltersPanel";
-import { ShibuyaIncident } from "./ShibuyaIncident";
+import { TokyoArrival } from "./TokyoArrival";
 import { NoirenDivider } from "@/components/common/NoirenDivider";
 import { useFiltersStore } from "@/stores/useFiltersStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useLocationStore } from "@/stores/useLocationStore";
-import { useShibuyaStore } from "@/stores/useShibuyaStore";
-import { guessRegion, isInShibuya } from "@/lib/geo/region";
+import { useTokyoArrivalStore } from "@/stores/useTokyoArrivalStore";
+import { guessRegion, isInTokyo } from "@/lib/geo/region";
 
 export function HomeShell() {
   useGeolocation();
@@ -20,20 +20,20 @@ export function HomeShell() {
   const coords = useLocationStore((s) => s.coords);
   const region = coords ? guessRegion(coords.lat, coords.lng) : null;
 
-  // 渋谷事変 easter egg — auto-plays once per device when coords land in Shibuya.
-  const seal = useShibuyaStore((s) => s.seal);
+  // 도쿄 도착 easter egg — auto-plays once per device when coords land in Tokyo.
+  const seal = useTokyoArrivalStore((s) => s.seal);
   const [playing, setPlaying] = useState(() => {
     if (typeof window === "undefined") return false;
     const initial = useLocationStore.getState().coords;
-    if (!initial || useShibuyaStore.getState().sealed) return false;
-    return isInShibuya(initial.lat, initial.lng);
+    if (!initial || useTokyoArrivalStore.getState().sealed) return false;
+    return isInTokyo(initial.lat, initial.lng);
   });
   useEffect(() => {
     // Subscribe for later coord changes (preset switches, GPS updates).
     return useLocationStore.subscribe((next, prev) => {
       if (next.coords === prev.coords || !next.coords) return;
-      if (useShibuyaStore.getState().sealed) return;
-      if (isInShibuya(next.coords.lat, next.coords.lng)) setPlaying(true);
+      if (useTokyoArrivalStore.getState().sealed) return;
+      if (isInTokyo(next.coords.lat, next.coords.lng)) setPlaying(true);
     });
   }, []);
 
@@ -47,7 +47,7 @@ export function HomeShell() {
   return (
     <div className="px-5 pt-5 pb-6">
       {playing && (
-        <ShibuyaIncident
+        <TokyoArrival
           onComplete={() => {
             seal();
             setPlaying(false);

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * A short celebratory chime for the Shibuya-arrival intro.
+ * A short celebratory chime for the 도쿄 도착 intro.
  * A single major triad (C5 + E5 + G5) played as an additive bell —
  * bright, warm, traveller-arrival energy. ~1.8s of ringing decay.
  *
@@ -9,14 +9,14 @@
  * and silently degrade to no sound if blocked.
  */
 
-export interface BgmController {
+export interface ChimeController {
   stop: () => void;
 }
 
 type WindowWithWebkit = Window &
   typeof globalThis & { webkitAudioContext?: typeof AudioContext };
 
-export function startShibuyaBgm(): BgmController | null {
+export function startTokyoArrivalChime(): ChimeController | null {
   if (typeof window === "undefined") return null;
   const win = window as WindowWithWebkit;
   const Ctor = win.AudioContext ?? win.webkitAudioContext;

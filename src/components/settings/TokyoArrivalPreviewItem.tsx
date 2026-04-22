@@ -2,19 +2,19 @@
 
 import { useState } from "react";
 import { Play } from "lucide-react";
-import { ShibuyaIncident } from "@/components/home/ShibuyaIncident";
+import { TokyoArrival } from "@/components/home/TokyoArrival";
 
 /**
- * Always-visible settings row to preview the 시부야 도착 intro on demand.
+ * Always-visible settings row to preview the 도쿄 도착 intro on demand.
  * Unlike the reset button, this does NOT touch the sealed state — it's a
- * pure replay, so the "first discovery in Shibuya" moment stays preserved.
+ * pure replay, so the "first discovery in Tokyo" moment stays preserved.
  */
-export function ShibuyaPreviewItem() {
+export function TokyoArrivalPreviewItem() {
   const [playing, setPlaying] = useState(false);
 
   return (
     <>
-      {playing && <ShibuyaIncident onComplete={() => setPlaying(false)} />}
+      {playing && <TokyoArrival onComplete={() => setPlaying(false)} />}
       <li>
         <button
           type="button"
@@ -27,7 +27,7 @@ export function ShibuyaPreviewItem() {
             </div>
             <div>
               <div className="font-heading text-[14px] font-bold tracking-tight text-sumi">
-                시부야 도착 인트로 미리보기
+                도쿄 도착 인트로 미리보기
               </div>
               <div className="mt-0.5 text-[11px] text-muted-foreground">
                 지금 바로 한 번 재생 · 최초 발견 상태는 그대로

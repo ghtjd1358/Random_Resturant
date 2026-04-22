@@ -3,20 +3,20 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface ShibuyaState {
-  /** True once the Shibuya Incident intro has played for this device. */
+interface TokyoArrivalState {
+  /** True once the 도쿄 도착 intro has played for this device. */
   sealed: boolean;
   seal: () => void;
   unseal: () => void;
 }
 
-export const useShibuyaStore = create<ShibuyaState>()(
+export const useTokyoArrivalStore = create<TokyoArrivalState>()(
   persist(
     (set) => ({
       sealed: false,
       seal: () => set({ sealed: true }),
       unseal: () => set({ sealed: false }),
     }),
-    { name: "rr-shibuya" },
+    { name: "rr-tokyo-arrival" },
   ),
 );
