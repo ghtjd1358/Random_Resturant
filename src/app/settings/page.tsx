@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Ban, Ruler, Download, Shield } from "lucide-react";
+import { ChevronRight, Ban, Ruler, Download, Shield, Coins } from "lucide-react";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PageHeader } from "@/components/common/PageHeader";
 
@@ -27,6 +27,13 @@ export default function SettingsPage() {
           iconClass="text-matcha-deep bg-matcha/10"
           title="기본 검색 반경"
           subtitle="홈 화면에서 조절 가능"
+        />
+        <SettingsItem
+          href="/settings/price-guide"
+          icon={Coins}
+          iconClass="text-torii bg-torii/8"
+          title="가격대 기준 보기"
+          subtitle="¥ · ¥¥ · ¥¥¥ · ¥¥¥¥ 는 각각 얼마?"
         />
         <SettingsItem
           href="/privacy"

@@ -62,11 +62,55 @@ export type PriceLevel =
 /** User-facing price bucket. "any" means no filtering. */
 export type PriceBucket = "¥" | "¥¥" | "¥¥¥" | "¥¥¥¥";
 
-export const PRICE_BUCKETS: { key: PriceBucket; label: string; level: PriceLevel; description: string }[] = [
-  { key: "¥", label: "¥", level: "PRICE_LEVEL_INEXPENSIVE", description: "저렴" },
-  { key: "¥¥", label: "¥¥", level: "PRICE_LEVEL_MODERATE", description: "보통" },
-  { key: "¥¥¥", label: "¥¥¥", level: "PRICE_LEVEL_EXPENSIVE", description: "비쌈" },
-  { key: "¥¥¥¥", label: "¥¥¥¥", level: "PRICE_LEVEL_VERY_EXPENSIVE", description: "최고급" },
+export interface PriceBucketDef {
+  key: PriceBucket;
+  label: string;
+  level: PriceLevel;
+  /** Short one-word label shown under the ¥ symbol in buttons. */
+  description: string;
+  /** Approximate per-meal range in Japan. Used in the price guide sheet. */
+  approxRange: string;
+  /** Longer explanation shown in the price guide sheet. */
+  longDescription: string;
+}
+
+export const PRICE_BUCKETS: PriceBucketDef[] = [
+  {
+    key: "¥",
+    label: "¥",
+    level: "PRICE_LEVEL_INEXPENSIVE",
+    description: "저렴",
+    approxRange: "~1,500엔",
+    longDescription:
+      "서민식당·체인점·동네 라멘집. 가볍게 한 끼 하기 좋은 가격대입니다.",
+  },
+  {
+    key: "¥¥",
+    label: "¥¥",
+    level: "PRICE_LEVEL_MODERATE",
+    description: "보통",
+    approxRange: "1,500~4,000엔",
+    longDescription:
+      "일반 식당·이자카야·동네 스시집. 여행 중 가장 흔하게 만나는 가격대예요.",
+  },
+  {
+    key: "¥¥¥",
+    label: "¥¥¥",
+    level: "PRICE_LEVEL_EXPENSIVE",
+    description: "비쌈",
+    approxRange: "4,000~10,000엔",
+    longDescription:
+      "중상급 식당·코스요리·야키니쿠·스테이크. 기념일이나 제대로 먹고 싶은 날에.",
+  },
+  {
+    key: "¥¥¥¥",
+    label: "¥¥¥¥",
+    level: "PRICE_LEVEL_VERY_EXPENSIVE",
+    description: "최고급",
+    approxRange: "10,000엔+",
+    longDescription:
+      "오마카세·가이세키·미슐랭 레스토랑. 예산은 넉넉하게, 예약은 필수입니다.",
+  },
 ];
 
 export function bucketToLevel(b: PriceBucket): PriceLevel {
