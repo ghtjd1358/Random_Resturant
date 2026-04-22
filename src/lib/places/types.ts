@@ -37,7 +37,7 @@ export const FOOD_SUBCATEGORIES: SubcategoryDef[] = [
 ];
 
 export const CAFE_SUBCATEGORIES: SubcategoryDef[] = [
-  { key: "all-cafe", label: "전체", emoji: "☕", includedTypes: [] },
+  { key: "all-cafe", label: "전체", emoji: "🍵", includedTypes: [] },
   { key: "coffee", label: "커피", emoji: "☕", includedTypes: ["coffee_shop", "cafe"] },
   { key: "dessert", label: "디저트", emoji: "🍰", includedTypes: ["ice_cream_shop"] },
   { key: "bakery", label: "베이커리", emoji: "🥐", includedTypes: ["bakery"] },
