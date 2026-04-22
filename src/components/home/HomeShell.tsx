@@ -80,7 +80,7 @@ function HomeHeader({ region }: { region: string | null }) {
           />
         </div>
 
-        <div className="flex min-w-0 flex-col justify-end pb-0.5">
+        <div className="flex min-w-0 flex-col justify-end pb-1.5">
           <p
             className="font-heading text-[10px] font-bold uppercase tracking-[0.3em] text-torii/80"
             aria-hidden
