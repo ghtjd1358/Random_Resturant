@@ -1,0 +1,41 @@
+{
+  "name": "랜덤레스토랑",
+  "short_name": "랜덤밥집",
+  "description": "일본여행 중 애매할 때, 현재 위치에서 한 집 뽑아드려요.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5EFE6",
+  "theme_color": "#C8102E",
+  "lang": "ko",
+  "categories": ["food", "travel", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "밥집 뽑기",
+      "short_name": "밥집",
+      "url": "/?c=food",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "카페 뽑기",
+      "short_name": "카페",
+      "url": "/?c=cafe",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}

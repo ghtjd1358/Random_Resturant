@@ -1,7 +1,5 @@
+import { HomeShell } from "@/components/home/HomeShell";
+
 export default function Home() {
-  return (
-    <main>
-      <div>Hello world!</div>
-    </main>
-  );
+  return <HomeShell />;
 }

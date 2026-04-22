@@ -1,1 +1,246 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-hand), var(--font-sans);
+    --font-sans: var(--font-sans);
+
+    --color-cream: #F5EFE6;
+    --color-cream-soft: #FAF6EE;
+    --color-cream-deep: #EDE3D2;
+    --color-sumi: #2B2B2B;
+    --color-sumi-soft: #4A4A4A;
+    --color-torii: #C8102E;
+    --color-torii-deep: #A00C24;
+    --color-torii-soft: #E55A72;
+    --color-matcha: #6B8E4E;
+    --color-matcha-soft: #A8BF90;
+    --color-matcha-deep: #4E6A37;
+    --color-washi: #E8DFCF;
+    --color-kinari: #F3EAD8;
+    --color-ink: #1F1F1F;
+
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+
+    --shadow-hanko: 0 0 0 1.5px rgba(200, 16, 46, 0.9) inset, 0 1px 2px rgba(200, 16, 46, 0.2);
+    --shadow-card: 0 1px 2px rgba(43, 43, 43, 0.04), 0 8px 20px rgba(43, 43, 43, 0.08), 0 20px 40px -12px rgba(43, 43, 43, 0.12);
+    --shadow-lift: 0 1px 2px rgba(43, 43, 43, 0.06), 0 4px 10px rgba(43, 43, 43, 0.05);
+}
+
+:root {
+    --background: #F5EFE6;
+    --foreground: #2B2B2B;
+    --card: #FAF6EE;
+    --card-foreground: #2B2B2B;
+    --popover: #FAF6EE;
+    --popover-foreground: #2B2B2B;
+    --primary: #C8102E;
+    --primary-foreground: #FAF6EE;
+    --secondary: #E8DFCF;
+    --secondary-foreground: #2B2B2B;
+    --muted: #E8DFCF;
+    --muted-foreground: #6B6259;
+    --accent: #6B8E4E;
+    --accent-foreground: #FAF6EE;
+    --destructive: #C8102E;
+    --border: #D9CEB8;
+    --input: #D9CEB8;
+    --ring: #C8102E;
+    --chart-1: #C8102E;
+    --chart-2: #6B8E4E;
+    --chart-3: #8A6D4B;
+    --chart-4: #D4A373;
+    --chart-5: #2B2B2B;
+    --radius: 0.75rem;
+    --sidebar: #FAF6EE;
+    --sidebar-foreground: #2B2B2B;
+    --sidebar-primary: #C8102E;
+    --sidebar-primary-foreground: #FAF6EE;
+    --sidebar-accent: #E8DFCF;
+    --sidebar-accent-foreground: #2B2B2B;
+    --sidebar-border: #D9CEB8;
+    --sidebar-ring: #C8102E;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Layered warm atmosphere — like looking at washi paper under soft light */
+    background-image:
+      radial-gradient(ellipse 70% 50% at 10% -5%, rgba(200, 16, 46, 0.055) 0, transparent 55%),
+      radial-gradient(ellipse 80% 60% at 95% 8%, rgba(107, 142, 78, 0.045) 0, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 50% 110%, rgba(139, 109, 75, 0.05) 0, transparent 60%);
+    background-attachment: fixed;
+    min-height: 100dvh;
+    overscroll-behavior-y: none;
+  }
+  /* Safe area helpers for iOS PWA */
+  .safe-pt { padding-top: env(safe-area-inset-top); }
+  .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+@layer utilities {
+  /* ── Washi paper grain — layered noise for depth without image ─────── */
+  .bg-washi-grain {
+    background-image:
+      linear-gradient(135deg, rgba(255,255,255,0.025) 0%, rgba(43,43,43,0.018) 100%),
+      repeating-linear-gradient(0deg, transparent 0 2px, rgba(43,43,43,0.008) 2px 3px),
+      repeating-linear-gradient(90deg, transparent 0 2px, rgba(43,43,43,0.005) 2px 3px);
+  }
+
+  /* Sparser washi — for cards, gentler than the body bg */
+  .bg-washi-soft {
+    background-image:
+      radial-gradient(circle at 22% 18%, rgba(139, 94, 47, 0.028) 1px, transparent 1.5px),
+      radial-gradient(circle at 68% 55%, rgba(43, 43, 43, 0.022) 1px, transparent 1.5px),
+      radial-gradient(circle at 40% 88%, rgba(200, 16, 46, 0.018) 1px, transparent 1.5px);
+    background-size: 84px 84px, 64px 64px, 110px 110px;
+  }
+
+  /* ── Seigaiha wave pattern — traditional, very subtle ──────────────── */
+  .pattern-seigaiha {
+    --seigaiha-color: rgba(200, 16, 46, 0.06);
+    background-image:
+      radial-gradient(circle at 50% 100%, transparent 48%, var(--seigaiha-color) 48%, var(--seigaiha-color) 50%, transparent 50%),
+      radial-gradient(circle at 0 100%,   transparent 48%, var(--seigaiha-color) 48%, var(--seigaiha-color) 50%, transparent 50%),
+      radial-gradient(circle at 100% 100%, transparent 48%, var(--seigaiha-color) 48%, var(--seigaiha-color) 50%, transparent 50%);
+    background-size: 32px 16px;
+    background-position: 0 0, 16px 8px, -16px 8px;
+  }
+
+  /* ── Hanko (red ink stamp) — for accent marks ──────────────────────── */
+  .hanko {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    color: var(--color-cream-soft);
+    background: radial-gradient(circle at 34% 30%, #D8294A 0%, #C8102E 45%, #A00C24 100%);
+    border-radius: 50%;
+    /* Uneven inner edge gives "stamped" feel */
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 245, 230, 0.08),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+      0 1px 2px rgba(200, 16, 46, 0.25);
+    text-shadow: 0 0 1px rgba(160, 12, 36, 0.6);
+  }
+
+  /* ── Ensō-inspired ring — outline of imperfect circle ──────────────── */
+  .ring-enso {
+    box-shadow:
+      0 0 0 2px rgba(200, 16, 46, 0.12),
+      0 0 0 6px rgba(200, 16, 46, 0.05),
+      0 20px 40px -16px rgba(200, 16, 46, 0.35);
+  }
+
+  /* ── Omikuji deckle edge — torn-paper top ──────────────────────────── */
+  .deckle-top {
+    -webkit-mask-image:
+      radial-gradient(circle at 10% 0, transparent 0 3px, black 4px),
+      radial-gradient(circle at 30% 0, transparent 0 2px, black 3px),
+      radial-gradient(circle at 55% 0, transparent 0 3px, black 4px),
+      radial-gradient(circle at 78% 0, transparent 0 2px, black 3px),
+      linear-gradient(black, black);
+    -webkit-mask-composite: source-over;
+  }
+
+  /* ── Text utilities ────────────────────────────────────────────────── */
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+  .break-keep { word-break: keep-all; }
+
+  /* Prevent text selection + tap highlight on interactive elements */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Decorative divider dot */
+  .dot-sep::before {
+    content: "·";
+    margin: 0 0.4em;
+    opacity: 0.45;
+    font-weight: 700;
+  }
+
+  /* Japanese bracket decoration (用 for heading accents) */
+  .quote-jp::before { content: "「"; }
+  .quote-jp::after  { content: "」"; }
+
+  /* Vertical tick mark (│) that doubles as separator */
+  .tick-jp {
+    background-image: linear-gradient(180deg, transparent 0, var(--color-torii) 25%, var(--color-torii) 75%, transparent 100%);
+    width: 2px;
+  }
+}
+
+/* Sonner toast custom theme */
+[data-sonner-toast] {
+  --normal-bg: var(--card) !important;
+  --normal-border: var(--border) !important;
+  --normal-text: var(--foreground) !important;
+  font-family: var(--font-sans) !important;
+}
+
+/* Slider thumb — make it feel like a red stone button instead of a generic knob */
+[data-slot="slider-thumb"] {
+  background: radial-gradient(circle at 30% 30%, #E55A72 0%, #C8102E 55%, #A00C24 100%) !important;
+  border: 1.5px solid #A00C24 !important;
+  box-shadow:
+    0 1px 2px rgba(43, 43, 43, 0.15),
+    0 0 0 4px rgba(200, 16, 46, 0.12) !important;
+}
+
+/* Slider track fill — matcha (filled portion) */
+[data-slot="slider-range"] {
+  background: linear-gradient(90deg, #A8BF90, #6B8E4E) !important;
+}
