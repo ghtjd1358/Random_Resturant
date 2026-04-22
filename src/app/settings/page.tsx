@@ -45,7 +45,7 @@ export default function SettingsPage() {
           subtitle="어떤 정보를 쓰는지 한 번에 요약"
         />
         <TokyoArrivalResetItem />
-        <TokyoArrivalPreviewItem />
+        {process.env.NODE_ENV !== "production" && <TokyoArrivalPreviewItem />}
       </ul>
 
       <footer className="mt-10 text-center text-xs text-muted-foreground">
