@@ -50,7 +50,7 @@ export function ModeToggle({ value, onChange }: Props) {
               />
             )}
             <span className="relative flex items-center gap-1.5">
-              <Icon className="size-3.5" strokeWidth={2} />
+              <Icon className="size-3.5 text-gold" strokeWidth={2} />
               <span className="text-sm font-medium">{label}</span>
             </span>
             <span className="relative text-[10px] opacity-80">{description}</span>

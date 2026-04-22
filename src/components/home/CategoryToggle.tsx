@@ -42,7 +42,10 @@ export function CategoryToggle({ value, onChange }: Props) {
             {active && (
               <motion.span
                 layoutId="category-active"
-                className="absolute inset-0 rounded-lg bg-sumi shadow-sm"
+                className={cn(
+                  "absolute inset-0 rounded-lg shadow-sm",
+                  key === "cafe" ? "bg-matcha" : "bg-sumi",
+                )}
                 transition={{ type: "spring", stiffness: 420, damping: 32 }}
               />
             )}

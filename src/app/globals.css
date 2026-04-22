@@ -19,6 +19,8 @@
     --color-matcha: #6B8E4E;
     --color-matcha-soft: #A8BF90;
     --color-matcha-deep: #4E6A37;
+    --color-gold: #E8B94A;
+    --color-gold-deep: #BF922F;
     --color-washi: #E8DFCF;
     --color-kinari: #F3EAD8;
     --color-ink: #1F1F1F;
@@ -231,13 +233,13 @@
   font-family: var(--font-sans) !important;
 }
 
-/* Slider thumb — make it feel like a red stone button instead of a generic knob */
+/* Slider thumb — matcha stone to stay in-family with the green range fill */
 [data-slot="slider-thumb"] {
-  background: radial-gradient(circle at 30% 30%, #E55A72 0%, #C8102E 55%, #A00C24 100%) !important;
-  border: 1.5px solid #A00C24 !important;
+  background: radial-gradient(circle at 30% 30%, #A8BF90 0%, #6B8E4E 55%, #4E6A37 100%) !important;
+  border: 1.5px solid #4E6A37 !important;
   box-shadow:
     0 1px 2px rgba(43, 43, 43, 0.15),
-    0 0 0 4px rgba(200, 16, 46, 0.12) !important;
+    0 0 0 4px rgba(107, 142, 78, 0.14) !important;
 }
 
 /* Slider track fill — matcha (filled portion) */
