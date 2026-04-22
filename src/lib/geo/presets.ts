@@ -10,6 +10,20 @@ export interface LocationPreset {
 }
 
 export const LOCATION_PRESETS: LocationPreset[] = [
+  // 서울
+  { id: "seoul-gangnam", city: "서울", label: "강남역", emoji: "🏙️", lat: 37.4979, lng: 127.0276, defaultRadius: 500 },
+  { id: "seoul-hongdae", city: "서울", label: "홍대입구", emoji: "🎸", lat: 37.5561, lng: 126.9236, defaultRadius: 600 },
+  { id: "seoul-myeongdong", city: "서울", label: "명동", emoji: "🛍️", lat: 37.5636, lng: 126.9826, defaultRadius: 500 },
+  { id: "seoul-seongsu", city: "서울", label: "성수동", emoji: "☕", lat: 37.5443, lng: 127.0557, defaultRadius: 600 },
+  { id: "seoul-itaewon", city: "서울", label: "이태원", emoji: "🌏", lat: 37.5344, lng: 126.9947, defaultRadius: 500 },
+
+  // 부산
+  { id: "busan-haeundae", city: "부산", label: "해운대", emoji: "🏖️", lat: 35.1587, lng: 129.1604, defaultRadius: 600 },
+  { id: "busan-seomyeon", city: "부산", label: "서면", emoji: "🚉", lat: 35.1579, lng: 129.0594, defaultRadius: 600 },
+
+  // 제주
+  { id: "jeju-city", city: "제주", label: "제주시 구도심", emoji: "🍊", lat: 33.5110, lng: 126.5219, defaultRadius: 700 },
+
   // 도쿄
   { id: "tokyo-shinjuku", city: "도쿄", label: "신주쿠역", emoji: "🗼", lat: 35.6896, lng: 139.7006, defaultRadius: 600 },
   { id: "tokyo-shibuya", city: "도쿄", label: "시부야 스크램블", emoji: "🎌", lat: 35.6595, lng: 139.7004, defaultRadius: 600 },

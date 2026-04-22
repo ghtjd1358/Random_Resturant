@@ -122,6 +122,56 @@ export function levelToBucket(l?: PriceLevel): PriceBucket | null {
   return found?.key ?? null;
 }
 
+/**
+ * Regional currency symbol used for price tier display. Kept to single
+ * characters so `repeat(n)` stays legible (₩₩₩ beats "NT$NT$NT$").
+ * Multi-currency regions (HK/TW/SG) collapse to "$" as a compact compromise.
+ */
+export function priceSymbolFor(countryCode?: string | null): string {
+  switch (countryCode) {
+    case "KR":
+      return "₩";
+    case "US":
+    case "CA":
+    case "AU":
+    case "NZ":
+    case "SG":
+    case "HK":
+    case "TW":
+    case "MX":
+      return "$";
+    case "GB":
+      return "£";
+    case "FR":
+    case "DE":
+    case "IT":
+    case "ES":
+    case "AT":
+    case "NL":
+    case "PT":
+    case "CZ":
+      return "€";
+    case "TH":
+      return "฿";
+    case "VN":
+      return "₫";
+    case "IN":
+      return "₹";
+    case "CN":
+    case "JP":
+    default:
+      return "¥";
+  }
+}
+
+/** Tier display (e.g. "¥¥¥", "₩₩", "$$$$") for a bucket in a given region. */
+export function priceTierFor(
+  bucket: PriceBucket,
+  countryCode?: string | null,
+): string {
+  return priceSymbolFor(countryCode).repeat(bucket.length);
+}
+
 export interface PlaceLite {
   id: string;
   name: string;

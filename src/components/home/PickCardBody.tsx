@@ -6,10 +6,14 @@ import { RatingBadge } from "@/components/common/RatingBadge";
 import { DistanceBadge } from "@/components/common/DistanceBadge";
 import { OpenNowBadge } from "@/components/common/OpenNowBadge";
 import { formatPrice, prettifyType } from "@/lib/format/place";
+import { guessCountryCode } from "@/lib/geo/region";
 import type { PlaceLite } from "@/lib/places/types";
 
 export function PickCardBody({ pick }: { pick: PlaceLite }) {
-  const price = formatPrice(pick.priceLevel);
+  // Use the pick's own coordinates so currency always matches the place,
+  // not the user's GPS. Seoul user browsing Tokyo presets still sees ¥.
+  const country = guessCountryCode(pick.location.lat, pick.location.lng);
+  const price = formatPrice(pick.priceLevel, country);
   const cleanType = prettifyType(pick.primaryType);
 
   return (

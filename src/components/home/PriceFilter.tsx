@@ -3,7 +3,9 @@
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
-import { PRICE_BUCKETS, type PriceBucket } from "@/lib/places/types";
+import { PRICE_BUCKETS, priceTierFor, type PriceBucket } from "@/lib/places/types";
+import { guessCountryCode } from "@/lib/geo/region";
+import { useLocationStore } from "@/stores/useLocationStore";
 
 interface Props {
   value: PriceBucket[];
@@ -13,6 +15,8 @@ interface Props {
 
 export function PriceFilter({ value, onToggle, onClear }: Props) {
   const allActive = value.length === 0;
+  const coords = useLocationStore((s) => s.coords);
+  const country = coords ? guessCountryCode(coords.lat, coords.lng) : null;
 
   return (
     <div className="flex items-center gap-2">
@@ -41,8 +45,9 @@ export function PriceFilter({ value, onToggle, onClear }: Props) {
       </button>
 
       <div className="flex flex-1 gap-1.5">
-        {PRICE_BUCKETS.map(({ key, label, description }) => {
+        {PRICE_BUCKETS.map(({ key, description }) => {
           const active = !allActive && value.includes(key);
+          const label = priceTierFor(key, country);
           return (
             <button
               key={key}

@@ -71,6 +71,38 @@ export function useVisitActions(place: PlaceLite) {
     setCurrentPick(null);
   }, [place, category, setCurrentPick]);
 
+  const share = useCallback(async () => {
+    haptic.tap();
+    const url = place.googleMapsUri ?? "";
+    const text = `여기맞아? 가 뽑아줬어 — ${place.name}${
+      place.rating ? ` (⭐${place.rating})` : ""
+    }`;
+
+    // Prefer native share sheet on supporting platforms (mobile, Edge, Safari).
+    // Fallback to clipboard on desktop Chrome/Firefox which lack navigator.share.
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        await navigator.share({ title: place.name, text, url: url || undefined });
+        return;
+      } catch (err) {
+        // User dismissed the share sheet — silently succeed.
+        if (err instanceof Error && err.name === "AbortError") return;
+      }
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard && url) {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("링크를 복사했어요.", {
+          description: "원하는 곳에 붙여넣기 하세요.",
+        });
+        return;
+      } catch {
+        /* fall through to error toast */
+      }
+    }
+    toast.error("공유를 지원하지 않는 환경이에요.");
+  }, [place]);
+
   const skip = useCallback(async () => {
     haptic.tap();
     try {
@@ -94,5 +126,5 @@ export function useVisitActions(place: PlaceLite) {
     rollAndReveal();
   }, [place, category, setCurrentPick, rollAndReveal]);
 
-  return { goMap, reroll: rerollHaptic, markGood, markBad, skip };
+  return { goMap, reroll: rerollHaptic, markGood, markBad, skip, share };
 }

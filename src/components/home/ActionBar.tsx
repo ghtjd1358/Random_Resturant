@@ -1,17 +1,18 @@
 "use client";
 
-import { Navigation2, RotateCcw, ThumbsDown, ThumbsUp, X, type LucideIcon } from "lucide-react";
+import { Navigation2, RotateCcw, Share2, ThumbsDown, ThumbsUp, X, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useVisitActions } from "@/hooks/useVisitActions";
 import type { PlaceLite } from "@/lib/places/types";
 
 export function ActionBar({ place }: { place: PlaceLite }) {
-  const { goMap, reroll, markGood, markBad, skip } = useVisitActions(place);
+  const { goMap, reroll, markGood, markBad, skip, share } = useVisitActions(place);
 
   return (
     <div className="border-t border-border bg-cream-soft p-2">
-      <div className="grid grid-cols-2 gap-1">
+      <div className="grid grid-cols-3 gap-1">
         <ActionButton label="여기로" icon={Navigation2} onClick={goMap} variant="accent" />
+        <ActionButton label="공유" icon={Share2} onClick={share} variant="subtle" />
         <ActionButton label="다시 뽑기" icon={RotateCcw} onClick={reroll} variant="subtle" />
       </div>
       <div className="mt-1 grid grid-cols-3 gap-1">

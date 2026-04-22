@@ -21,7 +21,7 @@ const gaegu = Gaegu({
 
 export const metadata: Metadata = {
   title: "여기맞아?",
-  description: "일본여행 중 애매할 때, 현재 위치에서 한 집 뽑아드려요.",
+  description: "뭐 먹을지 애매할 때, 지금 내 위치에서 한 집 뽑아드려요.",
   applicationName: "여기맞아?",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

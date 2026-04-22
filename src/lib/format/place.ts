@@ -1,8 +1,17 @@
-import { levelToBucket, type Category, type PriceLevel } from "@/lib/places/types";
+import {
+  levelToBucket,
+  priceTierFor,
+  type Category,
+  type PriceLevel,
+} from "@/lib/places/types";
 
-export function formatPrice(level?: PriceLevel | string): string {
+export function formatPrice(
+  level?: PriceLevel | string,
+  countryCode?: string | null,
+): string {
   const b = levelToBucket(level as never);
-  return b ?? "";
+  if (!b) return "";
+  return priceTierFor(b, countryCode);
 }
 
 export function formatDistance(m?: number): string {

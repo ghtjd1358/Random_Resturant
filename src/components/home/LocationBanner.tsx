@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, ChevronDown, Landmark, MapPin, Navigation, RotateCw } from "lucide-react";
+import { AlertCircle, ChevronDown, ChevronRight, Landmark, MapPin, Navigation, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PresetSheet } from "./PresetSheet";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -186,25 +186,31 @@ function DeniedBanner({ message, onRetry }: { message: string | null; onRetry: (
 }
 
 function PendingBanner() {
+  // Two-row layout: status on top, always-visible "skip the wait" CTA on
+  // the bottom. The uncertainty of "how long until GPS returns" is the whole
+  // user complaint — giving an immediate escape hatch solves it without
+  // needing a timer.
   return (
-    <div className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-      <span
-        aria-hidden
-        className="relative inline-flex size-2 items-center justify-center"
-      >
-        <span className="absolute inline-flex size-3.5 animate-ping rounded-full bg-muted-foreground/30" />
-        <span className="relative inline-flex size-2 rounded-full bg-muted-foreground/60" />
-      </span>
-      <MapPin className="size-3.5" />
-      <span className="font-medium">현재 위치 확인 중…</span>
-
+    <div className="overflow-hidden rounded-lg border border-border/50 bg-muted/30 text-xs">
+      <div className="flex items-center gap-2.5 px-3 py-2 text-muted-foreground">
+        <span
+          aria-hidden
+          className="relative inline-flex size-2 items-center justify-center"
+        >
+          <span className="absolute inline-flex size-3.5 animate-ping rounded-full bg-muted-foreground/30" />
+          <span className="relative inline-flex size-2 rounded-full bg-muted-foreground/60" />
+        </span>
+        <MapPin className="size-3.5" />
+        <span className="font-medium">현재 위치 확인 중…</span>
+      </div>
       <PresetSheet>
         <button
           type="button"
-          className="no-select ml-auto flex items-center gap-0.5 rounded-md px-1.5 py-1 text-[10px] font-medium tracking-wide text-muted-foreground transition-colors hover:bg-foreground/5"
+          className="no-select flex w-full items-center justify-center gap-1.5 border-t border-border/50 bg-torii/5 px-3 py-1.5 text-[11px] font-medium text-torii transition-colors hover:bg-torii/10"
         >
-          지역 선택
-          <ChevronDown className="size-3" />
+          기다리기 싫다면
+          <span className="underline underline-offset-2">지역 직접 고르기</span>
+          <ChevronRight className="size-3" />
         </button>
       </PresetSheet>
     </div>
