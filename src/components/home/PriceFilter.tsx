@@ -24,10 +24,10 @@ export function PriceFilter({ value, onToggle, onClear }: Props) {
           }
         }}
         className={cn(
-          "no-select relative flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+          "no-select relative flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
           allActive
-            ? "text-cream"
-            : "border border-border bg-card text-muted-foreground hover:text-sumi",
+            ? "border-transparent text-cream"
+            : "border-border bg-card text-muted-foreground hover:text-sumi",
         )}
       >
         {allActive && (
@@ -54,10 +54,10 @@ export function PriceFilter({ value, onToggle, onClear }: Props) {
               aria-pressed={active}
               aria-label={`${label} · ${description}`}
               className={cn(
-                "no-select flex flex-1 items-center justify-center rounded-lg px-2 py-1.5 text-sm font-medium transition-all",
+                "no-select flex flex-1 items-center justify-center rounded-lg border px-2 py-1.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-matcha text-cream shadow-sm"
-                  : "border border-border bg-card text-muted-foreground hover:text-sumi",
+                  ? "border-transparent bg-matcha text-cream shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:text-sumi",
               )}
             >
               {label}
