@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import { DiceButton } from "./DiceButton";
 import { PickCard } from "./PickCard";
 import { LocationBanner } from "./LocationBanner";
@@ -67,22 +68,15 @@ function HomeHeader({ region }: { region: string | null }) {
 
       {/* Title emblem: giraffe mascot + stacked wordmark */}
       <div className="relative flex items-end gap-3">
-        {/* Giraffe mascot with halo */}
-        <div className="relative flex size-14 shrink-0 items-end justify-center">
-          <div
-            aria-hidden
-            className="absolute inset-0 rounded-full bg-gradient-to-br from-matcha-soft/30 via-transparent to-torii/10 blur-md"
-          />
-          <span
-            aria-hidden
-            className="relative z-10 text-[2.4rem] leading-none drop-shadow-[0_2px_3px_rgba(43,43,43,0.12)]"
-          >
-            🦒
-          </span>
-          {/* tiny floor shadow */}
-          <span
-            aria-hidden
-            className="absolute bottom-0 left-1/2 h-1 w-8 -translate-x-1/2 rounded-full bg-sumi/10 blur-sm"
+        {/* Giraffe shop-sign mascot */}
+        <div className="relative size-16 shrink-0">
+          <Image
+            src="/mascot-giraffe.png"
+            alt="랜덤한끼 기린 셰프 마스코트"
+            fill
+            sizes="64px"
+            priority
+            className="object-contain drop-shadow-[0_2px_3px_rgba(43,43,43,0.12)]"
           />
         </div>
 
