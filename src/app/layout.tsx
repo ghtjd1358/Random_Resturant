@@ -20,14 +20,14 @@ const gaegu = Gaegu({
 });
 
 export const metadata: Metadata = {
-  title: "랜덤레스토랑",
+  title: "여기맞아?",
   description: "일본여행 중 애매할 때, 현재 위치에서 한 집 뽑아드려요.",
-  applicationName: "랜덤레스토랑",
+  applicationName: "여기맞아?",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "랜덤레스토랑",
+    title: "여기맞아?",
   },
   formatDetection: { telephone: false },
   icons: {

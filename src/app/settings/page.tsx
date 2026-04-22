@@ -3,7 +3,7 @@ import { ChevronRight, Ban, Ruler, Download, Shield, Coins } from "lucide-react"
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PageHeader } from "@/components/common/PageHeader";
 
-export const metadata = { title: "설정 · 랜덤레스토랑" };
+export const metadata = { title: "설정 · 여기맞아?" };
 
 export default function SettingsPage() {
   return (
@@ -54,7 +54,7 @@ export default function SettingsPage() {
           }}
         />
         <p className="font-heading font-bold tracking-wider">
-          랜덤레스토랑 · v0.1.0
+          여기맞아? · v0.1.0
         </p>
         <p className="mt-1 flex items-center justify-center gap-1 text-[11px]">
           <Download className="size-3" />
@@ -63,7 +63,7 @@ export default function SettingsPage() {
         <p className="mt-4 text-[10px] leading-relaxed tracking-wide text-muted-foreground/80">
           식당 정보 제공 · Google Places API
           <br />
-          <span>© 2026 랜덤레스토랑</span>
+          <span>© 2026 여기맞아?</span>
         </p>
       </footer>
     </div>

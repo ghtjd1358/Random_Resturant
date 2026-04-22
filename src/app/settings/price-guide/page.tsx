@@ -1,7 +1,7 @@
 import { PageHeader } from "@/components/common/PageHeader";
 import { PRICE_BUCKETS } from "@/lib/places/types";
 
-export const metadata = { title: "가격대 기준 · 랜덤레스토랑" };
+export const metadata = { title: "가격대 기준 · 여기맞아?" };
 
 export default function PriceGuidePage() {
   return (

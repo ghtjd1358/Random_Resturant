@@ -91,10 +91,10 @@ function HomeHeader({ region }: { region: string | null }) {
             className="font-heading text-[10px] font-bold uppercase tracking-[0.3em] text-torii/80"
             aria-hidden
           >
-            RANDOM · 旅メシ
+            ここ? · 旅メシ
           </p>
-          <h1 className="font-heading text-[2.25rem] font-bold leading-none tracking-tight text-sumi">
-            랜덤<span className="text-torii">레스토랑</span>
+          <h1 className="font-heading text-[2.4rem] font-bold leading-none tracking-tight text-sumi">
+            여기<span className="text-torii">맞아?</span>
           </h1>
         </div>
       </div>

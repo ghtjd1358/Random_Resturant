@@ -1,7 +1,7 @@
 import { VisitedList } from "@/components/history/VisitedList";
 import { PageHeader } from "@/components/common/PageHeader";
 
-export const metadata = { title: "방문 기록 · 랜덤레스토랑" };
+export const metadata = { title: "방문 기록 · 여기맞아?" };
 
 export default function HistoryPage() {
   return (

@@ -1,6 +1,6 @@
 {
-  "name": "랜덤레스토랑",
-  "short_name": "랜덤밥집",
+  "name": "여기맞아?",
+  "short_name": "여기맞아",
   "description": "일본여행 중 애매할 때, 현재 위치에서 한 집 뽑아드려요.",
   "start_url": "/",
   "scope": "/",

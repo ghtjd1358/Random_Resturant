@@ -1,6 +1,6 @@
 import { WifiOff } from "lucide-react";
 
-export const metadata = { title: "오프라인 · 랜덤레스토랑" };
+export const metadata = { title: "오프라인 · 여기맞아?" };
 
 export default function OfflinePage() {
   return (

@@ -1,7 +1,7 @@
 import { SkippedList } from "@/components/skipped/SkippedList";
 import { PageHeader } from "@/components/common/PageHeader";
 
-export const metadata = { title: "스킵 관리 · 랜덤레스토랑" };
+export const metadata = { title: "스킵 관리 · 여기맞아?" };
 
 export default function SkippedPage() {
   return (
