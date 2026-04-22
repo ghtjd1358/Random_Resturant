@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 // Next.js 16 reads these named exports and wires OG meta automatically.
 export const runtime = "nodejs";
@@ -10,6 +12,15 @@ export const contentType = "image/png";
 // one child to set display:flex explicitly — it does not inherit browser
 // defaults. Keep styles flat + flex-first below.
 export default async function OGImage() {
+  // Satori's <img> accepts HTTP URLs or data URIs — inline the mascot PNG
+  // as a base64 data URI so rendering stays self-contained. process.cwd()
+  // resolves to the Next.js project root both locally and on Vercel.
+  const mascotData = await readFile(
+    join(process.cwd(), "public/mascot-giraffe.png"),
+    "base64",
+  );
+  const mascotSrc = `data:image/png;base64,${mascotData}`;
+
   return new ImageResponse(
     (
       <div
@@ -74,9 +85,15 @@ export default async function OGImage() {
             marginBottom: 24,
           }}
         >
-          <div style={{ display: "flex", fontSize: 120, lineHeight: 1 }}>
-            🦒
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={mascotSrc}
+            width={180}
+            height={180}
+            alt=""
+            style={{ display: "block" }}
+          />
+
           <div
             style={{
               display: "flex",
