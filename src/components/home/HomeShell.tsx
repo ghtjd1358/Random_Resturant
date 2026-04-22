@@ -69,12 +69,12 @@ function HomeHeader({ region }: { region: string | null }) {
       {/* Title emblem: giraffe mascot + stacked wordmark */}
       <div className="relative flex items-end gap-3">
         {/* Giraffe shop-sign mascot */}
-        <div className="relative size-16 shrink-0">
+        <div className="relative size-20 shrink-0">
           <Image
             src="/mascot-giraffe.png"
             alt="랜덤한끼 기린 셰프 마스코트"
             fill
-            sizes="64px"
+            sizes="80px"
             priority
             className="object-contain drop-shadow-[0_2px_3px_rgba(43,43,43,0.12)]"
           />
