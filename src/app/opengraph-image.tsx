@@ -12,11 +12,11 @@ export const contentType = "image/png";
 // one child to set display:flex explicitly — it does not inherit browser
 // defaults. Keep styles flat + flex-first below.
 export default async function OGImage() {
-  // Satori's <img> accepts HTTP URLs or data URIs — inline the mascot PNG
-  // as a base64 data URI so rendering stays self-contained. process.cwd()
-  // resolves to the Next.js project root both locally and on Vercel.
+  // Mascot renders at 180×180 in the card, so use the 192px icon variant
+  // (~32KB) instead of the 1254×1254 source (~600KB) — same visual result,
+  // smaller base64 payload, faster Satori rasterization on cold start.
   const mascotData = await readFile(
-    join(process.cwd(), "public/mascot-giraffe.png"),
+    join(process.cwd(), "public/icons/icon-192.png"),
     "base64",
   );
   const mascotSrc = `data:image/png;base64,${mascotData}`;
