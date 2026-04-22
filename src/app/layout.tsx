@@ -19,11 +19,28 @@ const gaegu = Gaegu({
   display: "swap",
 });
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://random-restaurant-orcin.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "여기맞아?",
   description: "뭐 먹을지 애매할 때, 지금 내 위치에서 한 집 뽑아드려요.",
   applicationName: "여기맞아?",
   manifest: "/manifest.webmanifest",
+  openGraph: {
+    title: "여기맞아?",
+    description: "뭐 먹을지 애매할 때, 지금 내 위치에서 한 집 뽑아드려요.",
+    url: SITE_URL,
+    siteName: "여기맞아?",
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "여기맞아?",
+    description: "뭐 먹을지 애매할 때, 지금 내 위치에서 한 집 뽑아드려요.",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

@@ -20,17 +20,27 @@ interface FiltersState {
   setMode: (m: PickMode) => void;
   togglePriceLevel: (p: PriceBucket) => void;
   clearPriceLevels: () => void;
+  resetFilters: () => void;
 }
+
+/**
+ * Default filter snapshot — also used by the reset button and the
+ * `isFiltersDefault` selector to decide whether to surface the
+ * "기본값으로" pill.
+ */
+export const DEFAULT_FILTERS = {
+  category: "food" as Category,
+  subcategory: "all-food" as Subcategory,
+  radius: 800,
+  openNowOnly: false,
+  mode: "popular" as PickMode,
+  priceLevels: [] as PriceBucket[],
+};
 
 export const useFiltersStore = create<FiltersState>()(
   persist(
     (set) => ({
-      category: "food",
-      subcategory: "all-food",
-      radius: 800,
-      openNowOnly: false,
-      mode: "popular",
-      priceLevels: [], // empty = all allowed
+      ...DEFAULT_FILTERS,
       setCategory: (category) =>
         set({
           category,
@@ -47,7 +57,20 @@ export const useFiltersStore = create<FiltersState>()(
             : [...state.priceLevels, p],
         })),
       clearPriceLevels: () => set({ priceLevels: [] }),
+      resetFilters: () => set({ ...DEFAULT_FILTERS }),
     }),
     { name: "rr-filters" },
   ),
 );
+
+/** True when every field matches DEFAULT_FILTERS. Used to hide the reset pill. */
+export function isFiltersDefault(s: FiltersState): boolean {
+  return (
+    s.category === DEFAULT_FILTERS.category &&
+    s.subcategory === DEFAULT_FILTERS.subcategory &&
+    s.radius === DEFAULT_FILTERS.radius &&
+    s.openNowOnly === DEFAULT_FILTERS.openNowOnly &&
+    s.mode === DEFAULT_FILTERS.mode &&
+    s.priceLevels.length === 0
+  );
+}
