@@ -226,6 +226,31 @@
 }
 
 /* ── 渋谷事変 easter-egg keyframes ─────────────────────────────────── */
+@keyframes shibuya-tilt {
+  0%, 21%  { transform: translateY(-100vh); }
+  55%, 100% { transform: translateY(0); }
+}
+
+@keyframes shibuya-silhouette-rise {
+  0%   { opacity: 0; transform: translate(-50%, 18vh) scale(0.7); filter: blur(16px); }
+  60%  { opacity: 0.95; transform: translate(-50%, 0) scale(1.02); filter: blur(0); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); filter: blur(0); }
+}
+
+@keyframes shibuya-shockwave {
+  0%   { opacity: 0;    transform: translate(-50%, -50%) scale(0.1); }
+  10%  { opacity: 1; }
+  100% { opacity: 0;    transform: translate(-50%, -50%) scale(8); }
+}
+
+@keyframes shibuya-neon-flicker {
+  0%, 100%     { opacity: 0.9; }
+  6%, 12%, 54% { opacity: 0.25; }
+  18%, 62%     { opacity: 1; }
+  26%          { opacity: 0.4; }
+  72%          { opacity: 0.85; }
+}
+
 @keyframes shibuya-flicker {
   0%, 100% { opacity: 0.95; }
   4%, 8%   { opacity: 0.55; }
