@@ -87,7 +87,7 @@ function HomeHeader({ region }: { region: string | null }) {
           >
             ここ? · 旅メシ
           </p>
-          <h1 className="translate-y-[5px] font-heading text-[2.4rem] font-bold leading-none tracking-tight text-sumi">
+          <h1 className="-translate-y-[5px] font-heading text-[2.4rem] font-bold leading-none tracking-tight text-sumi">
             랜덤<span className="text-torii">한끼</span>
           </h1>
         </div>

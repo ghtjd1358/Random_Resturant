@@ -50,7 +50,7 @@ export function CategoryToggle({ value, onChange }: Props) {
               />
             )}
             <span className="relative flex items-center gap-2">
-              <Icon className="size-4" />
+              <Icon className="size-4 text-gold" />
               {label}
             </span>
           </button>
