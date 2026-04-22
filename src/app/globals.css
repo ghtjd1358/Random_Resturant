@@ -225,6 +225,51 @@
   }
 }
 
+/* ── 渋谷事変 easter-egg keyframes ─────────────────────────────────── */
+@keyframes shibuya-flicker {
+  0%, 100% { opacity: 0.95; }
+  4%, 8%   { opacity: 0.55; }
+  12%      { opacity: 1; }
+  16%      { opacity: 0.4; }
+  22%, 60% { opacity: 0.88; }
+  64%      { opacity: 0.5; }
+  72%      { opacity: 1; }
+}
+
+@keyframes shibuya-halo {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.9;  transform: scale(1.15); }
+}
+
+@keyframes shibuya-sigil-in {
+  0%   { opacity: 0; transform: scale(2.2) rotate(-8deg); filter: blur(18px); }
+  55%  { opacity: 1; transform: scale(1.08) rotate(3deg);  filter: blur(0); }
+  70%  { transform: scale(0.96) rotate(-1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0);         filter: blur(0); }
+}
+
+@keyframes shibuya-kanji-crush {
+  0%   { opacity: 0; letter-spacing: 1.1em; transform: scale(1.35); filter: blur(8px); }
+  60%  { opacity: 1; letter-spacing: 0.28em; transform: scale(0.98); filter: blur(0); }
+  100% { opacity: 1; letter-spacing: 0.32em; transform: scale(1);    filter: blur(0); }
+}
+
+@keyframes shibuya-fade-up {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shibuya-scan {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes shibuya-final-flash {
+  0%   { opacity: 0; }
+  20%  { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+
 /* Sonner toast custom theme */
 [data-sonner-toast] {
   --normal-bg: var(--card) !important;

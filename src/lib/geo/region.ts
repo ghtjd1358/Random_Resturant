@@ -174,3 +174,15 @@ export function guessRegion(lat: number, lng: number): string | null {
 export function guessCountryCode(lat: number, lng: number): string | null {
   return guessRegionInfo(lat, lng)?.countryCode ?? null;
 }
+
+// ~1.5km box around Shibuya Scramble Crossing (35.6595, 139.7004).
+// Powers the 渋谷事変 easter egg — intentionally tight so it only fires for
+// the real Shibuya neighborhood, not all of greater Tokyo.
+const SHIBUYA_BOUNDS: [number, number, number, number] = [
+  35.646, 35.673, 139.684, 139.717,
+];
+
+/** True when the coords fall inside the tight Shibuya box. */
+export function isInShibuya(lat: number, lng: number): boolean {
+  return inside(lat, lng, SHIBUYA_BOUNDS);
+}

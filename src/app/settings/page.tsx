@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ChevronRight, Ban, Ruler, Download, Shield, Coins } from "lucide-react";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PageHeader } from "@/components/common/PageHeader";
+import { ShibuyaResetItem } from "@/components/settings/ShibuyaResetItem";
+import { ShibuyaPreviewItem } from "@/components/settings/ShibuyaPreviewItem";
 
 export const metadata = { title: "설정 · 랜덤한끼" };
 
@@ -42,6 +44,8 @@ export default function SettingsPage() {
           title="개인정보 처리방침"
           subtitle="어떤 정보를 쓰는지 한 번에 요약"
         />
+        <ShibuyaResetItem />
+        <ShibuyaPreviewItem />
       </ul>
 
       <footer className="mt-10 text-center text-xs text-muted-foreground">

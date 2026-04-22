@@ -1,22 +1,41 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { DiceButton } from "./DiceButton";
 import { PickCard } from "./PickCard";
 import { LocationBanner } from "./LocationBanner";
 import { FiltersPanel } from "./FiltersPanel";
+import { ShibuyaIncident } from "./ShibuyaIncident";
 import { NoirenDivider } from "@/components/common/NoirenDivider";
 import { useFiltersStore } from "@/stores/useFiltersStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useLocationStore } from "@/stores/useLocationStore";
-import { guessRegion } from "@/lib/geo/region";
+import { useShibuyaStore } from "@/stores/useShibuyaStore";
+import { guessRegion, isInShibuya } from "@/lib/geo/region";
 
 export function HomeShell() {
   useGeolocation();
   const setCategory = useFiltersStore((s) => s.setCategory);
   const coords = useLocationStore((s) => s.coords);
   const region = coords ? guessRegion(coords.lat, coords.lng) : null;
+
+  // 渋谷事変 easter egg — auto-plays once per device when coords land in Shibuya.
+  const seal = useShibuyaStore((s) => s.seal);
+  const [playing, setPlaying] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const initial = useLocationStore.getState().coords;
+    if (!initial || useShibuyaStore.getState().sealed) return false;
+    return isInShibuya(initial.lat, initial.lng);
+  });
+  useEffect(() => {
+    // Subscribe for later coord changes (preset switches, GPS updates).
+    return useLocationStore.subscribe((next, prev) => {
+      if (next.coords === prev.coords || !next.coords) return;
+      if (useShibuyaStore.getState().sealed) return;
+      if (isInShibuya(next.coords.lat, next.coords.lng)) setPlaying(true);
+    });
+  }, []);
 
   // Apply category shortcut from PWA manifest (?c=food|cafe)
   useEffect(() => {
@@ -27,6 +46,14 @@ export function HomeShell() {
 
   return (
     <div className="px-5 pt-5 pb-6">
+      {playing && (
+        <ShibuyaIncident
+          onComplete={() => {
+            seal();
+            setPlaying(false);
+          }}
+        />
+      )}
       <HomeHeader region={region} />
 
       <div className="mt-5">
