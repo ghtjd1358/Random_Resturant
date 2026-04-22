@@ -1,6 +1,6 @@
 {
-  "name": "여기맞아?",
-  "short_name": "여기맞아",
+  "name": "랜덤한끼",
+  "short_name": "랜덤한끼",
   "description": "뭐 먹을지 애매할 때, 지금 내 위치에서 한 집 뽑아드려요.",
   "start_url": "/",
   "scope": "/",

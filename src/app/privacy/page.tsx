@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/common/PageHeader";
 
-export const metadata = { title: "개인정보 처리방침 · 여기맞아?" };
+export const metadata = { title: "개인정보 처리방침 · 랜덤한끼" };
 
 export default function PrivacyPage() {
   return (

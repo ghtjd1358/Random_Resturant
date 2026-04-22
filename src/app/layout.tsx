@@ -24,27 +24,27 @@ const SITE_URL =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "여기맞아?",
+  title: "랜덤한끼",
   description: "뭐 먹을지 애매할 때, 지금 내 위치에서 한 집 뽑아드려요.",
-  applicationName: "여기맞아?",
+  applicationName: "랜덤한끼",
   manifest: "/manifest.webmanifest",
   openGraph: {
-    title: "여기맞아?",
+    title: "랜덤한끼",
     description: "뭐 먹을지 애매할 때, 지금 내 위치에서 한 집 뽑아드려요.",
     url: SITE_URL,
-    siteName: "여기맞아?",
+    siteName: "랜덤한끼",
     locale: "ko_KR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "여기맞아?",
+    title: "랜덤한끼",
     description: "뭐 먹을지 애매할 때, 지금 내 위치에서 한 집 뽑아드려요.",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "여기맞아?",
+    title: "랜덤한끼",
   },
   formatDetection: { telephone: false },
   icons: {

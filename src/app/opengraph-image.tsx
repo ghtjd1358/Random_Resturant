@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 // Next.js 16 reads these named exports and wires OG meta automatically.
 export const runtime = "nodejs";
-export const alt = "여기맞아? — 지금 내 위치에서 한 집, 고민 없이";
+export const alt = "랜덤한끼 — 지금 내 위치에서 한 집, 고민 없이";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -62,7 +62,7 @@ export default async function OGImage() {
             textTransform: "uppercase",
           }}
         >
-          ここ? · 旅メシ · 오늘의 한 집
+ランダム · 旅メシ · 오늘의 한 집
         </div>
 
         {/* Giraffe + wordmark */}
@@ -87,8 +87,8 @@ export default async function OGImage() {
               color: "#2B2B2B",
             }}
           >
-            여기
-            <span style={{ color: "#C8102E" }}>맞아?</span>
+            랜덤
+            <span style={{ color: "#C8102E" }}>한끼</span>
           </div>
         </div>
 

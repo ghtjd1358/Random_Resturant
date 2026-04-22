@@ -84,7 +84,7 @@ export function useVisitActions(place: PlaceLite) {
     const mapUrl = place.googleMapsUri;
     const ratingTail = place.rating ? ` (⭐${place.rating})` : "";
     const lines = [
-      `여기맞아? 가 뽑아줬어 — ${place.name}${ratingTail}`,
+      `랜덤한끼 가 뽑아줬어 — ${place.name}${ratingTail}`,
       mapUrl ? `📍 ${mapUrl}` : "",
       "",
       "고민 없이 한 집, 지금 내 위치에서 ↓",
@@ -96,7 +96,7 @@ export function useVisitActions(place: PlaceLite) {
     if (typeof navigator !== "undefined" && "share" in navigator) {
       try {
         await navigator.share({
-          title: `${place.name} · 여기맞아?`,
+          title: `${place.name} · 랜덤한끼`,
           text,
           url: appUrl || mapUrl || undefined,
         });
