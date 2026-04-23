@@ -6,6 +6,7 @@ import { PickCard } from "./PickCard";
 import { LocationBanner } from "./LocationBanner";
 import { FiltersPanel } from "./FiltersPanel";
 import { TokyoArrival } from "./TokyoArrival";
+import { KanjiWatermark } from "@/components/common/KanjiWatermark";
 import { useFiltersStore } from "@/stores/useFiltersStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useLocationStore } from "@/stores/useLocationStore";
@@ -48,6 +49,9 @@ export function HomeShell() {
 
   return (
     <div className="relative px-5 pt-5 pb-6">
+      <KanjiWatermark glyph="選" />
+      {/* Wrap interactive content in z-10 so it sits above the watermark */}
+      <div className="relative z-10">
       {playing && (
         <TokyoArrival
           onComplete={() => {
@@ -70,6 +74,7 @@ export function HomeShell() {
         <DiceButton />
         <PickCard />
       </section>
+      </div>
     </div>
   );
 }
