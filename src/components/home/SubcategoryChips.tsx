@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
 import type { Category, Subcategory } from "@/lib/places/types";
@@ -12,14 +11,31 @@ interface Props {
   onChange: (s: Subcategory) => void;
 }
 
+// Korean label → kanji glyph for the editorial chip system.
+const KANJI: Partial<Record<Subcategory, string>> = {
+  "all-food": "全",
+  ramen: "拉麵",
+  sushi: "鮨",
+  japanese: "和",
+  izakaya: "居",
+  steak: "焼",
+  seafood: "海",
+  fastfood: "速",
+  "all-cafe": "全",
+  coffee: "珈",
+  dessert: "菓",
+  bakery: "麭",
+};
+
 export function SubcategoryChips({ category, value, onChange }: Props) {
   const options = subcategoriesFor(category);
 
   return (
-    <div className="-mx-5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div role="radiogroup" aria-label="세부 카테고리" className="flex gap-2">
+    <div className="-mx-5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div role="radiogroup" aria-label="세부 카테고리" className="flex gap-1.5">
         {options.map((opt) => {
           const active = value === opt.key;
+          const kanji = KANJI[opt.key];
           return (
             <button
               key={opt.key}
@@ -30,23 +46,25 @@ export function SubcategoryChips({ category, value, onChange }: Props) {
                 onChange(opt.key);
               }}
               className={cn(
-                "no-select relative flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                "no-select relative flex shrink-0 items-center gap-1.5 border px-2.5 py-1.5 text-[12px] transition-colors",
                 active
-                  ? "text-cream"
-                  : "border border-border bg-card text-muted-foreground hover:text-sumi",
+                  ? "border-sumi-ink bg-sumi-ink text-paper"
+                  : "border-hairline bg-paper text-sumi-ink hover:border-sumi-ink/40",
               )}
             >
-              {active && (
-                <motion.span
-                  layoutId={`subcat-${category}-active`}
-                  className="absolute inset-0 rounded-full bg-sumi shadow-sm"
-                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                />
-              )}
-              <span className="relative flex items-center gap-1.5">
-                <span className="text-sm leading-none">{opt.emoji}</span>
-                <span>{opt.label}</span>
+              <span className="font-mincho font-medium tracking-tight">
+                {opt.label}
               </span>
+              {kanji && (
+                <span
+                  className={cn(
+                    "font-mincho text-[10px]",
+                    active ? "text-paper/55" : "text-sumi-fade",
+                  )}
+                >
+                  {kanji}
+                </span>
+              )}
             </button>
           );
         })}

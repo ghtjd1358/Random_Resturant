@@ -1,77 +1,63 @@
 "use client";
 
-import { ExternalLink, MapPin } from "lucide-react";
 import { AIReasonLine } from "./AIReasonLine";
-import { RatingBadge } from "@/components/common/RatingBadge";
-import { DistanceBadge } from "@/components/common/DistanceBadge";
-import { OpenNowBadge } from "@/components/common/OpenNowBadge";
 import { formatPrice, prettifyType } from "@/lib/format/place";
 import { guessCountryCode } from "@/lib/geo/region";
 import type { PlaceLite } from "@/lib/places/types";
 
 export function PickCardBody({ pick }: { pick: PlaceLite }) {
-  // Use the pick's own coordinates so currency always matches the place,
-  // not the user's GPS. Seoul user browsing Tokyo presets still sees ¥.
   const country = guessCountryCode(pick.location.lat, pick.location.lng);
   const price = formatPrice(pick.priceLevel, country);
   const cleanType = prettifyType(pick.primaryType);
+  const walkMin = pick.distanceMeters
+    ? Math.max(1, Math.round(pick.distanceMeters / 80))
+    : null;
 
   return (
-    <div className="relative px-5 pt-6 pb-4">
-      {/* Metadata row (type · price · open status) */}
-      <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-        {cleanType && <span>{cleanType}</span>}
-        {cleanType && price && <Dot />}
-        {price && <span className="text-matcha-deep">{price}</span>}
-        {pick.openNow !== undefined && (
-          <>
-            <Dot />
-            <OpenNowBadge open={pick.openNow} />
-          </>
-        )}
-      </div>
-
-      {/* Place name — big, handwritten, with brush-stroke underline on first char */}
-      <h2 className="font-heading text-[1.75rem] font-bold leading-[1.1] tracking-tight text-sumi text-balance break-keep">
+    <div className="relative px-5 pt-5 pb-5">
+      {/* Place name — Shippori Mincho */}
+      <h2 className="font-mincho text-[1.7rem] font-medium leading-[1.15] tracking-tight text-sumi-ink text-balance break-keep">
         {pick.name}
       </h2>
 
-      {/* Thin brush rule */}
-      <div
-        aria-hidden
-        className="mt-3 h-px w-12"
-        style={{
-          background:
-            "linear-gradient(90deg, rgba(43,43,43,0.45), rgba(43,43,43,0))",
-        }}
-      />
+      {/* Subtitle: type in mincho with bracket decoration */}
+      {cleanType && (
+        <p className="mt-1.5 font-mincho text-[12px] text-sumi-mute">
+          <span className="text-sumi-fade">《</span>
+          {cleanType}
+          <span className="text-sumi-fade">》</span>
+        </p>
+      )}
 
-      {/* Rating · distance */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-        <RatingBadge rating={pick.rating} count={pick.userRatingCount} />
-        <DistanceBadge meters={pick.distanceMeters} />
+      {/* Stats row — rating · count · walk · price, all hairline */}
+      <div className="mt-3.5 flex items-center gap-3 text-[12px] num-tabular text-sumi-ink">
+        {pick.rating !== undefined && (
+          <span className="flex items-baseline gap-1.5">
+            <span className="font-mincho text-[15px] font-medium">
+              {pick.rating.toFixed(1)}
+            </span>
+            <span aria-hidden className="h-px w-4 bg-sumi-ink/60" />
+            {pick.userRatingCount !== undefined && (
+              <span className="text-sumi-fade">
+                {pick.userRatingCount.toLocaleString()}
+              </span>
+            )}
+          </span>
+        )}
+        {walkMin !== null && (
+          <span className="font-mincho text-sumi-mute">
+            徒歩 <span className="text-sumi-ink">{walkMin}</span>分
+          </span>
+        )}
+        {price && (
+          <span className="font-mincho text-sumi-ink">{price}</span>
+        )}
       </div>
 
+      {/* Hairline before AI line */}
+      <div className="hairline-soft mt-4" />
+
       <AIReasonLine placeId={pick.id} />
-
-      {pick.googleMapsUri && (
-        <a
-          href={pick.googleMapsUri}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1 rounded-md text-xs font-semibold text-matcha-deep underline-offset-4 hover:underline"
-        >
-          <MapPin className="size-3" />
-          구글맵에서 보기
-          <ExternalLink className="size-3" />
-        </a>
-      )}
     </div>
-  );
-}
-
-function Dot() {
-  return (
-    <span aria-hidden className="size-[3px] rounded-full bg-muted-foreground/40" />
   );
 }

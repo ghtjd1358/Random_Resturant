@@ -7,10 +7,23 @@
 @theme inline {
     --font-heading: var(--font-hand), var(--font-sans);
     --font-sans: var(--font-sans);
+    --font-mincho: var(--font-mincho), "Noto Serif KR", serif;
+    --font-mono: var(--font-mono), ui-monospace, monospace;
 
     --color-cream: #F5EFE6;
     --color-cream-soft: #FAF6EE;
     --color-cream-deep: #EDE3D2;
+    /* 日本ミニマル redesign tokens — 3-tone (먹/크림/朱) */
+    --color-paper: #F0E6D2;       /* warmer page (matches design mockup) */
+    --color-paper-soft: #F5ECD9;  /* card/raised */
+    --color-paper-deep: #E6DBC0;  /* hover/sunk */
+    --color-sumi-ink: #1C1815;    /* near-black for body display */
+    --color-sumi-mute: #5A554C;   /* secondary text */
+    --color-sumi-fade: #8A8378;   /* tertiary, captions */
+    --color-shu: #B3321D;         /* 朱 — desaturated red accent */
+    --color-shu-deep: #8B2515;
+    --color-hairline: #C9BEAA;    /* 1px line */
+    --color-hairline-soft: #D9CFB8;
     --color-sumi: #2B2B2B;
     --color-sumi-soft: #4A4A4A;
     --color-torii: #C8102E;
@@ -114,13 +127,8 @@
     -moz-osx-font-smoothing: grayscale;
   }
   body {
-    @apply bg-background text-foreground;
-    /* Layered warm atmosphere — like looking at washi paper under soft light */
-    background-image:
-      radial-gradient(ellipse 70% 50% at 10% -5%, rgba(200, 16, 46, 0.055) 0, transparent 55%),
-      radial-gradient(ellipse 80% 60% at 95% 8%, rgba(107, 142, 78, 0.045) 0, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 50% 110%, rgba(139, 109, 75, 0.05) 0, transparent 60%);
-    background-attachment: fixed;
+    @apply text-foreground;
+    background-color: var(--color-paper);
     min-height: 100dvh;
     overscroll-behavior-y: none;
   }
@@ -222,6 +230,80 @@
   .tick-jp {
     background-image: linear-gradient(180deg, transparent 0, var(--color-torii) 25%, var(--color-torii) 75%, transparent 100%);
     width: 2px;
+  }
+
+  /* ── 日本ミニマル — Editorial system ─────────────────────────────── */
+  /* Hairline divider — 1px or 0.5px ink line */
+  .hairline { background: var(--color-hairline); height: 1px; }
+  .hairline-soft { background: var(--color-hairline-soft); height: 1px; }
+
+  /* Eyebrow label — N° 042 / TODAY'S PICK style mono caption */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--color-sumi-fade);
+    text-transform: uppercase;
+  }
+  .eyebrow-strong {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--color-sumi-mute);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* Mincho display — for headings and kanji glyphs */
+  .font-mincho { font-family: var(--font-mincho); }
+  .num-tabular { font-variant-numeric: tabular-nums; }
+
+  /* Hanko square — small sumi outline box with 1 kanji inside */
+  .hanko-square {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-sumi-ink);
+    color: var(--color-sumi-ink);
+    background: transparent;
+    font-family: var(--font-mincho);
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1;
+    width: 22px;
+    height: 22px;
+  }
+  .hanko-square-filled {
+    background: var(--color-sumi-ink);
+    color: var(--color-paper-soft);
+  }
+  .hanko-square-shu {
+    border-color: var(--color-shu);
+    color: var(--color-shu);
+  }
+
+  /* Round 朱 stamp — bigger right-side decorative seal (一食 / 訪問 etc) */
+  .hanko-round {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--color-shu);
+    color: var(--color-shu);
+    border-radius: 50%;
+    font-family: var(--font-mincho);
+    font-weight: 600;
+    line-height: 1;
+    background: transparent;
+  }
+
+  /* 2px 朱 corner tab on cards — printed-paper feel */
+  .shu-tab {
+    position: absolute;
+    top: 0;
+    right: 22px;
+    width: 26px;
+    height: 3px;
+    background: var(--color-shu);
   }
 }
 

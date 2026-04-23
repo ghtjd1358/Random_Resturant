@@ -67,63 +67,51 @@ function ActiveBanner({
   const label = preset ? preset.label : region ?? "현위치";
 
   return (
-    <div
-      className={cn(
-        "relative flex items-center gap-2.5 overflow-hidden rounded-lg border px-3 py-2 text-xs transition-colors",
-        preset
-          ? "border-torii/25 bg-torii/6 text-sumi"
-          : stale
-            ? "border-torii/15 bg-torii/5 text-muted-foreground"
-            : "border-matcha/15 bg-matcha/8 text-matcha-deep",
-      )}
-    >
+    <div className="flex items-center gap-2.5 border-y border-hairline-soft py-2.5 text-[12px]">
       {/* Pulse dot */}
       <span
         aria-hidden
         className="relative flex size-2 shrink-0 items-center justify-center"
       >
         {!stale && !preset && (
-          <span className="absolute inline-flex size-3.5 animate-ping rounded-full bg-matcha/40" />
+          <span className="absolute inline-flex size-3.5 animate-ping rounded-full bg-shu/30" />
         )}
         <span
           className={cn(
             "relative inline-flex size-2 rounded-full",
-            preset ? "bg-torii" : stale ? "bg-torii/70" : "bg-matcha",
+            preset ? "bg-shu" : stale ? "bg-shu/70" : "bg-sumi-ink",
           )}
         />
       </span>
 
       {preset ? (
-        <Landmark className="size-3.5 text-torii" />
+        <Landmark className="size-3.5 text-shu" />
       ) : (
-        <MapPin className={cn("size-3.5", stale && "opacity-60")} />
-      )}
-      <span className="font-heading text-[13px] font-bold tracking-tight">{label}</span>
-
-      {preset ? (
-        <span className="text-[10px] font-medium tracking-wide text-muted-foreground/80">
-          · {preset.city}
-        </span>
-      ) : (
-        <span
-          className={cn(
-            "text-[10px] font-medium tracking-wide",
-            stale ? "text-torii" : "text-muted-foreground/80",
-          )}
-        >
-          · {formatAge(age)}
-          {stale && " · 갱신 필요"}
-        </span>
+        <MapPin className={cn("size-3.5 text-sumi-mute", stale && "opacity-60")} />
       )}
 
-      <div className="ml-auto flex items-center gap-0.5">
+      <span className="font-mincho text-[13px] font-medium tracking-tight text-sumi-ink">
+        {label}
+      </span>
+
+      <span
+        className={cn(
+          "text-[11px] num-tabular",
+          stale ? "text-shu" : "text-sumi-fade",
+        )}
+      >
+        · {preset ? preset.city : formatAge(age)}
+        {!preset && stale && " · 갱신 필요"}
+      </span>
+
+      <div className="ml-auto flex items-center gap-1">
         <PresetSheet>
           <button
             type="button"
             aria-label="지역 변경"
-            className="no-select flex items-center gap-0.5 rounded-md px-1.5 py-1 text-[10px] font-medium tracking-wide text-muted-foreground transition-colors hover:bg-foreground/5"
+            className="no-select inline-flex items-center gap-0.5 text-[11px] font-medium tracking-wide text-shu transition-opacity hover:opacity-70"
           >
-            지역
+            위치 바꾸기
             <ChevronDown className="size-3" />
           </button>
         </PresetSheet>
@@ -132,7 +120,7 @@ function ActiveBanner({
             type="button"
             onClick={onBackToGps}
             aria-label="현위치로 돌아가기"
-            className="no-select rounded-md p-1 text-torii transition-colors hover:bg-torii/15"
+            className="no-select rounded-sm p-1 text-sumi-mute transition-colors hover:text-sumi-ink"
           >
             <Navigation className="size-3.5" />
           </button>
@@ -141,12 +129,7 @@ function ActiveBanner({
             type="button"
             onClick={onRefresh}
             aria-label="위치 새로고침"
-            className={cn(
-              "no-select rounded-md p-1 transition-colors",
-              stale
-                ? "text-torii hover:bg-torii/15"
-                : "text-matcha-deep hover:bg-matcha/15",
-            )}
+            className="no-select rounded-sm p-1 text-sumi-mute transition-colors hover:text-sumi-ink"
           >
             <RotateCw className="size-3.5" />
           </button>
@@ -158,27 +141,34 @@ function ActiveBanner({
 
 function DeniedBanner({ message, onRetry }: { message: string | null; onRetry: () => void }) {
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-torii/25 bg-torii/6 px-3 py-2.5 text-xs">
-      <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-torii" />
-      <div className="flex-1">
-        <p className="font-heading text-[13px] font-bold text-sumi">
-          위치 권한이 필요해요
-        </p>
-        <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground break-keep">
-          {message ?? "브라우저 설정에서 위치 권한을 허용해 주세요."}
-        </p>
-        <div className="mt-2 flex items-center gap-1.5">
-          <Button size="sm" variant="outline" onClick={onRetry} className="h-7 text-xs">
-            다시 요청
-          </Button>
-          <PresetSheet>
-            <button
-              type="button"
-              className="no-select h-7 rounded-md border border-border/60 bg-card px-2 text-[11px] font-medium hover:bg-muted/50"
+    <div className="border-y border-hairline-soft py-3 text-[12px]">
+      <div className="flex items-start gap-2">
+        <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-shu" />
+        <div className="flex-1">
+          <p className="font-mincho text-[13px] font-medium text-sumi-ink">
+            위치 권한이 필요해요
+          </p>
+          <p className="mt-0.5 text-[11px] leading-relaxed text-sumi-mute break-keep">
+            {message ?? "브라우저 설정에서 위치 권한을 허용해 주세요."}
+          </p>
+          <div className="mt-2 flex items-center gap-3">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onRetry}
+              className="h-7 px-0 text-[11px] font-medium text-shu hover:bg-transparent hover:opacity-70"
             >
-              지역 직접 선택
-            </button>
-          </PresetSheet>
+              다시 요청
+            </Button>
+            <PresetSheet>
+              <button
+                type="button"
+                className="no-select h-7 text-[11px] font-medium text-sumi-mute transition-opacity hover:opacity-70"
+              >
+                지역 직접 선택
+              </button>
+            </PresetSheet>
+          </div>
         </div>
       </div>
     </div>
@@ -186,33 +176,30 @@ function DeniedBanner({ message, onRetry }: { message: string | null; onRetry: (
 }
 
 function PendingBanner() {
-  // Two-row layout: status on top, always-visible "skip the wait" CTA on
-  // the bottom. The uncertainty of "how long until GPS returns" is the whole
-  // user complaint — giving an immediate escape hatch solves it without
-  // needing a timer.
   return (
-    <div className="overflow-hidden rounded-lg border border-border/50 bg-muted/30 text-xs">
-      <div className="flex items-center gap-2.5 px-3 py-2 text-muted-foreground">
+    <div className="border-y border-hairline-soft py-2.5 text-[12px]">
+      <div className="flex items-center gap-2.5">
         <span
           aria-hidden
           className="relative inline-flex size-2 items-center justify-center"
         >
-          <span className="absolute inline-flex size-3.5 animate-ping rounded-full bg-muted-foreground/30" />
-          <span className="relative inline-flex size-2 rounded-full bg-muted-foreground/60" />
+          <span className="absolute inline-flex size-3.5 animate-ping rounded-full bg-sumi-fade/30" />
+          <span className="relative inline-flex size-2 rounded-full bg-sumi-fade/70" />
         </span>
-        <MapPin className="size-3.5" />
-        <span className="font-medium">현재 위치 확인 중…</span>
+        <MapPin className="size-3.5 text-sumi-mute" />
+        <span className="font-mincho text-[13px] font-medium text-sumi-mute">
+          현재 위치 확인 중…
+        </span>
+        <PresetSheet>
+          <button
+            type="button"
+            className="no-select ml-auto inline-flex items-center gap-0.5 text-[11px] font-medium text-shu transition-opacity hover:opacity-70"
+          >
+            지역 직접 고르기
+            <ChevronRight className="size-3" />
+          </button>
+        </PresetSheet>
       </div>
-      <PresetSheet>
-        <button
-          type="button"
-          className="no-select flex w-full items-center justify-center gap-1.5 border-t border-border/50 bg-torii/5 px-3 py-1.5 text-[11px] font-medium text-torii transition-colors hover:bg-torii/10"
-        >
-          기다리기 싫다면
-          <span className="underline underline-offset-2">지역 직접 고르기</span>
-          <ChevronRight className="size-3" />
-        </button>
-      </PresetSheet>
     </div>
   );
 }
