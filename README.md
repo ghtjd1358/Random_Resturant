@@ -1,25 +1,25 @@
-# 🦒 랜덤한끼 (Random-Hankki)
+# 랜덤한끼 (Random-Hankki)
 
 > 일본 여행 중 "오늘 뭐 먹지…" 가 애매할 때, **현재 위치에서 한 집**을 대신 뽑아주는 PWA.
 
-주사위를 굴리듯 흔들면, 근처 식당 · 카페 후보 중 한 곳이 결정됩니다. 👍/👎 피드백이 쌓일수록 취향을 학습해서 다음 픽에 반영합니다.
+주사위를 굴리듯 흔들면, 근처 식당 · 카페 후보 중 한 곳이 결정됩니다. 좋아요/싫어요 피드백이 쌓일수록 취향을 학습해서 다음 픽에 반영합니다.
 
 ---
 
-## ✨ 주요 기능
+## 주요 기능
 
-- 🎲 **원-탭 랜덤 픽** — 위치 기반으로 식당/카페 한 집을 즉시 추천
-- 🗺️ **세분화 필터** — 카테고리(식사/카페) · 서브카테고리(라멘 · 스시 · 커피 · 베이커리 등) · 반경 · 영업 중 · 가격대
-- 🎯 **모드 선택** — `popular` (평점/리뷰 가중) vs `discovery` (숨은 맛집 가중)
-- 🧠 **취향 학습** — 👍/👎 피드백이 `typeBias` · `priceBias` 에 누적되어 점수에 반영
-- 📝 **AI 한줄평** — Vercel AI Gateway 를 통해 "왜 이 집인가" 를 한 문장으로 설명
-- 📚 **방문/스킵 기록** — IndexedDB(`idb`) 로 로컬 저장, 최근 스킵/방문은 다음 픽에서 회피
-- 📱 **PWA** — Serwist 기반 서비스 워커, 홈 화면 설치, 오프라인 페이지 지원
-- 🏯 **일본풍 UI** — 와시(和紙) 텍스처, 한코(判子) 도장, 마스코트 기린, 손글씨 폰트
+- **원-탭 랜덤 픽** — 위치 기반으로 식당/카페 한 집을 즉시 추천
+- **세분화 필터** — 카테고리(식사/카페) · 서브카테고리(라멘 · 스시 · 커피 · 베이커리 등) · 반경 · 영업 중 · 가격대
+- **모드 선택** — `popular` (평점/리뷰 가중) vs `discovery` (숨은 맛집 가중)
+- **취향 학습** — 좋아요/싫어요 피드백이 `typeBias` · `priceBias` 에 누적되어 점수에 반영
+- **AI 한줄평** — Vercel AI Gateway 를 통해 "왜 이 집인가" 를 한 문장으로 설명
+- **방문/스킵 기록** — IndexedDB(`idb`) 로 로컬 저장, 최근 스킵/방문은 다음 픽에서 회피
+- **PWA** — Serwist 기반 서비스 워커, 홈 화면 설치, 오프라인 페이지 지원
+- **일본풍 UI** — 와시(和紙) 텍스처, 한코(判子) 도장, 마스코트 기린, 손글씨 폰트
 
 ---
 
-## 🧱 기술 스택
+## 기술 스택
 
 | 영역 | 사용 기술 |
 |---|---|
@@ -36,7 +36,7 @@
 
 ---
 
-## 🚀 시작하기
+## 시작하기
 
 ### 1. 의존성 설치
 
@@ -77,7 +77,7 @@ npm run typecheck  # tsc --noEmit
 
 ---
 
-## 🗂️ 프로젝트 구조
+## 프로젝트 구조
 
 ```
 src/
@@ -107,7 +107,7 @@ src/
 │   ├── useRoll.ts            # 주사위 로직
 │   ├── useDiceSpin.ts        # 주사위 애니메이션
 │   ├── useAIReason.ts        # AI 한줄평 스트리밍
-│   ├── useVisitActions.ts    # 👍/👎 기록
+│   ├── useVisitActions.ts    # 좋아요/싫어요 기록
 │   ├── useVisitedRecords.ts
 │   ├── useSkippedRecords.ts
 │   ├── useInstallPrompt.ts   # PWA 설치
@@ -141,7 +141,7 @@ next.config.ts                # Next + Serwist 통합
 
 ---
 
-## 🎲 픽 알고리즘 개요
+## 픽 알고리즘 개요
 
 1. **후보 수집** — `/api/places/nearby` 가 Google Places API (New) 로 반경 내 장소 조회
 2. **주석 + 랭킹** (`annotateAndRank`) — 거리 · 평점 · 리뷰 수 · 취향 편향(`typeBias`/`priceBias`) · 모드(popular/discovery) 로 가중 점수 계산
@@ -152,18 +152,18 @@ next.config.ts                # Next + Serwist 통합
 
 ---
 
-## 🧠 취향 학습
+## 취향 학습
 
 `src/lib/db/schema.ts::ProfileRecord` 에 사용자별로 누적:
 
 - `typeBias` — Google Places `primaryType` 별 (+/-) 가중치 (예: `ramen_restaurant`, `coffee_shop`)
 - `priceBias` — `PRICE_LEVEL_*` 버킷별 가중치
 
-👍 피드백은 해당 타입/가격의 bias 를 증가, 👎 는 감소시키고 `annotateAndRank` 가 점수에 반영합니다. 설정 페이지에서 초기화 가능합니다.
+좋아요 피드백은 해당 타입/가격의 bias 를 증가, 싫어요 는 감소시키고 `annotateAndRank` 가 점수에 반영합니다. 설정 페이지에서 초기화 가능합니다.
 
 ---
 
-## 📱 PWA
+## PWA
 
 - 매니페스트: `public/manifest.webmanifest`
 - 서비스 워커: `src/app/sw.ts` → 빌드 시 `public/sw.js` 로 생성
@@ -173,7 +173,7 @@ next.config.ts                # Next + Serwist 통합
 
 ---
 
-## 🚢 배포 (Vercel)
+## 배포 (Vercel)
 
 `vercel.ts` 에 빌드 명령 · 캐시 헤더가 선언되어 있습니다.
 
@@ -188,6 +188,6 @@ npx vercel --prod # production
 
 ---
 
-## 📄 라이선스
+## 라이선스
 
 개인 포트폴리오 프로젝트.
