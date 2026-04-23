@@ -282,11 +282,18 @@
     color: var(--color-shu);
   }
 
-  /* Round 朱 stamp — bigger right-side decorative seal (一食 / 訪問 etc) */
+  /* Round 朱 stamp — bigger right-side decorative seal (一食 / 訪問 etc).
+     Default is a 64×64 circle with safe inner padding so kanji + romaji
+     don't crash into the border. Override with a different size class only
+     when content is shorter (e.g. single kanji). */
   .hanko-round {
     display: inline-flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    width: 64px;
+    height: 64px;
+    padding: 8px;
     border: 1.5px solid var(--color-shu);
     color: var(--color-shu);
     border-radius: 50%;
@@ -294,6 +301,18 @@
     font-weight: 600;
     line-height: 1;
     background: transparent;
+    overflow: hidden;
+    text-align: center;
+  }
+  .hanko-round-kanji {
+    font-size: 14px;
+    line-height: 1;
+  }
+  .hanko-round-romaji {
+    margin-top: 3px;
+    font-size: 6px;
+    letter-spacing: 0.15em;
+    color: rgb(179 50 29 / 0.7);
   }
 
   /* 2px 朱 corner tab on cards — printed-paper feel */
@@ -360,16 +379,16 @@
   font-family: var(--font-sans) !important;
 }
 
-/* Slider thumb — matcha stone to stay in-family with the green range fill */
+/* Slider thumb — sumi ink, matches the editorial 3-tone palette */
 [data-slot="slider-thumb"] {
-  background: radial-gradient(circle at 30% 30%, #A8BF90 0%, #6B8E4E 55%, #4E6A37 100%) !important;
-  border: 1.5px solid #4E6A37 !important;
+  background: var(--color-sumi-ink) !important;
+  border: 1.5px solid var(--color-sumi-ink) !important;
   box-shadow:
-    0 1px 2px rgba(43, 43, 43, 0.15),
-    0 0 0 4px rgba(107, 142, 78, 0.14) !important;
+    0 1px 2px rgba(28, 24, 21, 0.15),
+    0 0 0 3px rgba(28, 24, 21, 0.08) !important;
 }
 
-/* Slider track fill — matcha (filled portion) */
+/* Slider track fill — sumi ink (filled portion) */
 [data-slot="slider-range"] {
-  background: linear-gradient(90deg, #A8BF90, #6B8E4E) !important;
+  background: var(--color-sumi-ink) !important;
 }

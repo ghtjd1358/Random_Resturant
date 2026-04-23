@@ -14,7 +14,11 @@ import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
 const ROOT = process.cwd();
-const SRC = path.join(ROOT, "public/mascot-giraffe.png");
+// Two source mascots after split-mascot-source.mjs:
+//   - SRC_FULL → editorial full-body version (used inline + as watermark)
+//   - SRC_FACE → face-only version (used as the basis for square app icons)
+const SRC_FULL = path.join(ROOT, "public/mascot-source-full.png");
+const SRC_FACE = path.join(ROOT, "public/mascot-source-face.png");
 
 const LOW = 235;
 const HIGH = 252;
@@ -51,14 +55,20 @@ const TRANSPARENT_BG = { r: 0, g: 0, b: 0, alpha: 0 };
 const MASKABLE_BG = { r: 245, g: 239, b: 230, alpha: 1 }; // #F5EFE6 (background_color)
 
 async function main() {
-  const base = await softKeyWhite(SRC);
-  const baseBuf = await base.toBuffer();
+  // Full body — keeps its alpha-cut version at the original mascot path so
+  // HomeShell / PickCard watermark / OG card all keep working.
+  const fullBase = await softKeyWhite(SRC_FULL);
+  const fullBuf = await fullBase.toBuffer();
+  await writeFile(path.join(ROOT, "public/mascot-giraffe.png"), fullBuf);
+  console.log("wrote public/mascot-giraffe.png (full body, transparent)");
 
-  // Overwrite source with transparent version so HomeShell gets it too.
-  await writeFile(SRC, baseBuf);
-  console.log("overwrote", path.relative(ROOT, SRC), "with transparent version");
+  // Face — separate output for the inline header avatar.
+  const faceBase = await softKeyWhite(SRC_FACE);
+  const faceBuf = await faceBase.toBuffer();
+  await writeFile(path.join(ROOT, "public/mascot-giraffe-face.png"), faceBuf);
+  console.log("wrote public/mascot-giraffe-face.png (face only, transparent)");
 
-  // Contain-fit onto transparent canvas for each target size.
+  // App icons — face fits squares much better than the tall full body.
   const sizes = [
     { out: "src/app/icon.png", size: 512 },
     { out: "src/app/apple-icon.png", size: 180 },
@@ -67,7 +77,7 @@ async function main() {
   ];
   for (const { out, size } of sizes) {
     await write(
-      sharp(baseBuf).resize(size, size, {
+      sharp(faceBuf).resize(size, size, {
         fit: "contain",
         background: TRANSPARENT_BG,
       }),
@@ -76,8 +86,8 @@ async function main() {
   }
 
   // Maskable: 512×512 with background color, mascot scaled to ~80% safe zone.
-  const safe = 410; // 512 * 0.8
-  const inner = await sharp(baseBuf)
+  const safe = 410;
+  const inner = await sharp(faceBuf)
     .resize(safe, safe, { fit: "contain", background: TRANSPARENT_BG })
     .toBuffer();
   await write(

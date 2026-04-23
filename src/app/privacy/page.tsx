@@ -1,131 +1,211 @@
 import { PageHeader } from "@/components/common/PageHeader";
+import { KanjiWatermark } from "@/components/common/KanjiWatermark";
+import { PRICE_BUCKETS } from "@/lib/places/types";
 
-export const metadata = { title: "개인정보 처리방침 · 랜덤한끼" };
+export const metadata = { title: "안내 · 랜덤한끼" };
 
-export default function PrivacyPage() {
+export default function AboutPage() {
   return (
-    <div className="px-5 pt-5 pb-6">
-      <PageHeader
-        eyebrow="privacy"
-        kanji="私"
-        title="개인정보 처리방침"
-        subtitle="최종 업데이트 · 2026년 4월"
-        backHref="/settings"
-        backLabel="설정"
-      />
+    <div className="relative px-5 pt-5 pb-6">
+      <KanjiWatermark glyph="案" />
+      <div className="relative z-10">
+        <PageHeader
+          eyebrow="random · hankki"
+          kanji="案"
+          jpLabel={
+            <>
+              안내
+              <span className="mx-1.5 text-sumi-fade/60">/</span>
+              <span className="text-sumi-fade">ABOUT</span>
+            </>
+          }
+          title="안내"
+          sealKanji="案内"
+          sealRomaji="ANNAI"
+          subtitle="가격 기준 · 개인정보 · AI 면책. 한 페이지에 모았습니다."
+          backHref="/settings"
+          backLabel="설정"
+        />
 
-      <div className="mt-6 space-y-6 text-sm leading-relaxed text-sumi/90">
-        <Section title="한 줄 요약" kanji="要">
-          <p className="break-keep">
-            이 앱은 <strong>서버에 개인정보를 저장하지 않습니다.</strong> 위치는
-            식당 검색용으로만 순간적으로 사용되고, 방문·스킵 기록은 오직 사용자의
-            기기(IndexedDB)에만 저장됩니다.
-          </p>
-        </Section>
+        {/* ── 가격대 기준 ────────────────────────────────────── */}
+        <SectionTitle kanji="價" labelKr="가격대 기준" labelEn="PRICE GUIDE">
+          일본 외식 한 끼 기준입니다. 참고용 대략치예요.
+        </SectionTitle>
 
-        <Section title="수집하는 정보" kanji="収">
-          <ul className="list-disc space-y-1.5 pl-5 break-keep">
-            <li>
-              <strong>위치 정보 (위도·경도)</strong>: 브라우저 Geolocation API로
-              받아, 근처 식당 검색(Google Places API 호출)에만 사용합니다.{" "}
-              <strong>서버에 저장되지 않습니다.</strong>
-            </li>
-            <li>
-              <strong>방문 체크 · 스킵 기록</strong>: 가게 ID와 피드백(👍/👎)
-              정보. <strong>오직 사용자의 브라우저 안</strong>(IndexedDB)에
-              저장되며, 서버로 전송되지 않습니다.
-            </li>
-            <li>
-              <strong>필터 설정</strong> (카테고리·반경 등): 사용자의 localStorage에
-              저장됩니다.
-            </li>
-          </ul>
-        </Section>
-
-        <Section title="수집하지 않는 것" kanji="否">
-          <ul className="list-disc space-y-1.5 pl-5 break-keep">
-            <li>이름, 이메일, 전화번호 등 식별 정보 (회원 가입 자체가 없음)</li>
-            <li>광고·분석용 쿠키 및 트래킹</li>
-            <li>이동 경로, 방문 히스토리의 서버 전송</li>
-          </ul>
-        </Section>
-
-        <Section title="외부 서비스" kanji="外">
-          <ul className="list-disc space-y-1.5 pl-5 break-keep">
-            <li>
-              <strong>Google Places API (New)</strong>: 식당 데이터(이름, 평점,
-              리뷰 등)를 가져오기 위해 위도·경도가 Google로 전달됩니다. Google의{" "}
-              <a
-                href="https://policies.google.com/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-matcha-deep underline underline-offset-2"
+        <div className="flex flex-col">
+          {PRICE_BUCKETS.map((b) => (
+            <article
+              key={b.key}
+              className="flex items-start gap-3 border-b border-hairline-soft py-3.5 last:border-b-0"
+            >
+              <div
+                aria-hidden
+                className="hanko-square shrink-0 mt-0.5"
               >
-                개인정보 처리방침
-              </a>
-              에 따라 처리됩니다.
-            </li>
-            <li>
-              <strong>Vercel AI Gateway (Claude Haiku 4.5)</strong>: 추천 이유 한
-              줄 생성을 위해 가게 이름과 리뷰 텍스트가 전송됩니다. 개인 식별
-              정보는 포함되지 않으며, Vercel AI Gateway는 Zero Data Retention
-              정책을 적용합니다.
-            </li>
-            <li>
-              <strong>Vercel 호스팅</strong>: 일반 웹 서버 액세스 로그가 보안
-              목적으로 단기간 보관될 수 있습니다.
-            </li>
-          </ul>
-        </Section>
+                {b.label}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="font-mincho text-[14px] font-medium tracking-tight text-sumi-ink">
+                    {b.description}
+                  </span>
+                  <span className="text-[11px] num-tabular text-shu">
+                    {b.approxRange}
+                  </span>
+                </div>
+                <p className="mt-1 text-[12px] leading-relaxed text-sumi-mute break-keep">
+                  {b.longDescription}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
 
-        <Section title="기록 삭제" kanji="消">
-          <p className="break-keep">
-            브라우저 설정에서 이 사이트의 데이터(Site Data)를 지우면 IndexedDB에
-            저장된 모든 방문·스킵 기록이 삭제됩니다. 앱 내에서도 각 기록을 개별
-            삭제할 수 있어요 (<em>기록</em> 탭 및 <em>다시는 안 볼 곳</em> 페이지).
-          </p>
-        </Section>
+        <p className="mt-3 border border-dashed border-hairline px-3 py-2 text-[11px] leading-relaxed text-sumi-fade break-keep">
+          가격 정보가 없는 가게는 필터가 켜져 있어도 후보에 포함됩니다.
+          정확한 가격은 현지에서 확인해 주세요.
+        </p>
 
-        <Section title="AI 생성 콘텐츠 면책" kanji="注">
-          <p className="break-keep">
-            추천 카드의 한 줄 설명은 AI가 리뷰를 바탕으로 생성합니다. 실제 가게의
-            특성과 다를 수 있으며, 최종 판단은 사용자에게 있습니다.
-          </p>
-        </Section>
+        {/* ── 한 줄 요약 ─────────────────────────────────────── */}
+        <SectionTitle kanji="要" labelKr="한 줄 요약" labelEn="SUMMARY" />
+        <p className="text-[13px] leading-relaxed text-sumi-ink break-keep">
+          이 앱은 <strong className="font-medium text-sumi-ink">서버에 개인정보를 저장하지 않습니다.</strong>{" "}
+          위치는 식당 검색용으로만 순간적으로 사용되고, 방문·스킵 기록은 오직
+          사용자의 기기(IndexedDB)에만 저장됩니다.
+        </p>
 
-        <Section title="문의" kanji="尋">
-          <p className="text-muted-foreground break-keep">
-            개인 프로젝트로 운영되는 앱이며, 별도의 고객 지원은 없습니다.
-          </p>
-        </Section>
+        {/* ── 수집하는 정보 ───────────────────────────────────── */}
+        <SectionTitle kanji="収" labelKr="수집하는 정보" labelEn="COLLECTED" />
+        <BulletList>
+          <Bullet
+            head="위치 정보 (위도·경도)"
+            body="브라우저 Geolocation API로 받아, 근처 식당 검색에만 사용합니다. 서버에 저장되지 않습니다."
+          />
+          <Bullet
+            head="방문 체크 · 스킵 기록"
+            body="가게 ID와 좋아요/별로 정보. 오직 사용자의 브라우저 안(IndexedDB)에 저장되며, 서버로 전송되지 않습니다."
+          />
+          <Bullet
+            head="필터 설정"
+            body="카테고리·반경 등이 사용자의 localStorage에 저장됩니다."
+          />
+        </BulletList>
+
+        {/* ── 수집하지 않는 것 ─────────────────────────────────── */}
+        <SectionTitle kanji="否" labelKr="수집하지 않는 것" labelEn="NEVER" />
+        <BulletList>
+          <Bullet body="이름, 이메일, 전화번호 등 식별 정보 (회원 가입 자체가 없음)" />
+          <Bullet body="광고 · 분석용 쿠키 및 트래킹" />
+          <Bullet body="이동 경로, 방문 히스토리의 서버 전송" />
+        </BulletList>
+
+        {/* ── 외부 서비스 ─────────────────────────────────────── */}
+        <SectionTitle kanji="外" labelKr="외부 서비스" labelEn="EXTERNAL" />
+        <BulletList>
+          <Bullet
+            head="Google Places API (New)"
+            body={
+              <>
+                식당 데이터를 가져오기 위해 위도·경도가 Google로 전달됩니다.{" "}
+                <a
+                  href="https://policies.google.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-shu underline-offset-2 hover:underline"
+                >
+                  Google 개인정보 처리방침
+                </a>{" "}
+                에 따라 처리됩니다.
+              </>
+            }
+          />
+          <Bullet
+            head="Vercel AI Gateway (Claude Haiku 4.5)"
+            body="추천 이유 한 줄 생성을 위해 가게 이름과 리뷰 텍스트가 전송됩니다. 개인 식별 정보는 포함되지 않으며, Zero Data Retention 정책이 적용됩니다."
+          />
+          <Bullet
+            head="Vercel 호스팅"
+            body="일반 웹 서버 액세스 로그가 보안 목적으로 단기간 보관될 수 있습니다."
+          />
+        </BulletList>
+
+        {/* ── 기록 삭제 ───────────────────────────────────────── */}
+        <SectionTitle kanji="消" labelKr="기록 삭제" labelEn="DELETE" />
+        <p className="text-[13px] leading-relaxed text-sumi-ink break-keep">
+          브라우저 설정에서 이 사이트의 데이터(Site Data)를 지우면 IndexedDB에
+          저장된 모든 방문·스킵 기록이 삭제됩니다. 앱 내에서도 각 기록을 개별
+          삭제할 수 있어요 (<em className="not-italic font-mincho text-shu">기록</em>{" "}
+          탭 및 <em className="not-italic font-mincho text-shu">다시는 안 볼 곳</em>{" "}
+          페이지).
+        </p>
+
+        {/* ── AI 면책 ──────────────────────────────────────── */}
+        <SectionTitle kanji="注" labelKr="AI 생성 콘텐츠 면책" labelEn="AI NOTICE" />
+        <p className="text-[13px] leading-relaxed text-sumi-ink break-keep">
+          추천 카드의 한 줄 설명은 AI가 리뷰를 바탕으로 생성합니다. 실제 가게의
+          특성과 다를 수 있으며, 최종 판단은 사용자에게 있습니다.
+        </p>
+
+        {/* ── 문의 ────────────────────────────────────────── */}
+        <SectionTitle kanji="尋" labelKr="문의" labelEn="CONTACT" />
+        <p className="text-[12px] text-sumi-fade break-keep">
+          개인 프로젝트로 운영되는 앱이며, 별도의 고객 지원은 없습니다.
+        </p>
+
+        <div className="hairline-soft mx-auto mt-10 mb-3 w-12" />
+        <p className="text-center font-mincho text-[11px] tracking-tight text-sumi-fade">
+          최종 업데이트 · 2026년 4월
+        </p>
       </div>
     </div>
   );
 }
 
-function Section({
-  title,
+/* --------------------------------------------------------------------- */
+
+function SectionTitle({
   kanji,
+  labelKr,
+  labelEn,
   children,
 }: {
-  title: string;
   kanji: string;
-  children: React.ReactNode;
+  labelKr: string;
+  labelEn: string;
+  children?: React.ReactNode;
 }) {
   return (
-    <section>
-      <div className="mb-2.5 flex items-center gap-2">
-        <span
-          aria-hidden
-          className="hanko size-5 text-[10px] font-bold leading-none"
-        >
+    <div className="mt-7 mb-3">
+      <div className="flex items-baseline gap-2">
+        <span className="font-mincho text-[14px] font-medium text-sumi-ink">
           {kanji}
         </span>
-        <h2 className="font-heading text-[15px] font-bold tracking-tight text-sumi">
-          {title}
-        </h2>
+        <span className="font-mincho text-[13px] font-medium tracking-tight text-sumi-ink">
+          {labelKr}
+        </span>
+        <span className="eyebrow text-[9px]">/ {labelEn}</span>
       </div>
-      <div className="pl-7 text-sm text-sumi/85">{children}</div>
-    </section>
+      {children && (
+        <p className="mt-1 text-[12px] text-sumi-mute break-keep">{children}</p>
+      )}
+    </div>
+  );
+}
+
+function BulletList({ children }: { children: React.ReactNode }) {
+  return <ul className="flex flex-col gap-2">{children}</ul>;
+}
+
+function Bullet({ head, body }: { head?: string; body: React.ReactNode }) {
+  return (
+    <li className="flex gap-2 text-[12.5px] leading-relaxed text-sumi-ink break-keep">
+      <span aria-hidden className="mt-2 size-1 shrink-0 rounded-full bg-shu" />
+      <span>
+        {head && (
+          <span className="font-mincho font-medium text-sumi-ink">{head}: </span>
+        )}
+        <span className="text-sumi-mute">{body}</span>
+      </span>
+    </li>
   );
 }

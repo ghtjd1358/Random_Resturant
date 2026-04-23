@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { useSessionStore } from "@/stores/useSessionStore";
 import { ActionBar } from "./ActionBar";
@@ -21,24 +22,42 @@ export function PickCard() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -12, opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="relative border border-hairline bg-paper-soft"
+            className="relative overflow-hidden border border-hairline bg-paper-soft"
           >
             {/* 2px 朱 corner tab — printed-paper accent */}
             <span aria-hidden className="shu-tab" />
 
-            {/* Eyebrow row: N° issue · 오늘의 한 집 + 推 hanko */}
-            <div className="flex items-center justify-between border-b border-hairline-soft px-5 pt-4 pb-3">
-              <span className="eyebrow num-tabular">
-                N° {issueNo} · <span className="text-sumi-mute">오늘의 한 집</span>
-              </span>
-              <span className="hanko-square hanko-square-shu" aria-hidden>
-                推
-              </span>
+            {/* Full-body mascot watermark — anchored bottom-right of the
+                card, very low opacity so it sits behind text but signals
+                the brand. pointer-events-none keeps it out of the way. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-6 bottom-0 size-44 select-none opacity-[0.07]"
+            >
+              <Image
+                src="/mascot-giraffe.png"
+                alt=""
+                fill
+                sizes="176px"
+                className="object-contain object-bottom"
+              />
             </div>
 
-            <PickCardBody pick={pick} />
+            <div className="relative z-10">
+              {/* Eyebrow row: N° issue · 오늘의 한 집 + 推 hanko */}
+              <div className="flex items-center justify-between border-b border-hairline-soft px-5 pt-4 pb-3">
+                <span className="eyebrow num-tabular">
+                  N° {issueNo} · <span className="text-sumi-mute">오늘의 한 집</span>
+                </span>
+                <span className="hanko-square hanko-square-shu" aria-hidden>
+                  推
+                </span>
+              </div>
 
-            <ActionBar place={pick} />
+              <PickCardBody pick={pick} />
+
+              <ActionBar place={pick} />
+            </div>
           </motion.article>
         ) : (
           <Placeholder rolling={status === "rolling"} />

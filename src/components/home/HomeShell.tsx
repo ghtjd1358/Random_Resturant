@@ -5,6 +5,7 @@ import { DiceButton } from "./DiceButton";
 import { PickCard } from "./PickCard";
 import { LocationBanner } from "./LocationBanner";
 import { FiltersPanel } from "./FiltersPanel";
+import Image from "next/image";
 import { TokyoArrival } from "./TokyoArrival";
 import { KanjiWatermark } from "@/components/common/KanjiWatermark";
 import { useFiltersStore } from "@/stores/useFiltersStore";
@@ -104,23 +105,29 @@ function HomeHeader({ issueNo }: { issueNo: string }) {
         <span className="eyebrow num-tabular">N° {issueNo}</span>
       </div>
 
-      {/* Title row + 一食 round seal */}
-      <div className="relative mt-3 flex items-end justify-between">
-        <div className="min-w-0">
+      {/* Title row: face mascot + wordmark + 一食 round seal */}
+      <div className="relative mt-3 flex items-end gap-3">
+        <div className="relative size-14 shrink-0">
+          <Image
+            src="/mascot-giraffe-face.png"
+            alt="랜덤한끼 마스코트"
+            fill
+            sizes="56px"
+            priority
+            className="object-contain"
+          />
+        </div>
+
+        <div className="min-w-0 flex-1">
           <p className="eyebrow mb-1 text-sumi-fade">random · hankki</p>
-          <h1 className="font-mincho text-[2.6rem] font-semibold leading-none tracking-tight text-sumi-ink">
+          <h1 className="font-mincho text-[2.4rem] font-semibold leading-none tracking-tight text-sumi-ink">
             랜덤<span className="text-shu">한</span>끼
           </h1>
         </div>
 
-        <span
-          className="hanko-round size-[58px] shrink-0 flex-col gap-0 leading-none"
-          aria-hidden
-        >
-          <span className="text-[16px]">一食</span>
-          <span className="mt-0.5 text-[7px] tracking-[0.2em] text-shu/70">
-            ICHI·SHOKU
-          </span>
+        <span className="hanko-round shrink-0" aria-hidden>
+          <span className="hanko-round-kanji">一食</span>
+          <span className="hanko-round-romaji">ICHI·SHOKU</span>
         </span>
       </div>
 

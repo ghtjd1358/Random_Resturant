@@ -75,15 +75,10 @@ export function PageHeader({
         </div>
 
         {sealKanji && (
-          <span
-            className="hanko-round size-[54px] shrink-0 flex-col gap-0 leading-none"
-            aria-hidden
-          >
-            <span className="text-[15px]">{sealKanji}</span>
+          <span className="hanko-round shrink-0" aria-hidden>
+            <span className="hanko-round-kanji">{sealKanji}</span>
             {sealRomaji && (
-              <span className="mt-0.5 text-[7px] tracking-[0.2em] text-shu/70">
-                {sealRomaji}
-              </span>
+              <span className="hanko-round-romaji">{sealRomaji}</span>
             )}
           </span>
         )}

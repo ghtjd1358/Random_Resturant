@@ -34,20 +34,30 @@ export function PresetSheet({ children }: { children: ReactNode }) {
   return (
     <Drawer>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="mx-auto max-w-[480px]">
-        <DrawerHeader>
-          <DrawerTitle>지역 선택</DrawerTitle>
-          <DrawerDescription>
+      <DrawerContent className="mx-auto max-w-[480px] bg-paper">
+        <DrawerHeader className="text-left">
+          <DrawerTitle className="font-mincho text-[1.5rem] font-medium tracking-tight text-sumi-ink">
+            지역 선택
+          </DrawerTitle>
+          <DrawerDescription className="text-sumi-fade">
             위치 권한 없이도 여행지 핫플에서 바로 굴릴 수 있어요.
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto px-4 pb-6">
-          {groups.map(({ city, items }) => (
+        <div className="flex max-h-[60vh] flex-col gap-5 overflow-y-auto px-5 pb-6">
+          {groups.map(({ city, cityKanji, items }) => (
             <section key={city}>
-              <h3 className="mb-2 font-heading text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                {city}
-              </h3>
+              <div className="mb-2 flex items-baseline gap-2 border-b border-hairline-soft pb-2">
+                <span className="font-mincho text-[14px] font-medium text-sumi-ink">
+                  {cityKanji}
+                </span>
+                <span className="font-mincho text-[12px] font-medium tracking-tight text-sumi-mute">
+                  {city}
+                </span>
+                <span className="ml-auto eyebrow text-[9px] num-tabular">
+                  {String(items.length).padStart(2, "0")}
+                </span>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 {items.map((p) => {
                   const active = p.id === presetId;
@@ -57,20 +67,38 @@ export function PresetSheet({ children }: { children: ReactNode }) {
                         type="button"
                         onClick={() => handleSelect(p)}
                         className={cn(
-                          "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-left transition-colors",
+                          "flex items-center gap-2 border px-2.5 py-2 text-left transition-colors",
                           active
-                            ? "border-matcha/60 bg-matcha/10"
-                            : "border-border/60 bg-card hover:bg-muted/50",
+                            ? "border-sumi-ink bg-sumi-ink text-paper"
+                            : "border-hairline bg-paper text-sumi-ink hover:border-sumi-ink/40",
                         )}
                       >
-                        <span aria-hidden className="mt-0.5 text-base leading-none">
-                          {p.emoji ?? "📍"}
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "flex size-7 shrink-0 items-center justify-center border font-mincho text-[13px] font-medium leading-none",
+                            active
+                              ? "border-paper/40 text-paper"
+                              : "border-sumi-ink text-sumi-ink",
+                          )}
+                        >
+                          {p.kanji}
                         </span>
-                        <div className="flex min-w-0 flex-col gap-0.5">
-                          <span className="truncate font-heading text-[13px] font-bold leading-tight">
+                        <div className="flex min-w-0 flex-col">
+                          <span
+                            className={cn(
+                              "truncate font-mincho text-[13px] font-medium tracking-tight",
+                              active ? "text-paper" : "text-sumi-ink",
+                            )}
+                          >
                             {p.label}
                           </span>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span
+                            className={cn(
+                              "text-[10px] num-tabular",
+                              active ? "text-paper/60" : "text-sumi-fade",
+                            )}
+                          >
                             반경 {p.defaultRadius}m
                           </span>
                         </div>

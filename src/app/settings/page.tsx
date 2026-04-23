@@ -44,11 +44,6 @@ export default function SettingsPage() {
             title="기본 거리"
             subtitle="800m · 홈에서 바로 바꿀 수 있어요"
           />
-          <SettingsItem
-            href="/settings/price-guide"
-            title="가격대 기준"
-            subtitle="¥ · ¥¥ · ¥¥¥ · ¥¥¥¥ 이 뭔지"
-          />
         </SettingsGroup>
 
         <SectionLabel kanji="好">취향 학습</SectionLabel>
@@ -68,8 +63,8 @@ export default function SettingsPage() {
         <SettingsGroup>
           <SettingsItem
             href="/privacy"
-            title="개인정보 처리방침"
-            subtitle="어떤 정보를 어떻게 쓰는지"
+            title="안내 · 案内"
+            subtitle="가격 기준 · 개인정보 · AI 면책"
           />
           <TokyoArrivalResetItem />
           {process.env.NODE_ENV !== "production" && <TokyoArrivalPreviewItem />}
