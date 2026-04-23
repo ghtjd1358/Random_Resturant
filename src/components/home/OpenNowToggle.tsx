@@ -1,8 +1,8 @@
 "use client";
 
-import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
+import { FilterSectionHeader } from "./FilterSectionHeader";
 
 interface Props {
   value: boolean;
@@ -16,51 +16,37 @@ export function OpenNowToggle({ value, onChange }: Props) {
   };
 
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={value}
-      onClick={handle}
-      className={cn(
-        "no-select group flex items-center justify-between rounded-xl border bg-card px-4 py-2.5 text-sm transition-all",
-        value
-          ? "border-matcha/40 bg-matcha/8 text-matcha-deep"
-          : "border-border bg-washi-soft text-muted-foreground hover:border-border/80",
-      )}
-    >
-      <span className="flex items-center gap-2">
-        <span
-          className={cn(
-            "flex size-6 items-center justify-center rounded-md transition-colors",
-            value
-              ? "bg-matcha/15 text-matcha-deep"
-              : "bg-muted text-muted-foreground",
-          )}
-        >
-          <Clock className="size-3.5" strokeWidth={2.25} />
-        </span>
-        <span
-          className={cn(
-            "font-heading text-[13px] font-bold tracking-tight",
-            value ? "text-matcha-deep" : "text-sumi-soft",
-          )}
-        >
-          지금 영업 중만
-        </span>
-      </span>
-      <span
-        className={cn(
-          "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors",
-          value ? "bg-matcha" : "bg-muted",
-        )}
+    <div>
+      <FilterSectionHeader kanji="營" labelKr="영업" labelEn="OPEN" />
+      <button
+        type="button"
+        role="switch"
+        aria-checked={value}
+        onClick={handle}
+        className="no-select flex w-full items-center justify-between border-y border-hairline-soft py-3 text-left"
       >
+        <div className="min-w-0">
+          <p className="font-mincho text-[13px] font-medium tracking-tight text-sumi-ink">
+            지금 열린 곳만
+          </p>
+          <p className="mt-0.5 text-[11px] text-sumi-fade">
+            닫은 곳은 안 보이게
+          </p>
+        </div>
         <span
           className={cn(
-            "absolute inline-block size-4 transform rounded-full bg-cream shadow-sm transition-transform",
-            value ? "translate-x-4" : "translate-x-0.5",
+            "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors",
+            value ? "bg-sumi-ink" : "bg-hairline",
           )}
-        />
-      </span>
-    </button>
+        >
+          <span
+            className={cn(
+              "absolute inline-block size-4 rounded-full bg-paper transition-transform",
+              value ? "translate-x-4" : "translate-x-0.5",
+            )}
+          />
+        </span>
+      </button>
+    </div>
   );
 }

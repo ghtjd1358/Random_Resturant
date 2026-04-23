@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
 import { PRICE_BUCKETS, type PriceBucket } from "@/lib/places/types";
+import { FilterSectionHeader } from "./FilterSectionHeader";
 
 interface Props {
   value: PriceBucket[];
@@ -15,56 +15,79 @@ export function PriceFilter({ value, onToggle, onClear }: Props) {
   const allActive = value.length === 0;
 
   return (
-    <div className="flex items-center gap-2">
-      <button
-        onClick={() => {
-          if (!allActive) {
-            haptic.select();
-            onClear();
-          }
-        }}
-        className={cn(
-          "no-select relative flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-          allActive
-            ? "border-transparent text-cream"
-            : "border-border bg-card text-muted-foreground hover:text-sumi",
-        )}
-      >
-        {allActive && (
-          <motion.span
-            layoutId="price-active"
-            className="absolute inset-0 rounded-full bg-sumi shadow-sm"
-            transition={{ type: "spring", stiffness: 420, damping: 32 }}
-          />
-        )}
-        <span className="relative">전체</span>
-      </button>
-
-      <div className="flex flex-1 gap-1.5">
+    <div>
+      <FilterSectionHeader kanji="價" labelKr="예산" labelEn="PRICE" />
+      <div className="grid grid-cols-5 gap-1.5">
+        <PriceCell
+          symbol="全"
+          caption="전체"
+          active={allActive}
+          accent
+          onClick={() => {
+            if (!allActive) {
+              haptic.select();
+              onClear();
+            }
+          }}
+        />
         {PRICE_BUCKETS.map(({ key, description }) => {
           const active = !allActive && value.includes(key);
-          const label = key;
           return (
-            <button
+            <PriceCell
               key={key}
+              symbol={key}
+              caption={description}
+              active={active}
               onClick={() => {
                 haptic.select();
                 onToggle(key);
               }}
-              aria-pressed={active}
-              aria-label={`${label} · ${description}`}
-              className={cn(
-                "no-select flex flex-1 items-center justify-center rounded-lg border px-2 py-1.5 text-sm font-medium transition-colors",
-                active
-                  ? "border-transparent bg-matcha text-cream shadow-sm"
-                  : "border-border bg-card text-muted-foreground hover:text-sumi",
-              )}
-            >
-              {label}
-            </button>
+            />
           );
         })}
       </div>
     </div>
+  );
+}
+
+function PriceCell({
+  symbol,
+  caption,
+  active,
+  accent = false,
+  onClick,
+}: {
+  symbol: string;
+  caption: string;
+  active: boolean;
+  accent?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "no-select flex flex-col items-center justify-center gap-0.5 border py-2 transition-colors",
+        active
+          ? accent
+            ? "border-shu bg-shu text-paper"
+            : "border-sumi-ink bg-sumi-ink text-paper"
+          : "border-hairline bg-paper text-sumi-ink hover:border-sumi-ink/40",
+      )}
+    >
+      <span className="font-mincho text-[14px] font-medium leading-none">
+        {symbol}
+      </span>
+      <span
+        className={cn(
+          "font-mincho text-[9px] tracking-tight",
+          active ? "text-paper/65" : "text-sumi-fade",
+        )}
+      >
+        {caption}
+      </span>
+    </button>
   );
 }

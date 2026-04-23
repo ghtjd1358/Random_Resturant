@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,17 +29,23 @@ export function InstallPrompt() {
     <>
       <button
         onClick={handleClick}
-        className="no-select flex w-full items-center gap-3 rounded-xl border border-matcha/30 bg-matcha/10 p-4 text-left transition-colors active:bg-matcha/15"
+        className="no-select relative flex w-full items-center justify-between gap-3 border border-hairline bg-paper-soft p-4 text-left transition-colors active:bg-paper-deep"
       >
-        <div className="rounded-lg bg-matcha/20 p-2">
-          <Download className="size-5 text-matcha" />
+        <span aria-hidden className="shu-tab" />
+        <div className="flex items-center gap-3">
+          <span className="hanko-square hanko-square-shu" aria-hidden>
+            裝
+          </span>
+          <div>
+            <p className="font-mincho text-[14px] font-medium tracking-tight text-sumi-ink">
+              홈 화면에 추가
+            </p>
+            <p className="mt-0.5 text-[11px] text-sumi-fade">
+              앱처럼 한 번에 켜지게
+            </p>
+          </div>
         </div>
-        <div className="flex-1">
-          <p className="text-sm font-medium">홈 화면에 추가</p>
-          <p className="text-xs text-muted-foreground">
-            앱처럼 빠르게 열 수 있어요
-          </p>
-        </div>
+        <span className="text-[11px] font-medium text-shu">설치 ▸</span>
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -61,13 +66,16 @@ export function InstallPrompt() {
 
 function InstalledNotice() {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-matcha/30 bg-matcha/10 p-4">
-      <div className="rounded-lg bg-matcha/20 p-2">
-        <Check className="size-5 text-matcha" />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-medium">홈 화면에 설치됨</p>
-        <p className="text-xs text-muted-foreground">앱처럼 사용 중이에요</p>
+    <div className="relative flex items-center gap-3 border border-hairline bg-paper-soft p-4">
+      <span aria-hidden className="shu-tab" />
+      <span className="hanko-square hanko-square-shu" aria-hidden>
+        ✓
+      </span>
+      <div>
+        <p className="font-mincho text-[14px] font-medium tracking-tight text-sumi-ink">
+          홈 화면에 설치됨
+        </p>
+        <p className="mt-0.5 text-[11px] text-sumi-fade">앱처럼 사용 중이에요</p>
       </div>
     </div>
   );

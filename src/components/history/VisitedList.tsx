@@ -1,34 +1,41 @@
 "use client";
 
-import { motion } from "motion/react";
 import { VisitedItem } from "./VisitedItem";
 import { useVisitedRecords, type VisitedFilter } from "@/hooks/useVisitedRecords";
 import { EmptyPlaceholder } from "@/components/common/EmptyPlaceholder";
 import { cn } from "@/lib/utils";
 
-const FILTERS: { key: VisitedFilter; label: string; kanji?: string }[] = [
-  { key: "all", label: "전체" },
-  { key: "good", label: "좋았어요 👍" },
-  { key: "bad", label: "별로 👎" },
+const FILTERS: { key: VisitedFilter; label: string; suffix?: string }[] = [
+  { key: "all", label: "전체", suffix: "all" },
+  { key: "good", label: "또 갈래요", suffix: "liked" },
+  { key: "bad", label: "별로였어요", suffix: "skip" },
 ];
 
 export function VisitedList() {
   const { records, filter, setFilter, remove, setFeedback } = useVisitedRecords();
+  const counts = records
+    ? {
+        all: records.length,
+        good: records.filter((r) => r.feedback === "good").length,
+        bad: records.filter((r) => r.feedback === "bad").length,
+      }
+    : { all: 0, good: 0, bad: 0 };
 
   return (
     <div className="flex flex-col gap-4">
-      <FilterTabs value={filter} onChange={setFilter} />
+      <FilterTabs value={filter} counts={counts} onChange={setFilter} />
 
       {records === null ? (
         <EmptyPlaceholder kanji="待" title="불러오는 중…" />
       ) : records.length === 0 ? (
         <EmptyPlaceholder {...emptyMessage(filter)} />
       ) : (
-        <ul className="flex flex-col gap-2">
-          {records.map((r) => (
+        <ul className="flex flex-col">
+          {records.map((r, idx) => (
             <VisitedItem
               key={r.placeId}
               record={r}
+              index={records.length - idx}
               onFeedback={setFeedback}
               onDelete={remove}
             />
@@ -37,10 +44,8 @@ export function VisitedList() {
       )}
 
       {records && records.length > 0 && (
-        <p className="mt-1 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground/80">
-          <span className="size-1 rounded-full bg-torii/60" aria-hidden />
-          이름을 탭하면 구글 지도에서 열려요
-          <span className="size-1 rounded-full bg-torii/60" aria-hidden />
+        <p className="font-mincho mt-2 text-center text-[11px] tracking-tight text-sumi-fade">
+          ─ 여기까지 ─
         </p>
       )}
     </div>
@@ -49,33 +54,37 @@ export function VisitedList() {
 
 function FilterTabs({
   value,
+  counts,
   onChange,
 }: {
   value: VisitedFilter;
+  counts: { all: number; good: number; bad: number };
   onChange: (f: VisitedFilter) => void;
 }) {
   return (
-    <div className="relative flex gap-1 rounded-xl border border-border bg-card bg-washi-soft p-1">
-      {FILTERS.map(({ key, label }) => {
+    <div className="flex items-baseline gap-4 border-b border-hairline-soft pb-2.5">
+      {FILTERS.map(({ key, label, suffix }) => {
         const active = value === key;
+        const count = counts[key];
         return (
           <button
             key={key}
             onClick={() => onChange(key)}
             className={cn(
-              "no-select relative flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-              active ? "text-cream" : "text-muted-foreground hover:text-sumi",
+              "no-select font-mincho text-[13px] tracking-tight transition-colors",
+              active ? "text-sumi-ink" : "text-sumi-fade hover:text-sumi-mute",
             )}
           >
-            {active && (
-              <motion.span
-                layoutId="visited-filter-active"
-                className="absolute inset-0 rounded-lg bg-sumi shadow-sm"
-                transition={{ type: "spring", stiffness: 420, damping: 32 }}
-              />
-            )}
-            <span className="relative font-heading font-bold tracking-tight">
+            <span className={active ? "border-b-2 border-shu pb-1" : ""}>
               {label}
+            </span>
+            <span
+              className={cn(
+                "ml-1.5 text-[10px] num-tabular tracking-[0.15em]",
+                active ? "text-sumi-fade" : "text-sumi-fade/70",
+              )}
+            >
+              {suffix} {String(count).padStart(2, "0")}
             </span>
           </button>
         );
@@ -99,13 +108,13 @@ function emptyMessage(filter: VisitedFilter): {
   if (filter === "good") {
     return {
       kanji: "善",
-      title: "아직 👍 준 곳이 없어요",
+      title: "아직 또 갈래요 한 곳이 없어요",
       hint: "좋았던 집은 두고두고 기록됩니다",
     };
   }
   return {
     kanji: "否",
-    title: "아직 👎 준 곳이 없어요",
+    title: "아직 별로였어요 한 곳이 없어요",
     hint: "별로였던 집은 앞으로 뽑기에 안 나와요",
   };
 }

@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ChevronRight, Ban, Ruler, Download, Shield, Coins } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PageHeader } from "@/components/common/PageHeader";
+import { KanjiWatermark } from "@/components/common/KanjiWatermark";
 import { TokyoArrivalResetItem } from "@/components/settings/TokyoArrivalResetItem";
 import { TokyoArrivalPreviewItem } from "@/components/settings/TokyoArrivalPreviewItem";
 
@@ -9,103 +10,137 @@ export const metadata = { title: "설정 · 랜덤한끼" };
 
 export default function SettingsPage() {
   return (
-    <div className="px-5 pt-5 pb-6">
-      <PageHeader eyebrow="settings" kanji="設" title="설정" />
+    <div className="relative px-5 pt-5 pb-6">
+      <KanjiWatermark glyph="設" />
+      <div className="relative z-10">
+        <PageHeader
+          eyebrow="random · hankki"
+          kanji="設"
+          jpLabel={
+            <>
+              설정
+              <span className="mx-1.5 text-sumi-fade/60">/</span>
+              <span className="text-sumi-fade">SETTINGS</span>
+            </>
+          }
+          title="설정"
+          sealKanji="設定"
+          sealRomaji="SETTEI"
+          subtitle="앱이 나를 더 잘 알게 해요."
+        />
 
-      <div className="mt-6">
-        <InstallPrompt />
+        <div className="mt-5">
+          <InstallPrompt />
+        </div>
+
+        <SectionLabel kanji="録">내 기록</SectionLabel>
+        <SettingsGroup>
+          <SettingsItem
+            href="/settings/skipped"
+            title="다시는 안 볼 곳"
+            subtitle="스킵한 가게 관리 · 복구"
+          />
+          <SettingsItem
+            title="기본 거리"
+            subtitle="800m · 홈에서 바로 바꿀 수 있어요"
+          />
+          <SettingsItem
+            href="/settings/price-guide"
+            title="가격대 기준"
+            subtitle="¥ · ¥¥ · ¥¥¥ · ¥¥¥¥ 이 뭔지"
+          />
+        </SettingsGroup>
+
+        <SectionLabel kanji="好">취향 학습</SectionLabel>
+        <SettingsGroup>
+          <SettingsItem
+            title="지금까지 학습된 취향"
+            subtitle="또 갈래요 0 · 별로 0"
+          />
+          <SettingsItem
+            title="처음부터 다시 배우게 하기"
+            subtitle="학습 기록을 모두 지워요"
+            accent
+          />
+        </SettingsGroup>
+
+        <SectionLabel kanji="他">기타</SectionLabel>
+        <SettingsGroup>
+          <SettingsItem
+            href="/privacy"
+            title="개인정보 처리방침"
+            subtitle="어떤 정보를 어떻게 쓰는지"
+          />
+          <TokyoArrivalResetItem />
+          {process.env.NODE_ENV !== "production" && <TokyoArrivalPreviewItem />}
+        </SettingsGroup>
+
+        <footer className="mt-10 text-center">
+          <div className="hairline-soft mx-auto mb-3 w-12" />
+          <p className="font-mincho text-[12px] font-medium tracking-tight text-sumi-mute">
+            랜덤한끼 · v0.1.0
+          </p>
+          <p className="mt-3 text-[10px] leading-relaxed tracking-wide text-sumi-fade">
+            식당 정보 제공 · Google Places API
+            <br />
+            <span>© 2026 랜덤한끼</span>
+          </p>
+        </footer>
       </div>
-
-      <ul className="mt-4 divide-y divide-border/70 rounded-xl border border-border bg-card bg-washi-soft">
-        <SettingsItem
-          href="/settings/skipped"
-          icon={Ban}
-          iconClass="text-torii bg-torii/8"
-          title="다시는 안 볼 곳"
-          subtitle="스킵한 가게 관리 · 복구"
-        />
-        <SettingsItem
-          icon={Ruler}
-          iconClass="text-matcha-deep bg-matcha/10"
-          title="기본 검색 반경"
-          subtitle="홈 화면에서 조절 가능"
-        />
-        <SettingsItem
-          href="/settings/price-guide"
-          icon={Coins}
-          iconClass="text-torii bg-torii/8"
-          title="가격대 기준 보기"
-          subtitle="¥ · ¥¥ · ¥¥¥ · ¥¥¥¥ 는 각각 얼마?"
-        />
-        <SettingsItem
-          href="/privacy"
-          icon={Shield}
-          iconClass="text-sumi-soft bg-muted"
-          title="개인정보 처리방침"
-          subtitle="어떤 정보를 쓰는지 한 번에 요약"
-        />
-        <TokyoArrivalResetItem />
-        {process.env.NODE_ENV !== "production" && <TokyoArrivalPreviewItem />}
-      </ul>
-
-      <footer className="mt-10 text-center text-xs text-muted-foreground">
-        <div
-          aria-hidden
-          className="mx-auto mb-3 h-px w-12"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, var(--color-border), transparent)",
-          }}
-        />
-        <p className="font-heading font-bold tracking-wider">
-          랜덤한끼 · v0.1.0
-        </p>
-        <p className="mt-1 flex items-center justify-center gap-1 text-[11px]">
-          <Download className="size-3" />
-          홈 화면에 추가하면 앱처럼 사용할 수 있어요
-        </p>
-        <p className="mt-4 text-[10px] leading-relaxed tracking-wide text-muted-foreground/80">
-          식당 정보 제공 · Google Places API
-          <br />
-          <span>© 2026 랜덤한끼</span>
-        </p>
-      </footer>
     </div>
   );
 }
 
 /* --------------------------------------------------------------------- */
 
+function SectionLabel({
+  kanji,
+  children,
+}: {
+  kanji: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mt-7 mb-2 flex items-baseline gap-2">
+      <span className="font-mincho text-[14px] font-medium text-sumi-ink">
+        {kanji}
+      </span>
+      <span className="font-mincho text-[12px] font-medium tracking-tight text-sumi-mute">
+        {children}
+      </span>
+      <span className="ml-2 hairline-soft flex-1" />
+    </div>
+  );
+}
+
+function SettingsGroup({ children }: { children: React.ReactNode }) {
+  return (
+    <ul className="divide-y divide-hairline-soft border-y border-hairline-soft">
+      {children}
+    </ul>
+  );
+}
+
 interface ItemProps {
-  icon: React.ComponentType<{ className?: string }>;
-  iconClass: string;
   title: string;
   subtitle: string;
   href?: string;
+  accent?: boolean;
 }
 
-function SettingsItem({ icon: Icon, iconClass, title, subtitle, href }: ItemProps) {
+function SettingsItem({ title, subtitle, href, accent }: ItemProps) {
   const body = (
-    <div className="flex items-center justify-between gap-3 px-4 py-4 transition-colors active:bg-muted/40">
-      <div className="flex items-center gap-3">
-        <div className={`rounded-lg p-2 ${iconClass}`}>
-          <Icon className="size-5" />
+    <div className="flex items-center justify-between gap-3 py-3.5 transition-colors active:bg-sumi-ink/5">
+      <div className="min-w-0">
+        <div
+          className={`font-mincho text-[14px] font-medium tracking-tight ${accent ? "text-shu" : "text-sumi-ink"}`}
+        >
+          {title}
         </div>
-        <div>
-          <div className="font-heading text-[14px] font-bold tracking-tight text-sumi">
-            {title}
-          </div>
-          <div className="mt-0.5 text-[11px] text-muted-foreground">
-            {subtitle}
-          </div>
-        </div>
+        <div className="mt-0.5 text-[11px] text-sumi-fade">{subtitle}</div>
       </div>
-      {href && <ChevronRight className="size-4 text-muted-foreground" />}
+      {href && <ChevronRight className="size-4 shrink-0 text-sumi-fade" />}
     </div>
   );
-  return (
-    <li>
-      {href ? <Link href={href}>{body}</Link> : body}
-    </li>
-  );
+  return <li>{href ? <Link href={href}>{body}</Link> : body}</li>;
 }

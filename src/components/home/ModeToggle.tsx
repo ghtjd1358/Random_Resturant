@@ -1,62 +1,67 @@
 "use client";
 
-import { motion } from "motion/react";
-import { Trophy, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
 import type { PickMode } from "@/lib/places/score";
+import { FilterSectionHeader } from "./FilterSectionHeader";
 
 interface Props {
   value: PickMode;
   onChange: (m: PickMode) => void;
 }
 
-const MODES: { key: PickMode; label: string; description: string; icon: typeof Trophy }[] = [
-  { key: "popular", label: "검증된 곳", description: "리뷰 많은 인기집", icon: Trophy },
-  { key: "discovery", label: "숨은 맛집", description: "리뷰 적은 로컬 발견", icon: Sparkles },
+const MODES: {
+  key: PickMode;
+  label: string;
+  caption: string;
+  badge: string;
+}[] = [
+  { key: "popular", label: "검증된 곳", caption: "평점 높고 리뷰 많은", badge: "POPULAR" },
+  { key: "discovery", label: "숨은 곳", caption: "아는 사람만 가는", badge: "HIDDEN" },
 ];
 
 export function ModeToggle({ value, onChange }: Props) {
   return (
-    <div
-      role="radiogroup"
-      aria-label="추천 방식"
-      className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-card p-1"
-    >
-      {MODES.map(({ key, label, description, icon: Icon }) => {
-        const active = value === key;
-        return (
-          <button
-            key={key}
-            role="radio"
-            aria-checked={active}
-            onClick={() => {
-              if (!active) haptic.select();
-              onChange(key);
-            }}
-            className={cn(
-              "no-select relative flex flex-col items-start gap-0.5 rounded-lg px-3 py-2 text-left transition-colors",
-              active ? "text-cream" : "text-muted-foreground hover:text-sumi",
-            )}
-          >
-            {active && (
-              <motion.span
-                layoutId="mode-active"
+    <div>
+      <FilterSectionHeader kanji="好" labelKr="취향" labelEn="MOOD" />
+      <div role="radiogroup" aria-label="추천 방식" className="grid grid-cols-2 gap-2">
+        {MODES.map(({ key, label, caption, badge }) => {
+          const active = value === key;
+          return (
+            <button
+              key={key}
+              role="radio"
+              aria-checked={active}
+              onClick={() => {
+                if (!active) haptic.select();
+                onChange(key);
+              }}
+              className={cn(
+                "no-select relative flex flex-col items-start border px-3 py-2.5 text-left transition-colors",
+                active
+                  ? "border-sumi-ink bg-paper-soft"
+                  : "border-hairline bg-paper hover:border-sumi-ink/40",
+              )}
+            >
+              {active && <span aria-hidden className="shu-tab" />}
+              <span
                 className={cn(
-                  "absolute inset-0 rounded-lg shadow-sm",
-                  key === "discovery" ? "bg-matcha" : "bg-sumi",
+                  "eyebrow text-[9px]",
+                  active ? "text-sumi-mute" : "text-sumi-fade",
                 )}
-                transition={{ type: "spring", stiffness: 420, damping: 32 }}
-              />
-            )}
-            <span className="relative flex items-center gap-1.5">
-              <Icon className="size-3.5 text-gold" strokeWidth={2} />
-              <span className="text-sm font-medium">{label}</span>
-            </span>
-            <span className="relative text-[10px] opacity-80">{description}</span>
-          </button>
-        );
-      })}
+              >
+                {badge}
+              </span>
+              <span className="font-mincho mt-1 text-[14px] font-medium tracking-tight text-sumi-ink">
+                {label}
+              </span>
+              <span className="font-mincho mt-0.5 text-[10px] text-sumi-fade">
+                {caption}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
