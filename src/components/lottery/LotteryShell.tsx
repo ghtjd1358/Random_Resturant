@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ChevronDown, RotateCcw } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { KanjiWatermark } from "@/components/common/KanjiWatermark";
 import { LocationBanner } from "@/components/home/LocationBanner";
 import { CategoryToggle } from "@/components/home/CategoryToggle";
 import { SubcategoryChips } from "@/components/home/SubcategoryChips";
-import { useFiltersStore } from "@/stores/useFiltersStore";
+import { ModeToggle } from "@/components/home/ModeToggle";
+import { PriceFilter } from "@/components/home/PriceFilter";
+import { RadiusSlider } from "@/components/home/RadiusSlider";
+import { OpenNowToggle } from "@/components/home/OpenNowToggle";
+import { isFiltersDefault, useFiltersStore } from "@/stores/useFiltersStore";
 import { useLocationStore } from "@/stores/useLocationStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useLotteryRoll } from "@/hooks/useLotteryRoll";
@@ -26,8 +31,19 @@ export function LotteryShell() {
 
   const category = useFiltersStore((s) => s.category);
   const subcategory = useFiltersStore((s) => s.subcategory);
+  const mode = useFiltersStore((s) => s.mode);
+  const radius = useFiltersStore((s) => s.radius);
+  const openNowOnly = useFiltersStore((s) => s.openNowOnly);
+  const priceLevels = useFiltersStore((s) => s.priceLevels);
   const setCategory = useFiltersStore((s) => s.setCategory);
   const setSubcategory = useFiltersStore((s) => s.setSubcategory);
+  const setMode = useFiltersStore((s) => s.setMode);
+  const setRadius = useFiltersStore((s) => s.setRadius);
+  const setOpenNowOnly = useFiltersStore((s) => s.setOpenNowOnly);
+  const togglePriceLevel = useFiltersStore((s) => s.togglePriceLevel);
+  const clearPriceLevels = useFiltersStore((s) => s.clearPriceLevels);
+  const resetFilters = useFiltersStore((s) => s.resetFilters);
+  const isDefault = useFiltersStore(isFiltersDefault);
   const stickCount = useLotteryStore((s) => s.stickCount);
   const setStickCount = useLotteryStore((s) => s.setStickCount);
   const hasLocation = useLocationStore((s) => s.coords !== null);
@@ -35,6 +51,12 @@ export function LotteryShell() {
   const { drawN } = useLotteryRoll();
   const [picks, setPicks] = useState<PlaceLite[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const handleResetFilters = () => {
+    haptic.tap();
+    resetFilters();
+  };
 
   // Apply category shortcut from PWA manifest (?c=food|cafe), same as Home.
   useEffect(() => {
@@ -125,6 +147,51 @@ export function LotteryShell() {
             })}
           </div>
         </div>
+
+        {/* Detail filter toggle — expands to mode/price/radius/open + reset.
+            Same controls as Home's "더 자세히" so settings stay consistent
+            across pick and lottery (filters store is shared anyway). */}
+        <div className="mt-3 flex items-baseline justify-end">
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            className="inline-flex items-center gap-0.5 text-[11px] font-medium text-shu transition-opacity hover:opacity-70"
+          >
+            {expanded ? "닫기" : "더 자세히"}
+            <ChevronDown
+              className={cn("size-3 transition-transform", expanded && "rotate-180")}
+            />
+          </button>
+        </div>
+
+        {expanded && (
+          <div className="mt-3 flex flex-col gap-3 border-t border-hairline-soft pt-3">
+            <ModeToggle value={mode} onChange={setMode} />
+            <PriceFilter
+              value={priceLevels}
+              onToggle={togglePriceLevel}
+              onClear={clearPriceLevels}
+            />
+            <RadiusSlider value={radius} onChange={setRadius} />
+            <OpenNowToggle value={openNowOnly} onChange={setOpenNowOnly} />
+
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              disabled={isDefault}
+              className={cn(
+                "no-select group mt-1 flex items-center justify-center gap-1.5 border py-2.5 text-[12px] font-mincho tracking-tight transition-colors",
+                isDefault
+                  ? "border-hairline-soft text-sumi-fade cursor-not-allowed"
+                  : "border-shu/40 text-shu hover:bg-shu/5",
+              )}
+            >
+              <RotateCcw className="size-3.5" strokeWidth={1.5} />
+              {isDefault ? "기본값입니다" : "필터 초기화 · 初期化"}
+            </button>
+          </div>
+        )}
 
         {/* Big draw button */}
         <section className="mt-10 flex flex-col items-center gap-3">

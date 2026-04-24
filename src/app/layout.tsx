@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomTabBar } from "@/components/nav/BottomTabBar";
 import { InstallBanner } from "@/components/pwa/InstallBanner";
+import { BackToExit } from "@/components/common/BackToExit";
 import "./globals.css";
 
 const notoSans = Noto_Sans_KR({
@@ -99,6 +100,7 @@ export default function RootLayout({
           <BottomTabBar />
         </div>
         <InstallBanner />
+        <BackToExit />
         <Toaster position="top-center" richColors />
       </body>
     </html>

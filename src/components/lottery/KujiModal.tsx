@@ -226,7 +226,7 @@ function Stage({
             "relative flex items-end justify-center",
             phase === "shaking" && "animate-[kuji-shake_1100ms_ease-in-out_1]",
           )}
-          style={{ width: 240, height: 300 }}
+          style={{ width: 200, height: 380 }}
         >
           {/* Splash droplets — only during shake */}
           {phase === "shaking" && <SplashLayer />}
@@ -237,9 +237,9 @@ function Stage({
               aria-hidden
               className="absolute left-1/2 -translate-x-1/2 animate-[kuji-halo_900ms_ease-out_both]"
               style={{
-                top: 30,
-                width: 180,
-                height: 180,
+                top: 40,
+                width: 200,
+                height: 200,
                 background:
                   "radial-gradient(circle, rgba(28,24,21,0.35) 0%, rgba(28,24,21,0) 70%)",
                 pointerEvents: "none",
@@ -247,7 +247,9 @@ function Stage({
             />
           )}
 
-          {/* Sticks */}
+          {/* Sticks — only the *visible* tip protruding above the cylinder
+              opening. The hidden lower portion is implied (real omikuji
+              sticks live inside the tube). */}
           {sticks.map((s) => (
             <Stick
               key={s.idx}
@@ -260,7 +262,8 @@ function Stage({
             />
           ))}
 
-          {/* Bamboo cylinder — SVG */}
+          {/* Bamboo cylinder — sits ABOVE sticks (z-2) so any stick body
+              that reaches into the tube is hidden by the cylinder front. */}
           <BambooCylinder />
         </div>
 
@@ -278,25 +281,27 @@ function Stage({
 /* ───────────────────────────────────────────────────────────────────── */
 
 /**
- * Bamboo (竹籤) cylinder. SVG so we can layer the perspective opening,
- * vertical fiber hints, two horizontal node bands, the inner shadow that
- * reads as "depth into the tube," and a 朱 hanko brand mark on the front.
+ * Bamboo (竹籤) cylinder. Slimmer than v1, muted-green palette so it
+ * actually reads as bamboo, and z-index 2 so the front of the tube
+ * properly hides the lower body of the sticks behind it.
  */
 function BambooCylinder() {
   return (
     <svg
-      viewBox="0 0 200 180"
+      viewBox="0 0 160 240"
       className="absolute bottom-0 left-1/2 -translate-x-1/2"
-      style={{ width: 200, height: 180 }}
+      style={{ width: 160, height: 240, zIndex: 2 }}
       aria-hidden
     >
       <defs>
+        {/* Muted bamboo green — light edges + saturated middle band so the
+            cylinder reads as a curved surface, not a flat rectangle. */}
         <linearGradient id="bamboo-body" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#E8DCC0" />
-          <stop offset="20%" stopColor="#F0E5C8" />
-          <stop offset="50%" stopColor="#F4EAD0" />
-          <stop offset="80%" stopColor="#EADFC0" />
-          <stop offset="100%" stopColor="#D8CBA8" />
+          <stop offset="0%" stopColor="#A8B888" />
+          <stop offset="18%" stopColor="#C8D5A8" />
+          <stop offset="50%" stopColor="#E0E8C5" />
+          <stop offset="82%" stopColor="#C2D0A2" />
+          <stop offset="100%" stopColor="#94A878" />
         </linearGradient>
         <radialGradient id="bamboo-hole" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0%" stopColor="#1C1815" stopOpacity="0.95" />
@@ -305,47 +310,49 @@ function BambooCylinder() {
         </radialGradient>
       </defs>
 
-      {/* Cylinder body — slight perspective: top wider than bottom */}
+      {/* Cylinder body — narrower waist with subtle perspective */}
       <path
-        d="M 18 38 Q 100 28, 182 38 L 178 168 Q 100 178, 22 168 Z"
+        d="M 14 36 Q 80 26, 146 36 L 142 226 Q 80 236, 18 226 Z"
         fill="url(#bamboo-body)"
         stroke="#1C1815"
         strokeWidth="2.2"
         strokeLinejoin="round"
       />
 
-      {/* Bamboo node bands — two horizontal subtle ridges */}
+      {/* Bamboo node bands — three horizontal subtle ridges (taller body
+          gets more nodes to keep proportions natural) */}
       <g stroke="#1C1815" strokeLinecap="round">
-        <line x1="22" y1="82" x2="178" y2="82" strokeWidth="1.4" opacity="0.55" />
-        <line x1="22" y1="84" x2="178" y2="84" strokeWidth="0.6" opacity="0.3" />
-        <line x1="22" y1="128" x2="178" y2="128" strokeWidth="1.4" opacity="0.55" />
-        <line x1="22" y1="130" x2="178" y2="130" strokeWidth="0.6" opacity="0.3" />
+        <line x1="18" y1="92" x2="142" y2="92" strokeWidth="1.4" opacity="0.55" />
+        <line x1="18" y1="94" x2="142" y2="94" strokeWidth="0.6" opacity="0.3" />
+        <line x1="18" y1="148" x2="142" y2="148" strokeWidth="1.4" opacity="0.55" />
+        <line x1="18" y1="150" x2="142" y2="150" strokeWidth="0.6" opacity="0.3" />
+        <line x1="18" y1="200" x2="142" y2="200" strokeWidth="1.4" opacity="0.5" />
       </g>
 
-      {/* Vertical fiber hints — sumi pen strokes along the grain */}
-      <g stroke="#1C1815" strokeWidth="0.5" opacity="0.18">
-        <line x1="50" y1="42" x2="48" y2="166" />
-        <line x1="78" y1="40" x2="77" y2="170" />
-        <line x1="118" y1="40" x2="120" y2="170" />
-        <line x1="150" y1="42" x2="153" y2="166" />
+      {/* Vertical fiber hints */}
+      <g stroke="#1C1815" strokeWidth="0.5" opacity="0.2">
+        <line x1="40" y1="40" x2="38" y2="224" />
+        <line x1="62" y1="38" x2="61" y2="228" />
+        <line x1="98" y1="38" x2="100" y2="228" />
+        <line x1="122" y1="40" x2="125" y2="224" />
       </g>
 
-      {/* 朱 hanko brand near the bottom */}
-      <g transform="translate(100, 150)">
+      {/* 朱 hanko brand near the lower-middle */}
+      <g transform="translate(80, 175)">
         <rect
-          x="-14"
-          y="-14"
-          width="28"
-          height="28"
+          x="-13"
+          y="-13"
+          width="26"
+          height="26"
           fill="none"
           stroke="#B3321D"
           strokeWidth="1.5"
         />
         <text
           textAnchor="middle"
-          y="6"
+          y="5"
           fontFamily='"Shippori Mincho", serif'
-          fontSize="20"
+          fontSize="18"
           fontWeight="600"
           fill="#B3321D"
         >
@@ -354,13 +361,13 @@ function BambooCylinder() {
       </g>
 
       {/* Top opening — dark "into the tube" depth */}
-      <ellipse cx="100" cy="38" rx="82" ry="11" fill="url(#bamboo-hole)" />
+      <ellipse cx="80" cy="36" rx="66" ry="9" fill="url(#bamboo-hole)" />
       {/* Top lip — sharp sumi rim */}
       <ellipse
-        cx="100"
-        cy="38"
-        rx="82"
-        ry="11"
+        cx="80"
+        cy="36"
+        rx="66"
+        ry="9"
         fill="none"
         stroke="#1C1815"
         strokeWidth="2.2"
@@ -399,44 +406,46 @@ function Stick({
     animation = `kuji-stick-drop 0.6s cubic-bezier(0.3,1.2,0.4,1) ${dropDelay}s both`;
   }
 
+  // Sticks sit so their *base* dips just inside the cylinder mouth (≈13px
+  // below the rim). The cylinder SVG is z-2 so anything below that point
+  // is hidden by the tube front. Visible portion is height 130.
   return (
     <span
-      className="absolute bottom-[60px] left-1/2 -translate-x-1/2 select-none"
+      className="absolute left-1/2 -translate-x-1/2 select-none"
       style={
         {
           "--rot": `${rot}deg`,
-          width: 14,
-          height: 220,
+          width: 12,
+          height: 130,
+          bottom: 200,
           transformOrigin: "bottom center",
           animation,
           zIndex: isWinner && phase === "drawing" ? 5 : 1,
         } as React.CSSProperties
       }
     >
-      {/* Stick body */}
+      {/* Stick body — narrower (12px) for a slimmer, more bamboo-like look */}
       <span
         className="block h-full w-full border border-sumi-ink bg-paper-soft"
         style={{
           borderRadius: 2,
-          boxShadow: isWinner && phase === "drawing"
-            ? "0 0 0 1px rgba(179,50,29,0.35), 0 4px 14px -4px rgba(28,24,21,0.4)"
-            : undefined,
+          boxShadow:
+            isWinner && phase === "drawing"
+              ? "0 0 0 1px rgba(179,50,29,0.35), 0 6px 18px -4px rgba(28,24,21,0.45)"
+              : undefined,
         }}
       />
       {/* Kanji label near top */}
       <span
-        className="font-mincho absolute left-1/2 top-2 -translate-x-1/2 text-sumi-ink"
+        className="font-mincho absolute left-1/2 top-3 -translate-x-1/2 text-sumi-ink"
         style={{ fontSize: 10, fontWeight: 600 }}
       >
         {kanji}
       </span>
-      {/* 朱 cap dot */}
+      {/* 朱 cap dot at the very top */}
       <span
         aria-hidden
-        className={cn(
-          "absolute left-1/2 top-[-3px] size-2 -translate-x-1/2 rounded-full bg-shu",
-          isWinner && phase === "drawing" && "animate-[arrival-droplet_900ms_ease-out_both]",
-        )}
+        className="absolute left-1/2 top-[-3px] size-2 -translate-x-1/2 rounded-full bg-shu"
       />
     </span>
   );
