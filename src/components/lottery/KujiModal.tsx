@@ -679,18 +679,18 @@ function RevealedView({
 
   return (
     <div className="px-5 pt-6 pb-8">
-      {/* Winner — brushed kanji + the oracle giraffe holding the
-          運勢吉 scroll. Mascot sits to the right of the headline so the
-          "結果 / 大吉" column stays visually centered on its own axis. */}
-      <div className="relative flex flex-col items-center text-center">
+      {/* Winner — oracle giraffe presents the 運勢吉 scroll above, then
+          brushed kanji 大吉 below. The mascot anchors the ceremony so the
+          result text reads as something she's revealing, not just a label. */}
+      <div className="flex flex-col items-center text-center">
         <span
           aria-hidden
-          className="pointer-events-none absolute right-0 top-0 animate-[kuji-oracle-bow_900ms_ease-out_both]"
+          className="animate-[kuji-oracle-bow_900ms_ease-out_both]"
           style={{ transformOrigin: "bottom center" }}
         >
-          <Mascot variant="scroll-fortune" size="md" />
+          <Mascot variant="scroll-fortune" size="lg" />
         </span>
-        <p className="font-mincho text-[12px] tracking-[0.3em] text-sumi-fade">
+        <p className="font-mincho mt-1 text-[12px] tracking-[0.3em] text-sumi-fade">
           결과
         </p>
         <p
