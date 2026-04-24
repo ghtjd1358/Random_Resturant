@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -14,8 +14,11 @@ import type { PlaceLite } from "@/lib/places/types";
 // 大吉 ("great fortune") at reveal time so users learn the pattern.
 const STICK_KANJI = ["吉", "中", "末", "小", "凶", "半", "平", "福"];
 
-const SHAKE_MS = 1100;
-const DRAWING_MS = 900;
+// Slightly extended for a more luxurious cadence — anticipation +
+// follow-through eat ~150ms each, and the winner reveal earns a beat to
+// breathe. Total ceremony: ~3.0s shake→reveal.
+const SHAKE_MS = 1400;
+const DRAWING_MS = 1200;
 
 // Deterministic ink splash positions — flicked off the cylinder lip during
 // shake. No RNG so render stays pure for React 19. Used by motion.span
@@ -46,20 +49,41 @@ const ASH = Array.from({ length: 8 }, (_, i) => ({
 
 /* ─── Motion variants ────────────────────────────────────────────────── */
 
-// Cylinder shake — keyframe array driven by motion. The values dampen
-// progressively (8 → 6 → 3 → 0) so the shake decays naturally instead of
-// stopping abruptly like a CSS animation.
+// Cylinder shake — applies Disney's anticipation + squash/stretch +
+// follow-through principles via a multi-stage keyframe sequence.
+//
+//   0-7%:   anticipation (subtle pull-back rotate, a moment of stillness
+//           before the shake — preps the eye)
+//   7-82%:  decaying shake with paired scaleY/scaleX (volume-preserving
+//           squash/stretch — the cylinder feels alive, not a rigid box)
+//   82-100%: follow-through wobble (carries inertia after the user
+//           released, sells the physical heft)
 const cylinderVariants: Variants = {
-  ready: { rotate: 0, x: 0 },
+  ready: { rotate: 0, x: 0, scaleX: 1, scaleY: 1 },
   shaking: {
-    rotate: [0, -8, 7, -5, 4, -2, 0],
-    x: [0, -3, 2, -2, 1, 0, 0],
-    transition: { duration: 1.1, ease: "easeInOut" },
+    rotate: [0, -4, -1, -8, 7, -5, 4, -2, 0, 1.5, -1, 0],
+    x: [0, -2, 1, -3, 2, -2, 1, 0, 0, 0.5, -0.5, 0],
+    scaleY: [1, 1.025, 0.99, 1.03, 0.97, 1.02, 0.985, 1.005, 1, 1.002, 0.998, 1],
+    scaleX: [1, 0.985, 1.005, 0.985, 1.02, 0.992, 1.01, 0.997, 1, 0.999, 1.001, 1],
+    transition: {
+      duration: 1.4,
+      times: [0, 0.04, 0.07, 0.18, 0.32, 0.45, 0.58, 0.7, 0.82, 0.88, 0.94, 1],
+      ease: "easeInOut",
+    },
   },
+  // During drawing the cylinder tips slightly forward, like the kuji-master
+  // is presenting the result. Spring back to rest after the winner clears.
   drawing: {
-    rotate: 0,
+    rotate: [0, 3, 1.5, 0],
+    y: [0, -1, 0, 0],
+    scaleX: 1,
+    scaleY: 1,
     x: 0,
-    transition: { type: "spring", stiffness: 220, damping: 24 },
+    transition: {
+      duration: 0.7,
+      times: [0, 0.3, 0.6, 1],
+      ease: [0.22, 1, 0.36, 1],
+    },
   },
 };
 
@@ -67,7 +91,7 @@ const cylinderVariants: Variants = {
 // flick out in waves, not all at once.
 const splashGroupVariants: Variants = {
   shaking: {
-    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.05, delayChildren: 0.18 },
   },
   ready: {},
   drawing: {},
@@ -77,20 +101,20 @@ const splashVariants: Variants = {
   shaking: (custom: { sx: number; sy: number }) => ({
     x: custom.sx,
     y: custom.sy,
-    opacity: [0, 0.7, 0],
-    scale: [0.4, 1, 0.9],
-    transition: { duration: 1.1, ease: [0.2, 0.7, 0.3, 1] },
+    opacity: [0, 0.85, 0],
+    scale: [0.3, 1.1, 0.7],
+    transition: { duration: 1.1, ease: [0.16, 0.7, 0.32, 1] },
   }),
-  ready: { x: 0, y: 0, opacity: 0, scale: 0.4 },
+  ready: { x: 0, y: 0, opacity: 0, scale: 0.3 },
   drawing: { opacity: 0 },
 };
 
 // Stick group — staggers initial drop-in and shake. Drawing stagger is
 // near-zero so winner rises immediately.
 const stickGroupVariants: Variants = {
-  ready: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
-  shaking: { transition: { staggerChildren: 0.045 } },
-  drawing: { transition: { staggerChildren: 0.02 } },
+  ready: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
+  shaking: { transition: { staggerChildren: 0.04 } },
+  drawing: { transition: { staggerChildren: 0.025 } },
 };
 
 interface KujiModalProps {
@@ -264,8 +288,11 @@ function Stage({
 
   return (
     <div className="relative flex h-full flex-col items-center justify-between px-5 py-6">
-      {/* Floating ash — kept as CSS. Infinite ambient loop, no phase
-          awareness needed. */}
+      {/* Atmospheric layers — kept light. Film grain SVG turbulence got
+          axed because the constant rasterization cost wasn't worth the
+          opacity-0.05 visual gain. Vignette is a single radial gradient
+          (cheap), ash flakes are a CSS infinite loop (GPU). */}
+      <Vignette intensity={phase === "drawing" ? 0.5 : 0.28} />
       <AshLayer />
 
       {/* Headline swaps per phase with AnimatePresence — crossfade + slight
@@ -320,8 +347,13 @@ function Stage({
             progressively. Sticks add their own finer shake on top for
             compounded motion. */}
         <motion.div
-          className="relative flex items-end justify-center"
-          style={{ width: 200, height: 380, transformOrigin: "50% 85%" }}
+          className="relative flex items-end justify-center transform-gpu"
+          style={{
+            width: 200,
+            height: 380,
+            transformOrigin: "50% 85%",
+            willChange: "transform",
+          }}
           variants={cylinderVariants}
           animate={phase}
         >
@@ -354,25 +386,13 @@ function Stage({
               ))}
           </motion.div>
 
-          {/* Halo behind winner — fades in during drawing. */}
+          {/* Light beam — rays radiating up from the cylinder mouth as the
+              winner emerges. Two layered radials (warm + cool) for dimension,
+              plus a slow rotate so the rays read as living light, not
+              decoration. */}
           <AnimatePresence>
             {phase === "drawing" && winnerIdx !== null && (
-              <motion.div
-                aria-hidden
-                className="absolute left-1/2 -translate-x-1/2"
-                style={{
-                  top: 40,
-                  width: 200,
-                  height: 200,
-                  background:
-                    "radial-gradient(circle, rgba(28,24,21,0.35) 0%, rgba(28,24,21,0) 70%)",
-                  pointerEvents: "none",
-                }}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              />
+              <LightBeam />
             )}
           </AnimatePresence>
 
@@ -424,81 +444,151 @@ function Stage({
 /* ───────────────────────────────────────────────────────────────────── */
 
 /**
- * Minimal kuji cylinder — kraft paper silhouette with sumi-ink hairlines.
+ * Premium kuji cylinder — paper silhouette with washi grain, refined
+ * bamboo node bands, and a depth-cued mouth.
  *
- * Design intent: match the rest of the editorial page (paper-deep + sumi),
- * not pretend to be a 3D bamboo prop. We dropped the 7-stop bamboo green
- * gradient, sheen overlay, hanko brand, fiber lines, and node-with-shadow
- * 3D bands — they fought the page's quiet ink palette. What remains is just
- * a hand-drawn jar shape: paper body, two thin node hairlines (still
- * implies bamboo), dark mouth for depth, sumi outline.
+ * Design intent: still minimalist (no glossy 3D bamboo green from earlier
+ * iterations) but with the small finishing touches that separate "blank
+ * shape" from "carefully crafted object":
+ *   - Tapered silhouette (slightly wider at top, narrower at base — the
+ *     classical omikuji/tsutsu shape)
+ *   - 4-stop body gradient with off-axis warmth so the form has depth
+ *     without screaming 3D
+ *   - Subtle washi grain noise inside the body
+ *   - Refined node bands: paired highlight ABOVE + sumi shadow BELOW
+ *     reads as raised bamboo joint at a glance
+ *   - Inner mouth radial gradient + sharp sumi rim
+ *   - Soft inner highlight on the rim catches "ambient light"
+ *   - Bottom contact ellipse + secondary fade shadow grounds it
+ *   - Tiny 籤 sumi mark at lower body — calligrapher's stamp without the
+ *     loud red hanko
  */
 function BambooCylinder() {
   return (
     <svg
-      viewBox="0 0 160 256"
-      className="absolute bottom-0 left-1/2 -translate-x-1/2"
-      style={{ width: 168, height: 270, zIndex: 2 }}
+      viewBox="0 0 160 270"
+      className="absolute bottom-0 left-1/2 -translate-x-1/2 transform-gpu"
+      style={{ width: 172, height: 290, zIndex: 2 }}
       aria-hidden
     >
       <defs>
-        {/* Subtle paper-tone body — barely-there tonal shift left → right
-            so the silhouette has SOME roundness, but it's not a glossy 3D
-            prop. */}
+        {/* Body — 4-stop with warmer left side (light source upper-left
+            convention). Subtle, not Disney glossy. */}
         <linearGradient id="kuji-body" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#D4C5A4" />
-          <stop offset="50%"  stopColor="#E6DBC0" />
-          <stop offset="100%" stopColor="#C9BCA0" />
+          <stop offset="0%"   stopColor="#C9BCA0" />
+          <stop offset="35%"  stopColor="#E2D6B8" />
+          <stop offset="70%"  stopColor="#D9CCAE" />
+          <stop offset="100%" stopColor="#B8AB8E" />
         </linearGradient>
 
-        {/* Mouth shadow — pure sumi-ink darkness with a soft edge so the
-            opening reads as "into the tube" without painting fake 3D. */}
-        <radialGradient id="kuji-mouth" cx="0.5" cy="0.5" r="0.55">
-          <stop offset="0%"   stopColor="#1C1815" stopOpacity="0.95" />
-          <stop offset="70%"  stopColor="#1C1815" stopOpacity="0.78" />
-          <stop offset="100%" stopColor="#1C1815" stopOpacity="0.55" />
+        {/* Top-to-bottom subtle vignette — slightly darker at the bottom
+            so the form has weight, not floating. */}
+        <linearGradient id="kuji-shading" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#FFFFFF" stopOpacity="0.06" />
+          <stop offset="55%"  stopColor="#FFFFFF" stopOpacity="0" />
+          <stop offset="100%" stopColor="#1C1815" stopOpacity="0.12" />
+        </linearGradient>
+
+        {/* Mouth — dark with a hint of warm bottom (light bouncing inside) */}
+        <radialGradient id="kuji-mouth" cx="0.5" cy="0.55" r="0.6">
+          <stop offset="0%"   stopColor="#0A0805" stopOpacity="0.95" />
+          <stop offset="60%"  stopColor="#1C1815" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#3D2F22" stopOpacity="0.65" />
         </radialGradient>
+
+        {/* Bamboo node band — gradient ring with subtle highlight + shadow
+            (paired with separate hairlines below for a 3D-ish ridge cue). */}
+        <linearGradient id="kuji-node" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#A9997C" stopOpacity="0.6" />
+          <stop offset="50%"  stopColor="#7A6D52" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#A9997C" stopOpacity="0.6" />
+        </linearGradient>
+
       </defs>
 
-      {/* Ground anchor — soft contact shadow */}
+      {/* Ground contact — two-layer shadow: tight + diffuse for proper
+          weight. Tight ellipse + larger blurred fade. */}
       <ellipse
-        cx="80"
-        cy="252"
-        rx="62"
-        ry="4"
-        fill="#1C1815"
-        opacity="0.14"
-        style={{ filter: "blur(2.5px)" }}
+        cx="80" cy="262" rx="58" ry="3.5"
+        fill="#1C1815" opacity="0.22"
+        style={{ filter: "blur(1.5px)" }}
+      />
+      <ellipse
+        cx="80" cy="266" rx="74" ry="6"
+        fill="#1C1815" opacity="0.08"
+        style={{ filter: "blur(5px)" }}
       />
 
-      {/* Body silhouette — paper fill + sumi 1.5px outline */}
+      {/* Body — base fill, then subtle vertical shading overlay, then
+          sumi outline last. (Removed the SVG turbulence washi grain — the
+          rasterization cost during shake animations was disproportionate
+          to the visual gain.) */}
       <path
-        d="M 18 38 Q 80 30, 142 38 L 138 240 Q 80 250, 22 240 Z"
+        d="M 16 40 Q 80 30, 144 40 L 138 246 Q 80 256, 22 246 Z"
         fill="url(#kuji-body)"
       />
       <path
-        d="M 18 38 Q 80 30, 142 38 L 138 240 Q 80 250, 22 240 Z"
+        d="M 16 40 Q 80 30, 144 40 L 138 246 Q 80 256, 22 246 Z"
+        fill="url(#kuji-shading)"
+      />
+      <path
+        d="M 16 40 Q 80 30, 144 40 L 138 246 Q 80 256, 22 246 Z"
         fill="none"
         stroke="#1C1815"
-        strokeWidth="1.5"
+        strokeWidth="1.4"
         strokeLinejoin="round"
       />
 
-      {/* Two node hairlines — just enough to suggest bamboo segments without
-          painting fake raised ridges. 0.6px sumi at low opacity. */}
-      {[110, 180].map((y) => (
-        <line
-          key={`node-${y}`}
-          x1="22" y1={y} x2="138" y2={y}
-          stroke="#1C1815" strokeWidth="0.6" opacity="0.35"
-        />
+      {/* Bamboo node bands — three rings spaced for natural bamboo
+          proportions. Each = highlight line above + gradient ring + shadow
+          line below. Reads as raised joint without painting 3D. */}
+      {[100, 158, 216].map((y) => (
+        <g key={`node-${y}`}>
+          <line
+            x1="20" y1={y - 2.2} x2="140" y2={y - 2.2}
+            stroke="#F4ECD2" strokeWidth="0.6" opacity="0.55"
+          />
+          <rect
+            x="16" y={y - 1.5} width="128" height="3"
+            fill="url(#kuji-node)" opacity="0.7"
+          />
+          <line
+            x1="20" y1={y + 1.8} x2="140" y2={y + 1.8}
+            stroke="#1C1815" strokeWidth="0.5" opacity="0.45"
+          />
+        </g>
       ))}
 
-      {/* Mouth ellipse — dark depth + sharp sumi rim on top */}
-      <ellipse cx="80" cy="38" rx="62" ry="9" fill="url(#kuji-mouth)" />
+      {/* Calligrapher's mark — tiny 籤 in sumi at lower body. Replaces the
+          loud red hanko from earlier; this reads as a subtle artist's seal,
+          not a stamp. */}
+      <text
+        x="128"
+        y="232"
+        fontFamily='"Shippori Mincho", serif'
+        fontSize="9"
+        fontWeight="500"
+        fill="#1C1815"
+        opacity="0.55"
+      >
+        籤
+      </text>
+
+      {/* Mouth — dark inner depth + sharp sumi rim. */}
+      <ellipse cx="80" cy="40" rx="64" ry="9.5" fill="url(#kuji-mouth)" />
       <ellipse
-        cx="80" cy="38" rx="62" ry="9"
-        fill="none" stroke="#1C1815" strokeWidth="1.5"
+        cx="80" cy="40" rx="64" ry="9.5"
+        fill="none" stroke="#1C1815" strokeWidth="1.4"
+      />
+
+      {/* Inner mouth highlight — catches ambient light on the rim's top
+          edge. Very thin, very subtle. */}
+      <path
+        d="M 18 40 Q 80 32, 142 40"
+        fill="none"
+        stroke="#F4ECD2"
+        strokeWidth="0.8"
+        opacity="0.45"
       />
     </svg>
   );
@@ -510,8 +600,11 @@ function BambooCylinder() {
  * Single kuji stick. Variants are built per-stick because each stick has
  * its own resting rotation — shake/draw animations need to oscillate around
  * that rest angle, not a global 0°.
+ *
+ * memo'd because the shake phase doesn't change props for each stick more
+ * than once per cycle, and rot/kanji are stable for the modal's lifetime.
  */
-function Stick({
+const Stick = memo(function Stick({
   rot,
   kanji,
   phase,
@@ -523,8 +616,9 @@ function Stick({
   isWinner: boolean;
 }) {
   // Per-stick variants — closure over `rot` and `isWinner` so each stick
-  // animates around its own rest position. Spring physics for the rises
-  // and drops; keyframe sequence for the shake (motion array notation).
+  // animates around its own rest position. Compound shake (parent cylinder
+  // does the macro motion, sticks add fine wobble on top). Drawing is split
+  // by isWinner: winner gets a 3-stage cinematic rise, losers stagger fade.
   const variants: Variants = {
     ready: {
       y: 0,
@@ -535,86 +629,135 @@ function Stick({
       transition: { type: "spring", stiffness: 220, damping: 18 },
     },
     shaking: {
-      // Compounded fine-grain wobble on top of the parent cylinder shake.
-      // Decays across the cycle so it doesn't feel mechanical.
+      // Compounded jitter — parent cylinder handles macro shake, this is
+      // the per-stick chatter inside the can.
       rotate: [rot - 5, rot + 5, rot - 4, rot + 3, rot - 2, rot],
       x: [0, -1.5, 1.5, -1, 1, 0],
-      y: [0, -1, 1, -1, 0, 0],
+      y: [0, -1.5, 1, -1, 0.5, 0],
       transition: { duration: 1.1, ease: "easeInOut" },
     },
     drawing: isWinner
       ? {
-          y: -110,
+          // 3-stage rise: anticipation pause → quick straightening lift →
+          // slow settling overshoot. Reads like a chosen object presented
+          // with intention, not a CSS pop.
+          y: [0, -2, -120, -110],
           x: 0,
-          rotate: rot * 0.3, // straightens slightly as it rises — feels chosen
-          scale: 1.12,
+          rotate: [rot, rot * 0.6, rot * 0.2, 0],
+          scale: [1, 1.04, 1.18, 1.14],
           opacity: 1,
           transition: {
-            type: "spring",
-            stiffness: 180,
-            damping: 14,
-            mass: 0.8,
+            duration: 1.0,
+            times: [0, 0.18, 0.7, 1],
+            ease: [0.22, 1, 0.36, 1],
           },
         }
       : {
-          y: 6,
+          // Losers descend slightly, fade and gray out — by zone of
+          // attention they yield the focus to the winner stick.
+          y: 8,
           rotate: rot,
-          scale: 0.94,
-          opacity: 0.18,
-          transition: { duration: 0.55, ease: [0.4, 0, 0.6, 1] },
+          scale: 0.92,
+          opacity: 0.14,
+          filter: "saturate(0.4) blur(0.5px)",
+          transition: { duration: 0.65, ease: [0.4, 0, 0.6, 1] },
         },
   };
 
+  // Winner during drawing gets a layered glow that pulses — combines a
+  // close-in dusty-shu shadow with a wider warm-light bloom. Losers keep
+  // a flat sumi micro-shadow for grounding without pulling focus.
+  const winnerGlow = isWinner && phase === "drawing";
+  const filter = winnerGlow
+    ? "drop-shadow(0 0 12px rgba(201,129,127,0.55)) drop-shadow(0 8px 24px rgba(232,185,74,0.35))"
+    : "drop-shadow(0 1px 1.5px rgba(28,24,21,0.2))";
+
   return (
     <motion.span
-      className="absolute left-1/2 select-none"
+      className="absolute left-1/2 select-none transform-gpu"
       style={{
         width: 14,
         height: 140,
         bottom: 210,
         marginLeft: -7,
         transformOrigin: "bottom center",
-        zIndex: isWinner && phase === "drawing" ? 5 : 1,
+        zIndex: winnerGlow ? 5 : 1,
+        willChange: "transform, opacity",
       }}
-      // Drop in from above on first mount — uses spring via the parent
-      // stagger orchestrator.
       initial={{ y: -40, opacity: 0, rotate: 0 }}
       variants={variants}
       animate={phase}
     >
       {/* Drop shadow split out so motion doesn't fight CSS filter. */}
-      <span
-        className="block h-full w-full"
-        style={{
-          filter:
-            isWinner && phase === "drawing"
-              ? "drop-shadow(0 4px 8px rgba(201,129,127,0.55))"
-              : "drop-shadow(0 1px 1.5px rgba(28,24,21,0.2))",
-        }}
-      >
+      <span className="block h-full w-full" style={{ filter }}>
         <svg
           viewBox="0 0 14 140"
           className="block h-full w-full"
           preserveAspectRatio="none"
         >
-          {/* Stick body — flat warm wheat fill, sumi outline. */}
+          <defs>
+            {/* Subtle 3-stop wood — light at edges, slightly darker center
+                gives the stick gentle roundness (real omikuji sticks are
+                round dowels) without being a glossy bevel. */}
+            <linearGradient
+              id={`stick-wood-${rot}`}
+              x1="0" y1="0" x2="1" y2="0"
+            >
+              <stop offset="0%"   stopColor="#D4C19A" />
+              <stop offset="50%"  stopColor="#E6D6B0" />
+              <stop offset="100%" stopColor="#C7B58D" />
+            </linearGradient>
+            {/* Cap — dusty-shu with a subtle vertical fade so the band
+                has dimension instead of flat color */}
+            <linearGradient
+              id={`stick-cap-${rot}`}
+              x1="0" y1="0" x2="0" y2="1"
+            >
+              <stop offset="0%"  stopColor="#D49A98" />
+              <stop offset="100%" stopColor="#B5736F" />
+            </linearGradient>
+          </defs>
+
+          {/* Body — wood gradient fill + thin sumi outline */}
           <rect
-            x="0.7" y="4" width="12.6" height="134"
-            rx="1.2" ry="1.2"
-            fill="#E6D6B0"
+            x="0.7" y="6" width="12.6" height="132"
+            rx="1.4" ry="1.4"
+            fill={`url(#stick-wood-${rot})`}
             stroke="#1C1815"
-            strokeWidth="0.7"
+            strokeWidth="0.6"
           />
-          {/* Top accent — slim dusty-shu stripe. */}
-          <rect x="0.7" y="4" width="12.6" height="6" fill="#C9817F" />
+
+          {/* Wood grain — single hairline down the center, very low
+              opacity. Implies the dowel without being literal. */}
           <line
-            x1="0.7" y1="10" x2="13.3" y2="10"
-            stroke="#1C1815" strokeWidth="0.6"
+            x1="7" y1="14" x2="7" y2="135"
+            stroke="#1C1815" strokeWidth="0.25" opacity="0.18"
           />
-          {/* Kanji label */}
+
+          {/* Cap — dusty-shu band, slightly taller than before so the
+              proportion reads more like an omikuji stick (stalk:cap ≈ 22:1
+              feels right). */}
+          <rect
+            x="0.7" y="6" width="12.6" height="6.5"
+            fill={`url(#stick-cap-${rot})`}
+          />
+          {/* Hairline separator — keeps the cap crisp against the body */}
+          <line
+            x1="0.7" y1="12.5" x2="13.3" y2="12.5"
+            stroke="#1C1815" strokeWidth="0.55"
+          />
+
+          {/* Cherry-blossom dot at the very top tip — traditional omikuji
+              marker. Gives the stick a finishing detail without adding
+              chunky mass. */}
+          <circle cx="7" cy="9" r="1.05" fill="#8B2515" />
+          <circle cx="7" cy="9" r="0.4" fill="#F4ECD2" opacity="0.5" />
+
+          {/* Kanji label — pushed slightly down to make room for the
+              taller cap. */}
           <text
             x="7"
-            y="22"
+            y="24"
             textAnchor="middle"
             fontFamily='"Shippori Mincho", serif'
             fontSize="8"
@@ -627,7 +770,7 @@ function Stick({
       </span>
     </motion.span>
   );
-}
+});
 
 /* ───────────────────────────────────────────────────────────────────── */
 
@@ -652,6 +795,84 @@ function AshLayer() {
         />
       ))}
     </div>
+  );
+}
+
+/* ───────────────────────────────────────────────────────────────────── */
+
+/**
+ * Vignette — soft dark wash at the corners that focuses the eye toward
+ * the center cylinder. Intensity prop lifts during the drawing phase to
+ * dim the background and emphasize the rising winner stick.
+ */
+function Vignette({ intensity }: { intensity: number }) {
+  return (
+    <motion.div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 z-0"
+      animate={{ opacity: intensity }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        background:
+          "radial-gradient(ellipse at center, transparent 35%, rgba(28,24,21,0.3) 100%)",
+      }}
+    />
+  );
+}
+
+/* ───────────────────────────────────────────────────────────────────── */
+
+/**
+ * Light beam — radial light rays emerging from the cylinder mouth as the
+ * winner stick rises. Two layered radials (warm core + cool halo) plus a
+ * slow rotate so the rays read as living light, not a static halo.
+ */
+function LightBeam() {
+  return (
+    <>
+      {/* Warm core — close-in golden glow */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+        style={{
+          top: 30,
+          width: 240,
+          height: 240,
+          background:
+            "radial-gradient(circle, rgba(232,185,74,0.45) 0%, rgba(232,185,74,0.18) 35%, rgba(232,185,74,0) 70%)",
+          mixBlendMode: "screen",
+        }}
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: [0, 1, 0.85], scale: [0.5, 1.15, 1] }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: 1.0,
+          times: [0, 0.6, 1],
+          ease: [0.22, 1, 0.36, 1],
+        }}
+      />
+
+      {/* Outer halo — second radial layer for dimension. No rotation;
+          the original conic-gradient + mask + infinite rotate combo was
+          repainting the entire halo region every frame and felt heavy.
+          A second static radial reads almost the same with near-zero cost. */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+        style={{
+          top: 10,
+          width: 320,
+          height: 320,
+          background:
+            "radial-gradient(circle, rgba(232,185,74,0.18) 0%, rgba(232,185,74,0) 55%)",
+          mixBlendMode: "screen",
+        }}
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={{ opacity: 0.7, scale: [0.7, 1.05, 1] }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+      />
+    </>
   );
 }
 
