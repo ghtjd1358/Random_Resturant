@@ -100,7 +100,10 @@
     --destructive: #C8102E;
     --border: #D9CEB8;
     --input: #D9CEB8;
-    --ring: #C8102E;
+    /* Editorial focus ring — was torii red, now sumi ink so the tap-focus
+       outline doesn't bleed into the monochrome design (and stops looking
+       like a "red border" over kanji glyphs in the bottom tab). */
+    --ring: #1C1815;
     --chart-1: #C8102E;
     --chart-2: #6B8E4E;
     --chart-3: #8A6D4B;

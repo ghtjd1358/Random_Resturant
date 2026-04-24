@@ -38,14 +38,15 @@ export function VisitedItem({ record, index, onFeedback, onDelete }: Props) {
     else haptic.negative();
     onFeedback(record, target);
     toast.success(
-      target === "good" ? "또 갈래요로 바꿨어요" : "별로였어요로 바꿨어요",
+      target === "good" ? "좋아요로 바꿨어요" : "싫어요로 바꿨어요",
+      { duration: 1800 },
     );
   };
 
   const handleDelete = () => {
     haptic.tap();
     onDelete(record);
-    toast.success("기록을 삭제했어요.");
+    toast.success("기록을 삭제했어요.", { duration: 1800 });
     setOpen(false);
   };
 
@@ -88,7 +89,7 @@ export function VisitedItem({ record, index, onFeedback, onDelete }: Props) {
               record.feedback === "good" ? "text-sumi-ink" : "text-sumi-mute",
             )}
           >
-            好 또 갈래요
+            好 좋아요
           </button>
           <button
             type="button"
@@ -98,7 +99,7 @@ export function VisitedItem({ record, index, onFeedback, onDelete }: Props) {
               record.feedback === "bad" ? "text-sumi-ink" : "text-sumi-mute",
             )}
           >
-            否 별로
+            否 싫어요
           </button>
           <button
             type="button"

@@ -106,8 +106,8 @@ function HomeHeader({ issueNo }: { issueNo: string }) {
       </div>
 
       {/* Title row: face mascot + wordmark + 一食 round seal */}
-      <div className="relative mt-3 flex items-end gap-2">
-        <div className="relative size-20 shrink-0 -mb-1">
+      <div className="relative mt-3 flex items-center gap-2">
+        <div className="relative size-20 shrink-0">
           <Image
             src="/mascot-giraffe-face.png"
             alt="랜덤한끼 마스코트"

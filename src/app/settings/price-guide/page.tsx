@@ -1,8 +1,17 @@
 import { PageHeader } from "@/components/common/PageHeader";
 import { KanjiWatermark } from "@/components/common/KanjiWatermark";
-import { PRICE_BUCKETS } from "@/lib/places/types";
+import { PRICE_BUCKETS, type PriceBucket } from "@/lib/places/types";
 
 export const metadata = { title: "가격대 기준 · 랜덤한끼" };
+
+// Single-glyph tier label so the hanko-square stays a tidy 28×28 box.
+// The ¥ symbols live separately next to the description.
+const TIER_KANJI: Record<PriceBucket, string> = {
+  "¥": "廉",
+  "¥¥": "普",
+  "¥¥¥": "上",
+  "¥¥¥¥": "極",
+};
 
 export default function PriceGuidePage() {
   return (
@@ -36,14 +45,17 @@ export default function PriceGuidePage() {
               <div
                 aria-hidden
                 className="hanko-square shrink-0 mt-0.5"
-                style={{ width: 28, height: 28, fontSize: 12 }}
+                style={{ width: 28, height: 28, fontSize: 13 }}
               >
-                {b.label}
+                {TIER_KANJI[b.key]}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                   <span className="font-mincho text-[14px] font-medium tracking-tight text-sumi-ink">
                     {b.description}
+                  </span>
+                  <span className="font-mincho text-[13px] font-medium num-tabular text-sumi-ink whitespace-nowrap">
+                    {b.label}
                   </span>
                   <span className="text-[11px] num-tabular text-shu">
                     {b.approxRange}

@@ -22,12 +22,19 @@ const SRC_FACE = path.join(ROOT, "public/mascot-source-face.png");
 
 const LOW = 235;
 const HIGH = 252;
-// Face had a faint icon-frame ring around it from the source image; a more
-// aggressive low keys it out without chewing into the line art.
-const FACE_LOW = 205;
-const FACE_HIGH = 250;
+// Face had a faint icon-frame ring around it from the source image. Soft-key
+// alone left low-alpha ghost pixels along that ring. Round 4 keeps the
+// soft-key window narrow (preserves anti-aliased line edges) and adds a
+// hard alpha cutoff to delete the ghost ring entirely.
+const FACE_LOW = 215;
+const FACE_HIGH = 248;
+const FACE_ALPHA_CUTOFF = 180;
 
-async function softKeyWhite(inputPath, { low = LOW, high = HIGH } = {}) {
+// `alphaCutoff` lets us binarize the tail of the soft-key gradient. The
+// face source ships with a faint gray icon-frame ring whose pixels survive
+// the soft-key as low-alpha ghosts; any pixel below this threshold gets
+// snapped to fully transparent so no halo is visible at display time.
+async function softKeyWhite(inputPath, { low = LOW, high = HIGH, alphaCutoff = 0 } = {}) {
   const { data, info } = await sharp(inputPath)
     .ensureAlpha()
     .raw()
@@ -41,6 +48,9 @@ async function softKeyWhite(inputPath, { low = LOW, high = HIGH } = {}) {
     } else if (min >= low) {
       const t = (high - min) / (high - low); // 1 at low, 0 at high
       data[i + 3] = Math.round(255 * t);
+    }
+    if (alphaCutoff > 0 && data[i + 3] < alphaCutoff) {
+      data[i + 3] = 0;
     }
   }
 
@@ -68,10 +78,14 @@ async function main() {
 
   // Face — separate output for the inline header avatar.
   // After soft-keying the icon-frame white, trim() crops the remaining
-  // transparent padding so the face sits tight in its box. Without the
-  // trim, the inline <Image> container shows a large empty border and the
-  // face looks small inside the masthead.
-  const faceBase = await softKeyWhite(SRC_FACE, { low: FACE_LOW, high: FACE_HIGH });
+  // transparent padding so the face sits tight in its box. A higher
+  // threshold (35 vs default 10) eats the faint gray ring left behind by
+  // the source image's icon frame.
+  const faceBase = await softKeyWhite(SRC_FACE, {
+    low: FACE_LOW,
+    high: FACE_HIGH,
+    alphaCutoff: FACE_ALPHA_CUTOFF,
+  });
   const faceRaw = await faceBase.toBuffer();
   const faceBuf = await sharp(faceRaw).trim().toBuffer();
   await writeFile(path.join(ROOT, "public/mascot-giraffe-face.png"), faceBuf);

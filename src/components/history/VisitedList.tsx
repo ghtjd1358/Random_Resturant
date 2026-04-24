@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 
 const FILTERS: { key: VisitedFilter; label: string; suffix?: string }[] = [
   { key: "all", label: "전체", suffix: "all" },
-  { key: "good", label: "또 갈래요", suffix: "liked" },
-  { key: "bad", label: "별로였어요", suffix: "skip" },
+  { key: "good", label: "좋아요", suffix: "good" },
+  { key: "bad", label: "싫어요", suffix: "bad" },
 ];
 
 export function VisitedList() {
@@ -62,7 +62,7 @@ function FilterTabs({
   onChange: (f: VisitedFilter) => void;
 }) {
   return (
-    <div className="flex items-baseline gap-4 border-b border-hairline-soft pb-2.5">
+    <div className="flex items-baseline justify-between border-b border-hairline-soft pb-2.5">
       {FILTERS.map(({ key, label, suffix }) => {
         const active = value === key;
         const count = counts[key];

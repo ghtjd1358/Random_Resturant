@@ -44,7 +44,7 @@ export function useVisitActions(place: PlaceLite) {
     }
     toast.success("好 또 갈래요로 기록했어요", {
       description: `${place.name} · 방문 기록에 저장`,
-      duration: 3500,
+      duration: 1800,
     });
     setCurrentPick(null);
   }, [place, category, setCurrentPick]);
@@ -66,7 +66,7 @@ export function useVisitActions(place: PlaceLite) {
           toast.success("되돌렸어요.");
         },
       },
-      duration: 5000,
+      duration: 3500,
     });
     setCurrentPick(null);
   }, [place, category, setCurrentPick]);
@@ -140,7 +140,7 @@ export function useVisitActions(place: PlaceLite) {
           toast.success("다시 후보로 돌려놨어요.");
         },
       },
-      duration: 5000,
+      duration: 3500,
     });
     setCurrentPick(null);
     rollAndReveal();

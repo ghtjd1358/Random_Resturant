@@ -27,8 +27,8 @@ export function ActionBar({ place }: { place: PlaceLite }) {
       </div>
       {/* Feedback row — quieter, sits below primary */}
       <div className="grid grid-cols-2 divide-x divide-hairline-soft border-t border-hairline-soft">
-        <TextAction icon={ThumbsUp} label="好 또 갈래요" onClick={markGood} />
-        <TextAction icon={ThumbsDown} label="否 별로였어요" onClick={markBad} />
+        <TextAction icon={ThumbsUp} label="好 좋아요" onClick={markGood} />
+        <TextAction icon={ThumbsDown} label="否 싫어요" onClick={markBad} />
       </div>
     </div>
   );
