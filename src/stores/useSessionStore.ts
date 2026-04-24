@@ -21,7 +21,10 @@ interface SessionState {
   reset: () => void;
 }
 
-const LAST_PICKED_LIMIT = 3;
+// Bumped 3 → 8 so back-to-back rolls feel meaningfully different.
+// At 3, the user's first pick reappeared by the 4th roll; with 8 we keep
+// a longer breadcrumb and reduce "왜 또 같은 집이 나오지?" frustration.
+const LAST_PICKED_LIMIT = 8;
 
 export const useSessionStore = create<SessionState>((set) => ({
   status: "idle",

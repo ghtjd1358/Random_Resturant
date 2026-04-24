@@ -281,78 +281,156 @@ function Stage({
 /* ───────────────────────────────────────────────────────────────────── */
 
 /**
- * Bamboo (竹籤) cylinder. Slimmer than v1, muted-green palette so it
- * actually reads as bamboo, and z-index 2 so the front of the tube
- * properly hides the lower body of the sticks behind it.
+ * Bamboo (竹籤) cylinder. Hand-painted SVG with layered shading:
+ *   - 7-stop gradient for cylindrical curvature
+ *   - Highlight stripe down the left side of the bright band
+ *   - Raised node bands with sumi shadow + paper highlight
+ *   - Vertical fiber hints
+ *   - Inner mouth shadow with depth lines
+ *   - Ground contact shadow underneath
+ *   - 朱 hanko with subtle drop shadow
  */
 function BambooCylinder() {
   return (
     <svg
-      viewBox="0 0 160 240"
+      viewBox="0 0 160 256"
       className="absolute bottom-0 left-1/2 -translate-x-1/2"
-      style={{ width: 160, height: 240, zIndex: 2 }}
+      style={{ width: 168, height: 270, zIndex: 2 }}
       aria-hidden
     >
       <defs>
-        {/* Muted bamboo green — light edges + saturated middle band so the
-            cylinder reads as a curved surface, not a flat rectangle. */}
+        {/* 7-stop bamboo gradient — sharp left/right shadows + bright
+            highlight stripe slightly left of center (light source upper-left). */}
         <linearGradient id="bamboo-body" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#A8B888" />
-          <stop offset="18%" stopColor="#C8D5A8" />
-          <stop offset="50%" stopColor="#E0E8C5" />
-          <stop offset="82%" stopColor="#C2D0A2" />
-          <stop offset="100%" stopColor="#94A878" />
+          <stop offset="0%"   stopColor="#7A8A60" />
+          <stop offset="8%"   stopColor="#94A876" />
+          <stop offset="22%"  stopColor="#B8C898" />
+          <stop offset="42%"  stopColor="#E2EAC6" />
+          <stop offset="58%"  stopColor="#D5DDB6" />
+          <stop offset="80%"  stopColor="#A8B888" />
+          <stop offset="100%" stopColor="#7A8A5C" />
         </linearGradient>
-        <radialGradient id="bamboo-hole" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%" stopColor="#1C1815" stopOpacity="0.95" />
-          <stop offset="60%" stopColor="#2B2520" stopOpacity="0.85" />
-          <stop offset="100%" stopColor="#3D332B" stopOpacity="0.4" />
+
+        {/* Subtle vertical sheen — slightly brightens the upper portion */}
+        <linearGradient id="bamboo-sheen" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stopColor="#FFFFFF" stopOpacity="0.18" />
+          <stop offset="40%" stopColor="#FFFFFF" stopOpacity="0.06" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.08" />
+        </linearGradient>
+
+        {/* Inner mouth — deep into the tube */}
+        <radialGradient id="bamboo-hole" cx="0.5" cy="0.55" r="0.55">
+          <stop offset="0%"  stopColor="#0F0C0A" stopOpacity="0.96" />
+          <stop offset="55%" stopColor="#1C1815" stopOpacity="0.88" />
+          <stop offset="100%" stopColor="#3D332B" stopOpacity="0.45" />
         </radialGradient>
+
+        {/* Node band — raised ring (subtle 3D) */}
+        <linearGradient id="bamboo-node" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#5A6840" stopOpacity="0.6" />
+          <stop offset="50%"  stopColor="#3F4A2A" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#5A6840" stopOpacity="0.6" />
+        </linearGradient>
+
+        {/* Drop shadow filter for hanko + ground contact */}
+        <filter id="bamboo-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" />
+          <feOffset dx="0" dy="1" result="offsetblur" />
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.4" />
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
 
-      {/* Cylinder body — narrower waist with subtle perspective */}
+      {/* Ground shadow under the cylinder — anchors it visually */}
+      <ellipse
+        cx="80"
+        cy="252"
+        rx="68"
+        ry="5"
+        fill="#1C1815"
+        opacity="0.18"
+        style={{ filter: "blur(3px)" }}
+      />
+
+      {/* Cylinder body (back-to-front shading layered):
+          1) base body gradient
+          2) vertical sheen overlay
+          3) outline stroke */}
       <path
-        d="M 14 36 Q 80 26, 146 36 L 142 226 Q 80 236, 18 226 Z"
+        d="M 14 38 Q 80 28, 146 38 L 142 240 Q 80 252, 18 240 Z"
         fill="url(#bamboo-body)"
+      />
+      <path
+        d="M 14 38 Q 80 28, 146 38 L 142 240 Q 80 252, 18 240 Z"
+        fill="url(#bamboo-sheen)"
+      />
+      <path
+        d="M 14 38 Q 80 28, 146 38 L 142 240 Q 80 252, 18 240 Z"
+        fill="none"
         stroke="#1C1815"
-        strokeWidth="2.2"
+        strokeWidth="2"
         strokeLinejoin="round"
       />
 
-      {/* Bamboo node bands — three horizontal subtle ridges (taller body
-          gets more nodes to keep proportions natural) */}
-      <g stroke="#1C1815" strokeLinecap="round">
-        <line x1="18" y1="92" x2="142" y2="92" strokeWidth="1.4" opacity="0.55" />
-        <line x1="18" y1="94" x2="142" y2="94" strokeWidth="0.6" opacity="0.3" />
-        <line x1="18" y1="148" x2="142" y2="148" strokeWidth="1.4" opacity="0.55" />
-        <line x1="18" y1="150" x2="142" y2="150" strokeWidth="0.6" opacity="0.3" />
-        <line x1="18" y1="200" x2="142" y2="200" strokeWidth="1.4" opacity="0.5" />
+      {/* Bamboo node bands — three raised rings (4-5px tall each).
+          Each band has a subtle gradient ring + shadow line below + highlight
+          line above, so it reads as raised ridge, not just a stroke. */}
+      {[92, 152, 212].map((y, i) => (
+        <g key={`node-${i}`}>
+          {/* Highlight on top edge (paper) */}
+          <line
+            x1="20" y1={y - 3} x2="140" y2={y - 3}
+            stroke="#F4F8DC" strokeWidth="0.7" opacity="0.55"
+          />
+          {/* The band itself — gradient ring */}
+          <rect x="14" y={y - 2} width="132" height="4" fill="url(#bamboo-node)" opacity="0.85" />
+          {/* Sharp shadow on bottom edge */}
+          <line
+            x1="20" y1={y + 3} x2="140" y2={y + 3}
+            stroke="#1C1815" strokeWidth="0.8" opacity="0.6"
+          />
+        </g>
+      ))}
+
+      {/* Vertical fiber hints — uneven sumi pen strokes along the grain */}
+      <g stroke="#1C1815" strokeWidth="0.4" opacity="0.18" strokeLinecap="round">
+        <line x1="36" y1="44" x2="33" y2="236" />
+        <line x1="58" y1="42" x2="57" y2="240" />
+        <line x1="76" y1="44" x2="76" y2="240" />
+        <line x1="98" y1="42" x2="100" y2="238" />
+        <line x1="120" y1="44" x2="123" y2="236" />
       </g>
 
-      {/* Vertical fiber hints */}
-      <g stroke="#1C1815" strokeWidth="0.5" opacity="0.2">
-        <line x1="40" y1="40" x2="38" y2="224" />
-        <line x1="62" y1="38" x2="61" y2="228" />
-        <line x1="98" y1="38" x2="100" y2="228" />
-        <line x1="122" y1="40" x2="125" y2="224" />
-      </g>
+      {/* Side darkening — extra shadow at left and right edges for roundness */}
+      <path
+        d="M 14 38 Q 80 28, 146 38 L 142 240 Q 80 252, 18 240 Z"
+        fill="none"
+        stroke="#3F4A2A"
+        strokeWidth="0.6"
+        opacity="0.5"
+      />
 
       {/* 朱 hanko brand near the lower-middle */}
-      <g transform="translate(80, 175)">
+      <g transform="translate(80, 184)" filter="url(#bamboo-shadow)">
         <rect
-          x="-13"
-          y="-13"
-          width="26"
-          height="26"
-          fill="none"
+          x="-15"
+          y="-15"
+          width="30"
+          height="30"
+          fill="#F4EAD0"
           stroke="#B3321D"
-          strokeWidth="1.5"
+          strokeWidth="1.6"
         />
         <text
           textAnchor="middle"
-          y="5"
+          y="6"
           fontFamily='"Shippori Mincho", serif'
-          fontSize="18"
+          fontSize="20"
           fontWeight="600"
           fill="#B3321D"
         >
@@ -360,17 +438,29 @@ function BambooCylinder() {
         </text>
       </g>
 
-      {/* Top opening — dark "into the tube" depth */}
-      <ellipse cx="80" cy="36" rx="66" ry="9" fill="url(#bamboo-hole)" />
-      {/* Top lip — sharp sumi rim */}
+      {/* Inner mouth — dark "into the tube" depth + horizontal depth lines */}
+      <ellipse cx="80" cy="38" rx="66" ry="10" fill="url(#bamboo-hole)" />
+      {/* Depth hint lines inside the dark mouth */}
+      <line x1="22" y1="42" x2="138" y2="42" stroke="#000000" strokeWidth="0.5" opacity="0.5" />
+      <line x1="28" y1="45" x2="132" y2="45" stroke="#000000" strokeWidth="0.5" opacity="0.3" />
+
+      {/* Top lip — sharp sumi rim with subtle highlight on top */}
       <ellipse
         cx="80"
-        cy="36"
+        cy="38"
         rx="66"
-        ry="9"
+        ry="10"
         fill="none"
         stroke="#1C1815"
-        strokeWidth="2.2"
+        strokeWidth="2"
+      />
+      {/* Lip top highlight (catches light from above) */}
+      <path
+        d="M 16 38 Q 80 28, 144 38"
+        fill="none"
+        stroke="#F4F8DC"
+        strokeWidth="1.2"
+        opacity="0.7"
       />
     </svg>
   );
@@ -408,45 +498,86 @@ function Stick({
 
   // Sticks sit so their *base* dips just inside the cylinder mouth (≈13px
   // below the rim). The cylinder SVG is z-2 so anything below that point
-  // is hidden by the tube front. Visible portion is height 130.
+  // is hidden by the tube front.
   return (
     <span
       className="absolute left-1/2 -translate-x-1/2 select-none"
       style={
         {
           "--rot": `${rot}deg`,
-          width: 12,
-          height: 130,
-          bottom: 200,
+          width: 14,
+          height: 140,
+          bottom: 210,
           transformOrigin: "bottom center",
           animation,
           zIndex: isWinner && phase === "drawing" ? 5 : 1,
+          filter: isWinner && phase === "drawing"
+            ? "drop-shadow(0 4px 8px rgba(179,50,29,0.4))"
+            : "drop-shadow(0 1px 1.5px rgba(28,24,21,0.25))",
         } as React.CSSProperties
       }
     >
-      {/* Stick body — narrower (12px) for a slimmer, more bamboo-like look */}
-      <span
-        className="block h-full w-full border border-sumi-ink bg-paper-soft"
-        style={{
-          borderRadius: 2,
-          boxShadow:
-            isWinner && phase === "drawing"
-              ? "0 0 0 1px rgba(179,50,29,0.35), 0 6px 18px -4px rgba(28,24,21,0.45)"
-              : undefined,
-        }}
-      />
-      {/* Kanji label near top */}
-      <span
-        className="font-mincho absolute left-1/2 top-3 -translate-x-1/2 text-sumi-ink"
-        style={{ fontSize: 10, fontWeight: 600 }}
+      <svg
+        viewBox="0 0 14 140"
+        className="block h-full w-full"
+        preserveAspectRatio="none"
       >
-        {kanji}
-      </span>
-      {/* 朱 cap dot at the very top */}
-      <span
-        aria-hidden
-        className="absolute left-1/2 top-[-3px] size-2 -translate-x-1/2 rounded-full bg-shu"
-      />
+        <defs>
+          {/* Cylindrical shading on the stick (left dark, center bright,
+              right dark) so it reads as a round bamboo dowel. */}
+          <linearGradient id={`stick-body-${kanji}-${rot}`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="#D8C8A0" />
+            <stop offset="30%"  stopColor="#F0E5C4" />
+            <stop offset="55%"  stopColor="#F8EFD2" />
+            <stop offset="80%"  stopColor="#E2D4AC" />
+            <stop offset="100%" stopColor="#A8957A" />
+          </linearGradient>
+          {/* 朱 cap with radial highlight */}
+          <radialGradient id={`stick-cap-${kanji}-${rot}`} cx="0.35" cy="0.35" r="0.65">
+            <stop offset="0%"   stopColor="#E55A38" />
+            <stop offset="55%"  stopColor="#B3321D" />
+            <stop offset="100%" stopColor="#7A1D0F" />
+          </radialGradient>
+        </defs>
+
+        {/* Stick body — rounded rect with sumi outline */}
+        <rect
+          x="0.7" y="6" width="12.6" height="132"
+          rx="1.5" ry="1.5"
+          fill={`url(#stick-body-${kanji}-${rot})`}
+          stroke="#1C1815"
+          strokeWidth="0.7"
+        />
+
+        {/* Subtle vertical fiber line — implies bamboo grain */}
+        <line x1="7" y1="10" x2="7" y2="135" stroke="#1C1815" strokeWidth="0.3" opacity="0.18" />
+
+        {/* 朱 cap — flat-topped cylinder with radial highlight */}
+        <ellipse
+          cx="7" cy="6" rx="5.5" ry="2"
+          fill={`url(#stick-cap-${kanji}-${rot})`}
+          stroke="#1C1815"
+          strokeWidth="0.5"
+        />
+        {/* Cap highlight dot for depth */}
+        <ellipse cx="5" cy="5" rx="1.4" ry="0.8" fill="#FFFFFF" opacity="0.5" />
+
+        {/* Kanji label */}
+        <text
+          x="7"
+          y="22"
+          textAnchor="middle"
+          fontFamily='"Shippori Mincho", serif'
+          fontSize="8"
+          fontWeight="700"
+          fill="#1C1815"
+        >
+          {kanji}
+        </text>
+
+        {/* Bottom hairline — anchors the stick visually */}
+        <line x1="2" y1="137" x2="12" y2="137" stroke="#1C1815" strokeWidth="0.4" opacity="0.5" />
+      </svg>
     </span>
   );
 }
@@ -519,7 +650,6 @@ function RevealedView({
   picks: PlaceLite[];
   winnerIdx: number;
 }) {
-  const [showRest, setShowRest] = useState(false);
   const setCurrentPick = useSessionStore((s) => s.setCurrentPick);
   const currentPickId = useSessionStore((s) => s.currentPick?.id);
 
@@ -541,104 +671,103 @@ function RevealedView({
         </p>
       </div>
 
-      {/* Pick card — reflects session.currentPick (winner by default;
-          changes if user taps another candidate below). */}
+      {/* Pick card — reflects session.currentPick. Changes when user taps
+          another candidate below. */}
       <div className="mt-6">
         <PickCard />
       </div>
 
-      {/* Toggle: 나머지 후보 보기 */}
+      {/* All candidates — always visible (no toggle), so the user can
+          immediately see "could've been this one" alternatives. */}
       {picks.length > 1 && (
         <div className="mt-6">
-          <button
-            type="button"
-            onClick={() => setShowRest((v) => !v)}
-            aria-expanded={showRest}
-            className="no-select font-mincho flex w-full items-center justify-between border-y border-hairline-soft py-2.5 text-[12px] tracking-tight text-sumi-mute transition-colors hover:text-sumi-ink"
-          >
-            <span>나머지 {picks.length - 1}곳 함께 보기</span>
-            <span className="text-[10px] text-sumi-fade">
-              {showRest ? "닫기" : "펼치기"}
+          <div className="flex items-baseline justify-between border-b border-hairline-soft pb-2">
+            <div className="flex items-baseline gap-2">
+              <span className="font-mincho text-[14px] font-medium text-sumi-ink">
+                籤
+              </span>
+              <span className="font-mincho text-[12px] font-medium tracking-tight text-sumi-mute">
+                나머지 후보
+              </span>
+            </div>
+            <span className="font-mincho text-[11px] num-tabular text-sumi-fade">
+              모두 {picks.length}장
             </span>
-          </button>
+          </div>
 
-          {showRest && (
-            <ul className="flex flex-col">
-              {picks.map((p, i) => {
-                const isWinner = i === winnerIdx;
-                const isCurrent = p.id === currentPickId;
-                return (
-                  <li
-                    key={p.id}
-                    className="border-b border-hairline-soft last:border-b-0"
+          <ul className="flex flex-col">
+            {picks.map((p, i) => {
+              const isWinner = i === winnerIdx;
+              const isCurrent = p.id === currentPickId;
+              return (
+                <li
+                  key={p.id}
+                  className="border-b border-hairline-soft last:border-b-0"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPick(p)}
+                    className="no-select flex w-full items-center gap-3 py-3 text-left transition-colors active:bg-sumi-ink/5"
                   >
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPick(p)}
-                      className="no-select flex w-full items-center gap-3 py-3 text-left transition-colors active:bg-sumi-ink/5"
+                    <span
+                      className={cn(
+                        "font-mincho mt-0.5 w-[20px] shrink-0 text-[12px] num-tabular",
+                        isCurrent ? "text-sumi-ink" : "text-sumi-fade",
+                      )}
                     >
-                      <span
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p
                         className={cn(
-                          "font-mincho mt-0.5 w-[20px] shrink-0 text-[12px] num-tabular",
-                          isCurrent ? "text-sumi-ink" : "text-sumi-fade",
+                          "font-mincho truncate text-[14px] font-medium tracking-tight",
+                          isCurrent ? "text-sumi-ink" : "text-sumi-mute",
                         )}
                       >
-                        {i + 1}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p
-                          className={cn(
-                            "font-mincho truncate text-[14px] font-medium tracking-tight",
-                            isCurrent ? "text-sumi-ink" : "text-sumi-mute",
+                        {p.name}
+                      </p>
+                      {(p.rating !== undefined ||
+                        p.distanceMeters !== undefined) && (
+                        <p className="mt-0.5 text-[11px] num-tabular text-sumi-fade">
+                          {p.rating !== undefined && (
+                            <span>
+                              <span className="text-shu">★</span>{" "}
+                              {p.rating.toFixed(1)}
+                            </span>
                           )}
-                        >
-                          {p.name}
-                        </p>
-                        {(p.rating !== undefined ||
-                          p.distanceMeters !== undefined) && (
-                          <p className="mt-0.5 text-[11px] num-tabular text-sumi-fade">
-                            {p.rating !== undefined && (
+                          {p.distanceMeters !== undefined && (
+                            <>
+                              <span className="mx-1.5">·</span>
                               <span>
-                                <span className="text-shu">★</span>{" "}
-                                {p.rating.toFixed(1)}
+                                도보{" "}
+                                {Math.max(
+                                  1,
+                                  Math.round(p.distanceMeters / 80),
+                                )}
+                                분
                               </span>
-                            )}
-                            {p.distanceMeters !== undefined && (
-                              <>
-                                <span className="mx-1.5">·</span>
-                                <span>
-                                  도보{" "}
-                                  {Math.max(
-                                    1,
-                                    Math.round(p.distanceMeters / 80),
-                                  )}
-                                  분
-                                </span>
-                              </>
-                            )}
-                          </p>
-                        )}
-                      </div>
-                      {isWinner && (
-                        <span
-                          className="font-mincho shrink-0 text-[11px] tracking-tight text-shu"
-                          aria-label="뽑힌 곳"
-                        >
-                          뽑힘
-                        </span>
+                            </>
+                          )}
+                        </p>
                       )}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+                    </div>
+                    {isWinner && (
+                      <span
+                        className="font-mincho shrink-0 text-[11px] tracking-tight text-shu"
+                        aria-label="뽑힌 곳"
+                      >
+                        뽑힘
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
 
-          {showRest && (
-            <p className="font-mincho mt-3 text-center text-[11px] text-sumi-fade break-keep">
-              항목을 누르면 위 카드가 그쪽으로 바뀝니다.
-            </p>
-          )}
+          <p className="font-mincho mt-3 text-center text-[11px] text-sumi-fade break-keep">
+            항목을 누르면 위 카드가 그쪽으로 바뀝니다.
+          </p>
         </div>
       )}
     </div>
