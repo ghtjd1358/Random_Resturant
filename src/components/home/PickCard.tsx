@@ -13,8 +13,13 @@ export function PickCard() {
   const pickedCount = useSessionStore((s) => s.lastPickedIds.length);
   const issueNo = String(42 + pickedCount).padStart(3, "0");
 
+  // Card with full content runs ~440-480px tall (header + body + AI + actions).
+  // Old min-h was 240 — so when pick cleared, the page collapsed ~200px in
+  // a single frame and felt like jank. Holding the slot at the full height
+  // means the placeholder sits inside a stable container; nothing below
+  // (page content, bottom tab bar) shifts when pick changes.
   return (
-    <div className="min-h-[240px] w-full">
+    <div className="min-h-[460px] w-full">
       <AnimatePresence mode="wait">
         {pick ? (
           <motion.article

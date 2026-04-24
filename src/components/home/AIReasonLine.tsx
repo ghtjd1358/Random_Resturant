@@ -4,20 +4,27 @@ import { AnimatePresence, motion } from "motion/react";
 import { Sparkles } from "lucide-react";
 import { useAIReason } from "@/hooks/useAIReason";
 
+const ERROR_FALLBACK = "현지 평점을 바탕으로 골랐어요";
+
 /**
- * AI one-liner box. The green container is ALWAYS rendered (loading or
- * ready) at a fixed slot height so the card never resizes — only the
- * inner text crossfades between skeleton and real reason. Error state
- * falls back to null but the parent's reserved 78px slot keeps the card
- * stable either way.
+ * AI one-liner box. The green container is ALWAYS rendered with fixed
+ * slot height so the card never resizes — only the inner text crossfades.
  *
- * Text is clamped to 2 lines to keep the slot accurate; the API tends
- * to return 1-2 sentences anyway.
+ * State map:
+ *   loading → 2-line pulse skeleton
+ *   ready   → real AI text + disclaimer
+ *   error   → soft fallback string (NEVER null) so users don't see an
+ *             empty 78px gap inside the card
  */
 export function AIReasonLine({ placeId }: { placeId: string }) {
   const { reason, status } = useAIReason(placeId);
 
-  if (status === "error") return null;
+  const displayText =
+    status === "ready" && reason
+      ? reason
+      : status === "error"
+        ? ERROR_FALLBACK
+        : null;
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-matcha/20 bg-gradient-to-br from-matcha/8 via-matcha/5 to-matcha/10 px-3.5 py-3">
@@ -39,7 +46,7 @@ export function AIReasonLine({ placeId }: { placeId: string }) {
             skeleton ↔ real text swap doesn't resize the card. */}
         <div className="min-h-[2.5rem] flex-1">
           <AnimatePresence mode="wait">
-            {status === "loading" ? (
+            {displayText === null ? (
               <motion.div
                 key="skeleton"
                 initial={{ opacity: 0 }}
@@ -59,15 +66,16 @@ export function AIReasonLine({ placeId }: { placeId: string }) {
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 className="line-clamp-2 text-[13.5px] leading-snug text-sumi text-pretty break-keep"
               >
-                {reason}
+                {displayText}
               </motion.p>
             )}
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Disclaimer always present — opacity gates by status so the row
-          height stays reserved even during loading. */}
+      {/* Disclaimer — only when actual AI text is shown (not on the
+          fallback string). Opacity-gated so the row height is always
+          reserved, preventing card height jitter. */}
       <p
         className={`mt-1 flex items-center gap-1 pl-5 text-[10px] font-medium tracking-wide text-muted-foreground/80 transition-opacity duration-300 ${
           status === "ready" ? "opacity-100" : "opacity-0"
