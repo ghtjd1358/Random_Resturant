@@ -13,6 +13,12 @@ import { isStale } from "@/stores/useLocationStore";
 import { getFreshPosition } from "@/hooks/useGeolocation";
 import type { PlaceLite } from "@/lib/places/types";
 
+// Candidate cache TTL: 10 minutes. Long enough that a user who rolls 5×
+// in a row reuses the same fetch (cost savings — score+random gives
+// variety from the same pool), short enough that coming back later gets
+// a fresh pool that may have shifted (new openings, etc).
+const CANDIDATE_TTL_MS = 10 * 60 * 1000;
+
 /**
  * Runs one recommendation cycle: GPS refresh → Places API → filter+score → pick.
  *
@@ -23,6 +29,7 @@ import type { PlaceLite } from "@/lib/places/types";
 export function useRoll() {
   const abortRef = useRef<AbortController | null>(null);
   const lastFetchKey = useRef<string | null>(null);
+  const lastFetchedAt = useRef<number>(0);
   const lastCandidates = useRef<Awaited<ReturnType<typeof fetchNearby>>>([]);
 
   const roll = useCallback(async (): Promise<PlaceLite | null> => {
@@ -44,6 +51,7 @@ export function useRoll() {
       l = useLocationStore.getState();
       lastFetchKey.current = null;
       lastCandidates.current = [];
+      lastFetchedAt.current = 0;
     }
 
     if (!l.coords) {
@@ -71,7 +79,12 @@ export function useRoll() {
       ].join(":");
 
       let candidates = lastCandidates.current;
-      if (key !== lastFetchKey.current || candidates.length === 0) {
+      const cacheStale = Date.now() - lastFetchedAt.current > CANDIDATE_TTL_MS;
+      if (
+        key !== lastFetchKey.current ||
+        candidates.length === 0 ||
+        cacheStale
+      ) {
         candidates = await fetchNearby({
           lat: l.coords.lat,
           lng: l.coords.lng,
@@ -83,6 +96,7 @@ export function useRoll() {
         });
         lastFetchKey.current = key;
         lastCandidates.current = candidates;
+        lastFetchedAt.current = Date.now();
       }
 
       const [skippedIds, profile] = await Promise.all([

@@ -270,21 +270,37 @@ function offsetCoord(
 }
 
 /**
+ * How many sub-searches to run for a given radius. Each sub-search is one
+ * Places API call (≈$0.032) and returns up to 20 candidates. The route
+ * handler reads this same function to charge quota, so callers stay in sync.
+ *
+ * Tuning history: original 1/2/3 (≤500/≤1200/>1200) gave 20/40/60 raw
+ * candidates → 18/30/40 after dedupe in dense areas. Users hit "나왔던 게
+ * 또 나오네" since the new Places API (New) has no nextPageToken so we can't
+ * fetch a true page 2. Bumped to 2/3/5 to grow the pool ~2× — still cheap
+ * relative to monthly free credit.
+ */
+export function subSearchCount(radius: number): number {
+  if (radius <= 500) return 2;
+  if (radius < 1200) return 3;
+  return 5;
+}
+
+/**
  * Multi-center Nearby Search that actually respects the user's radius.
  *
- * Why: Places API caps results at 20 per call. In dense urban areas a single
+ * Why: Places API caps results at 20 per call AND the New API removed
+ * pagination via nextPageToken — so the only way to grow the candidate pool
+ * is more sub-searches at offset centers. In dense urban areas a single
  * search at the user's location returns the 20 most popular near the center,
- * regardless of whether they set 500m or 2km. So the radius slider appears
- * to do nothing.
+ * regardless of whether they set 500m or 2km.
  *
- * How: We run up to 3 parallel searches at geometrically distributed centers
- * (the user's center + 2 points at ~55% of the radius, 180° apart), each with
- * a smaller sub-radius. We then merge, dedupe by place id, and clip to the
- * user's declared radius. This spreads the candidate pool across the full
- * area and makes the slider meaningful.
+ * How: We run N parallel searches at geometrically distributed centers
+ * (see subSearchCount), each with a smaller sub-radius. We then merge,
+ * dedupe by place id, and clip to the user's declared radius.
  *
- * Cost: up to 3× API calls for large radii (cheap on $200 free credit).
- * Small radii (≤500m) stay single-call.
+ * Cost: 2~5× API calls per roll. Small radii get 2 micro-offset centers
+ * for variety even at 500m. Cheap on $200 monthly free credit.
  */
 export async function searchDistributed(params: {
   lat: number;
@@ -296,28 +312,40 @@ export async function searchDistributed(params: {
 }): Promise<PlaceLite[]> {
   const { lat, lng, radius } = params;
 
-  // Small radius: one search is enough; clustering isn't a problem.
-  if (radius <= 500) {
-    return searchNearby(params);
-  }
+  const numCenters = subSearchCount(radius);
 
   // Fixed geometry (not random) so cache hits work across re-rolls.
-  // 2 extras at 0°/180° for medium, 0°/120°/240° for large.
-  const useThreeExtras = radius >= 1200;
-  const numExtras = useThreeExtras ? 2 : 1;
-  const extraBearings = useThreeExtras
-    ? [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3].slice(0, 2).map((b) => b + Math.PI / 6)
-    : [Math.PI / 4, Math.PI + Math.PI / 4].slice(0, 1);
+  // - 2 centers: tight micro-offset for small radii (~30% offset)
+  // - 3 centers: triangle (0°/120°/240°) at ~55% offset
+  // - 5 centers: pentagon (0°/72°/144°/216°/288°) at ~55% offset
+  let bearings: number[];
+  let offsetFraction: number;
+  let subRadiusFraction: number;
+  if (numCenters === 2) {
+    bearings = [Math.PI / 4, Math.PI + Math.PI / 4];
+    offsetFraction = 0.3;
+    subRadiusFraction = 0.85;
+  } else if (numCenters === 3) {
+    bearings = [Math.PI / 6, Math.PI / 6 + (2 * Math.PI) / 3, Math.PI / 6 + (4 * Math.PI) / 3];
+    offsetFraction = 0.55;
+    subRadiusFraction = 0.65;
+  } else {
+    // 5 centers: 1 at center + 4 at corners-ish for large radii.
+    bearings = Array.from({ length: 4 }, (_, i) => (i * 2 * Math.PI) / 4 + Math.PI / 8);
+    offsetFraction = 0.6;
+    subRadiusFraction = 0.55;
+  }
 
-  const offsetDistance = radius * 0.55;
-  const subRadius = Math.round(radius * 0.6);
+  const offsetDistance = radius * offsetFraction;
+  const subRadius = Math.round(radius * subRadiusFraction);
 
-  const centers = [
-    { lat, lng },
-    ...extraBearings
-      .slice(0, numExtras)
-      .map((b) => offsetCoord(lat, lng, b, offsetDistance)),
-  ];
+  const centers =
+    numCenters === 5
+      ? [
+          { lat, lng },
+          ...bearings.map((b) => offsetCoord(lat, lng, b, offsetDistance)),
+        ]
+      : bearings.map((b) => offsetCoord(lat, lng, b, offsetDistance));
 
   const results = await Promise.all(
     centers.map((c) =>

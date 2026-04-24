@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { searchDistributed, PlacesApiError } from "@/lib/places/client";
+import {
+  searchDistributed,
+  subSearchCount,
+  PlacesApiError,
+} from "@/lib/places/client";
 import { withCache } from "@/lib/cache/runtime";
 import { consumeDailyQuota, RateLimitExceeded } from "@/lib/rate-limit";
 import type { NearbyResponse } from "@/lib/places/types";
@@ -36,12 +40,13 @@ export async function POST(req: Request) {
   try {
     const places = await withCache(
       key,
-      300, // 5 minutes
+      600, // 10 minutes — matches client TTL so cache hits stay aligned
       async () => {
-        // searchDistributed does up to 3 sub-searches for large radii. We
-        // charge the quota proportionally so budgets reflect actual cost.
-        const subSearches = radius > 500 ? (radius >= 1200 ? 3 : 2) : 1;
-        for (let i = 0; i < subSearches; i++) {
+        // searchDistributed runs N sub-searches based on radius (see
+        // subSearchCount). Charge quota proportionally so budgets reflect
+        // actual API cost.
+        const calls = subSearchCount(radius);
+        for (let i = 0; i < calls; i++) {
           await consumeDailyQuota("places-nearby");
         }
         return searchDistributed({

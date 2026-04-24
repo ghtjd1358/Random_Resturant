@@ -18,6 +18,12 @@ import { guessCountryCode } from "@/lib/geo/region";
 import { getFreshPosition } from "@/hooks/useGeolocation";
 import type { PlaceLite } from "@/lib/places/types";
 
+// Same TTL as useRoll — back-to-back lottery draws (e.g. user shakes
+// then redraws) reuse the pool. weightedPickN with uniform exponent
+// guarantees variety from the same pool, so cache hits don't reduce
+// perceived randomness.
+const CANDIDATE_TTL_MS = 10 * 60 * 1000;
+
 /**
  * Lottery (제비뽑기) roll: same fetch + scoring pipeline as useRoll, but
  * returns N distinct candidates instead of 1. The KujiModal renders these
@@ -26,6 +32,9 @@ import type { PlaceLite } from "@/lib/places/types";
  */
 export function useLotteryRoll() {
   const abortRef = useRef<AbortController | null>(null);
+  const lastFetchKey = useRef<string | null>(null);
+  const lastFetchedAt = useRef<number>(0);
+  const lastCandidates = useRef<Awaited<ReturnType<typeof fetchNearby>>>([]);
 
   const drawN = useCallback(async (count: number): Promise<PlaceLite[]> => {
     const f = useFiltersStore.getState();
@@ -42,6 +51,9 @@ export function useLotteryRoll() {
         return [];
       }
       l = useLocationStore.getState();
+      lastFetchKey.current = null;
+      lastCandidates.current = [];
+      lastFetchedAt.current = 0;
     }
     if (!l.coords) {
       toast.error("현재 위치가 필요해요.");
@@ -54,15 +66,36 @@ export function useLotteryRoll() {
 
     try {
       const regionCode = guessCountryCode(l.coords.lat, l.coords.lng) ?? undefined;
-      const candidates = await fetchNearby({
-        lat: l.coords.lat,
-        lng: l.coords.lng,
-        radius: f.radius,
-        category: f.category,
-        subcategory: f.subcategory,
-        regionCode,
-        signal: ctrl.signal,
-      });
+      const key = [
+        f.category,
+        f.subcategory ?? "all",
+        f.radius,
+        f.openNowOnly ? "open" : "any",
+        regionCode ?? "auto",
+        l.coords.lat.toFixed(3),
+        l.coords.lng.toFixed(3),
+      ].join(":");
+
+      let candidates = lastCandidates.current;
+      const cacheStale = Date.now() - lastFetchedAt.current > CANDIDATE_TTL_MS;
+      if (
+        key !== lastFetchKey.current ||
+        candidates.length === 0 ||
+        cacheStale
+      ) {
+        candidates = await fetchNearby({
+          lat: l.coords.lat,
+          lng: l.coords.lng,
+          radius: f.radius,
+          category: f.category,
+          subcategory: f.subcategory,
+          regionCode,
+          signal: ctrl.signal,
+        });
+        lastFetchKey.current = key;
+        lastCandidates.current = candidates;
+        lastFetchedAt.current = Date.now();
+      }
 
       const [skippedIds, profile] = await Promise.all([
         getSkippedIdSet().catch(() => new Set<string>()),
