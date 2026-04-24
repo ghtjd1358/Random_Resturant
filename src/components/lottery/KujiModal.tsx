@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
 import { useSessionStore } from "@/stores/useSessionStore";
@@ -17,21 +18,22 @@ const SHAKE_MS = 1100;
 const DRAWING_MS = 900;
 
 // Deterministic ink splash positions — flicked off the cylinder lip during
-// shake. No RNG so render stays pure for React 19.
-const SPLASH = Array.from({ length: 14 }, (_, i) => {
-  const angle = (i / 14) * Math.PI * 2 + (i % 3) * 0.3;
+// shake. No RNG so render stays pure for React 19. Used by motion.span
+// children with stagger for a more natural cascade than per-particle delays.
+const SPLASH = Array.from({ length: 12 }, (_, i) => {
+  const angle = (i / 12) * Math.PI * 2 + (i % 3) * 0.3;
   const distance = 90 + ((i * 23) % 70);
   return {
     id: i,
     sx: Math.cos(angle) * distance,
     sy: Math.sin(angle) * distance - 30,
     size: 4 + (i % 4),
-    delay: 0.05 + (i % 5) * 0.06,
-    duration: 1.0 + (i % 3) * 0.15,
   };
 });
 
-// Slow ash flakes drifting upward through the whole ceremony.
+// Slow ash flakes drifting upward through the whole ceremony. Still
+// CSS-driven — they're ambient, infinite, not phase-aware. motion would
+// be overkill for a constant background loop.
 const ASH = Array.from({ length: 8 }, (_, i) => ({
   id: i,
   left: 8 + ((i * 13) % 84),
@@ -41,6 +43,55 @@ const ASH = Array.from({ length: 8 }, (_, i) => ({
   ashX: ((i * 17) % 30) - 15,
   ashRot: 90 + (i * 47) % 180,
 }));
+
+/* ─── Motion variants ────────────────────────────────────────────────── */
+
+// Cylinder shake — keyframe array driven by motion. The values dampen
+// progressively (8 → 6 → 3 → 0) so the shake decays naturally instead of
+// stopping abruptly like a CSS animation.
+const cylinderVariants: Variants = {
+  ready: { rotate: 0, x: 0 },
+  shaking: {
+    rotate: [0, -8, 7, -5, 4, -2, 0],
+    x: [0, -3, 2, -2, 1, 0, 0],
+    transition: { duration: 1.1, ease: "easeInOut" },
+  },
+  drawing: {
+    rotate: 0,
+    x: 0,
+    transition: { type: "spring", stiffness: 220, damping: 24 },
+  },
+};
+
+// Splash group orchestration — staggered emit during shake so droplets
+// flick out in waves, not all at once.
+const splashGroupVariants: Variants = {
+  shaking: {
+    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
+  },
+  ready: {},
+  drawing: {},
+};
+
+const splashVariants: Variants = {
+  shaking: (custom: { sx: number; sy: number }) => ({
+    x: custom.sx,
+    y: custom.sy,
+    opacity: [0, 0.7, 0],
+    scale: [0.4, 1, 0.9],
+    transition: { duration: 1.1, ease: [0.2, 0.7, 0.3, 1] },
+  }),
+  ready: { x: 0, y: 0, opacity: 0, scale: 0.4 },
+  drawing: { opacity: 0 },
+};
+
+// Stick group — staggers initial drop-in and shake. Drawing stagger is
+// near-zero so winner rises immediately.
+const stickGroupVariants: Variants = {
+  ready: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
+  shaking: { transition: { staggerChildren: 0.045 } },
+  drawing: { transition: { staggerChildren: 0.02 } },
+};
 
 interface KujiModalProps {
   picks: PlaceLite[];
@@ -141,18 +192,37 @@ export function KujiModal({ picks, onClose }: KujiModalProps) {
         </button>
       </div>
 
-      {/* Body */}
+      {/* Body — AnimatePresence interpolates between stage ↔ revealed
+          instead of snapping, so the ceremony feels continuous. */}
       <div className="relative flex-1 overflow-y-auto">
-        {phase !== "revealed" ? (
-          <Stage
-            count={picks.length}
-            phase={phase}
-            winnerIdx={winnerIdx}
-            onShake={handleShake}
-          />
-        ) : (
-          <RevealedView picks={picks} winnerIdx={winnerIdx ?? 0} />
-        )}
+        <AnimatePresence mode="wait">
+          {phase !== "revealed" ? (
+            <motion.div
+              key="stage"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="h-full"
+            >
+              <Stage
+                count={picks.length}
+                phase={phase}
+                winnerIdx={winnerIdx}
+                onShake={handleShake}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="revealed"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <RevealedView picks={picks} winnerIdx={winnerIdx ?? 0} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -161,8 +231,9 @@ export function KujiModal({ picks, onClose }: KujiModalProps) {
 /* ───────────────────────────────────────────────────────────────────── */
 
 /**
- * Pre-reveal stage: headline + bamboo cylinder + sticks + splash + ash.
- * One component because all of these animate in lockstep with `phase`.
+ * Pre-reveal stage: headline + cylinder + sticks + splash + ash.
+ * All motion is driven by the shared `phase` value via motion variants,
+ * so transitions interpolate naturally instead of snapping between states.
  */
 function Stage({
   count,
@@ -176,12 +247,10 @@ function Stage({
   onShake: () => void;
 }) {
   const sticks = Array.from({ length: count }, (_, i) => {
-    const rot = ((i - (count - 1) / 2) * 6).toFixed(1);
+    const rot = Number(((i - (count - 1) / 2) * 6).toFixed(1));
     return {
       idx: i,
       rot,
-      dropDelay: 0.08 * i,
-      shakeDelay: 0.05 * i,
       kanji: STICK_KANJI[i % STICK_KANJI.length],
     };
   });
@@ -195,23 +264,48 @@ function Stage({
 
   return (
     <div className="relative flex h-full flex-col items-center justify-between px-5 py-6">
-      {/* Floating ash — runs the entire ceremony as ambient layer */}
+      {/* Floating ash — kept as CSS. Infinite ambient loop, no phase
+          awareness needed. */}
       <AshLayer />
 
-      {/* Big editorial headline */}
-      <div className="z-10 flex flex-col items-center text-center">
-        <p
-          className={cn(
-            "font-mincho text-shu",
-            phase === "shaking" && "animate-[kuji-headline-pulse_900ms_ease-in-out_infinite]",
-          )}
-          style={{ fontSize: "clamp(40px, 11vmin, 64px)", fontWeight: 600, lineHeight: 1 }}
-        >
-          {headlineCopy.jp}
-        </p>
-        <p className="font-mincho mt-2 text-[12px] tracking-tight text-sumi-mute break-keep">
-          {headlineCopy.kr}
-        </p>
+      {/* Headline swaps per phase with AnimatePresence — crossfade + slight
+          Y motion, not a hard jump. The 朱 kanji does a spring scale pulse
+          on mount so each phase transition has a subtle "here we go" beat. */}
+      <div className="z-10 flex h-[110px] flex-col items-center text-center">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={phase}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center"
+          >
+            <motion.p
+              className="font-mincho text-shu"
+              style={{
+                fontSize: "clamp(40px, 11vmin, 64px)",
+                fontWeight: 600,
+                lineHeight: 1,
+              }}
+              animate={
+                phase === "shaking"
+                  ? { scale: [1, 1.06, 1] }
+                  : { scale: 1 }
+              }
+              transition={
+                phase === "shaking"
+                  ? { duration: 0.9, repeat: Infinity, ease: "easeInOut" }
+                  : { type: "spring", stiffness: 260, damping: 18 }
+              }
+            >
+              {headlineCopy.jp}
+            </motion.p>
+            <p className="font-mincho mt-2 text-[12px] tracking-tight text-sumi-mute break-keep">
+              {headlineCopy.kr}
+            </p>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Cylinder + sticks */}
@@ -222,71 +316,98 @@ function Stage({
         aria-label="제비뽑기 시작"
         className="no-select relative z-10 flex flex-col items-center"
       >
-        <div
-          className={cn(
-            "relative flex items-end justify-center",
-            phase === "shaking" && "animate-[kuji-shake_1100ms_ease-in-out_1]",
-          )}
-          style={{ width: 200, height: 380 }}
+        {/* The entire scene shakes as one — rotate + x keyframes decay
+            progressively. Sticks add their own finer shake on top for
+            compounded motion. */}
+        <motion.div
+          className="relative flex items-end justify-center"
+          style={{ width: 200, height: 380, transformOrigin: "50% 85%" }}
+          variants={cylinderVariants}
+          animate={phase}
         >
-          {/* Splash droplets — only during shake */}
-          {phase === "shaking" && <SplashLayer />}
+          {/* Splash — staggered spring emit during shake only. */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-1/3 -translate-x-1/2"
+            variants={splashGroupVariants}
+            animate={phase}
+          >
+            {phase === "shaking" &&
+              SPLASH.map((s) => (
+                <motion.span
+                  key={s.id}
+                  className="absolute rounded-full bg-sumi-ink"
+                  style={{
+                    width: s.size,
+                    height: s.size,
+                    marginLeft: -s.size / 2,
+                    marginTop: -s.size / 2,
+                    filter: "blur(0.5px)",
+                  }}
+                  custom={{ sx: s.sx, sy: s.sy }}
+                  variants={splashVariants}
+                />
+              ))}
+          </motion.div>
 
-          {/* Halo behind winner during drawing */}
-          {phase === "drawing" && winnerIdx !== null && (
-            <div
-              aria-hidden
-              className="absolute left-1/2 -translate-x-1/2 animate-[kuji-halo_900ms_ease-out_both]"
-              style={{
-                top: 40,
-                width: 200,
-                height: 200,
-                background:
-                  "radial-gradient(circle, rgba(28,24,21,0.35) 0%, rgba(28,24,21,0) 70%)",
-                pointerEvents: "none",
-              }}
-            />
-          )}
+          {/* Halo behind winner — fades in during drawing. */}
+          <AnimatePresence>
+            {phase === "drawing" && winnerIdx !== null && (
+              <motion.div
+                aria-hidden
+                className="absolute left-1/2 -translate-x-1/2"
+                style={{
+                  top: 40,
+                  width: 200,
+                  height: 200,
+                  background:
+                    "radial-gradient(circle, rgba(28,24,21,0.35) 0%, rgba(28,24,21,0) 70%)",
+                  pointerEvents: "none",
+                }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              />
+            )}
+          </AnimatePresence>
 
-          {/* Meditate-giraffe watermark — sits BEHIND the tube as a
-              silent witness to the draw. Faint enough that the tube + sticks
-              stay the focal point; large enough to anchor the empty space
-              behind them. No animation — she's the still center while the
-              ceremony shakes around her. */}
+          {/* Meditate-giraffe watermark — still. She's the meditation
+              center while the ceremony shakes around her. */}
           <span
             aria-hidden
             className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-            style={{
-              bottom: 30,
-              opacity: 0.12,
-              zIndex: 0,
-            }}
+            style={{ bottom: 30, opacity: 0.12, zIndex: 0 }}
           >
             <Mascot variant="meditate" px={340} />
           </span>
 
-          {/* Sticks — only the *visible* tip protruding above the cylinder
-              opening. The hidden lower portion is implied (real omikuji
-              sticks live inside the tube). */}
-          {sticks.map((s) => (
-            <Stick
-              key={s.idx}
-              rot={s.rot}
-              dropDelay={s.dropDelay}
-              shakeDelay={s.shakeDelay}
-              kanji={s.kanji}
-              phase={phase}
-              isWinner={winnerIdx === s.idx}
-            />
-          ))}
+          {/* Stick group — parent orchestrates stagger, each stick reads
+              phase from its parent animate prop. */}
+          <motion.div
+            className="absolute left-0 right-0 top-0 bottom-0"
+            variants={stickGroupVariants}
+            initial="ready"
+            animate={phase}
+          >
+            {sticks.map((s) => (
+              <Stick
+                key={s.idx}
+                rot={s.rot}
+                kanji={s.kanji}
+                phase={phase}
+                isWinner={winnerIdx === s.idx}
+              />
+            ))}
+          </motion.div>
 
-          {/* Bamboo cylinder — sits ABOVE sticks (z-2) so any stick body
-              that reaches into the tube is hidden by the cylinder front. */}
+          {/* Cylinder sits ABOVE sticks (z-2) so stick bodies below the
+              rim are hidden by the tube front. */}
           <BambooCylinder />
-        </div>
+        </motion.div>
 
         <p className="font-mincho mt-4 text-[11px] tracking-[0.3em] text-sumi-fade">
-          {phase === "ready" ? "TAP" : phase === "shaking" ? "─" : "─"}
+          {phase === "ready" ? "TAP" : "─"}
         </p>
       </button>
 
@@ -381,129 +502,126 @@ function BambooCylinder() {
 
 /* ───────────────────────────────────────────────────────────────────── */
 
+/**
+ * Single kuji stick. Variants are built per-stick because each stick has
+ * its own resting rotation — shake/draw animations need to oscillate around
+ * that rest angle, not a global 0°.
+ */
 function Stick({
   rot,
-  dropDelay,
-  shakeDelay,
   kanji,
   phase,
   isWinner,
 }: {
-  rot: string;
-  dropDelay: number;
-  shakeDelay: number;
+  rot: number;
   kanji: string;
   phase: "ready" | "shaking" | "drawing";
   isWinner: boolean;
 }) {
-  // Pick the right animation per phase. Each stick keeps its own --rot so
-  // shake/loser-fade can rotate around its rest position.
-  let animation: string;
-  if (phase === "shaking") {
-    animation = `kuji-stick-shake 0.6s ease-in-out ${shakeDelay}s both infinite alternate`;
-  } else if (phase === "drawing") {
-    animation = isWinner
-      ? `kuji-winner-rise 900ms cubic-bezier(0.2,1.3,0.4,1) both`
-      : `kuji-loser-fade 800ms ease-out both`;
-  } else {
-    animation = `kuji-stick-drop 0.6s cubic-bezier(0.3,1.2,0.4,1) ${dropDelay}s both`;
-  }
+  // Per-stick variants — closure over `rot` and `isWinner` so each stick
+  // animates around its own rest position. Spring physics for the rises
+  // and drops; keyframe sequence for the shake (motion array notation).
+  const variants: Variants = {
+    ready: {
+      y: 0,
+      x: 0,
+      opacity: 1,
+      rotate: rot,
+      scale: 1,
+      transition: { type: "spring", stiffness: 220, damping: 18 },
+    },
+    shaking: {
+      // Compounded fine-grain wobble on top of the parent cylinder shake.
+      // Decays across the cycle so it doesn't feel mechanical.
+      rotate: [rot - 5, rot + 5, rot - 4, rot + 3, rot - 2, rot],
+      x: [0, -1.5, 1.5, -1, 1, 0],
+      y: [0, -1, 1, -1, 0, 0],
+      transition: { duration: 1.1, ease: "easeInOut" },
+    },
+    drawing: isWinner
+      ? {
+          y: -110,
+          x: 0,
+          rotate: rot * 0.3, // straightens slightly as it rises — feels chosen
+          scale: 1.12,
+          opacity: 1,
+          transition: {
+            type: "spring",
+            stiffness: 180,
+            damping: 14,
+            mass: 0.8,
+          },
+        }
+      : {
+          y: 6,
+          rotate: rot,
+          scale: 0.94,
+          opacity: 0.18,
+          transition: { duration: 0.55, ease: [0.4, 0, 0.6, 1] },
+        },
+  };
 
-  // Sticks sit so their *base* dips just inside the cylinder mouth (≈13px
-  // below the rim). The cylinder SVG is z-2 so anything below that point
-  // is hidden by the tube front.
   return (
-    <span
-      className="absolute left-1/2 -translate-x-1/2 select-none"
-      style={
-        {
-          "--rot": `${rot}deg`,
-          width: 14,
-          height: 140,
-          bottom: 210,
-          transformOrigin: "bottom center",
-          animation,
-          zIndex: isWinner && phase === "drawing" ? 5 : 1,
-          filter: isWinner && phase === "drawing"
-            ? "drop-shadow(0 4px 8px rgba(201,129,127,0.55))"
-            : "drop-shadow(0 1px 1.5px rgba(28,24,21,0.2))",
-        } as React.CSSProperties
-      }
+    <motion.span
+      className="absolute left-1/2 select-none"
+      style={{
+        width: 14,
+        height: 140,
+        bottom: 210,
+        marginLeft: -7,
+        transformOrigin: "bottom center",
+        zIndex: isWinner && phase === "drawing" ? 5 : 1,
+      }}
+      // Drop in from above on first mount — uses spring via the parent
+      // stagger orchestrator.
+      initial={{ y: -40, opacity: 0, rotate: 0 }}
+      variants={variants}
+      animate={phase}
     >
-      <svg
-        viewBox="0 0 14 140"
+      {/* Drop shadow split out so motion doesn't fight CSS filter. */}
+      <span
         className="block h-full w-full"
-        preserveAspectRatio="none"
+        style={{
+          filter:
+            isWinner && phase === "drawing"
+              ? "drop-shadow(0 4px 8px rgba(201,129,127,0.55))"
+              : "drop-shadow(0 1px 1.5px rgba(28,24,21,0.2))",
+        }}
       >
-        {/* Stick body — flat warm wheat fill with sumi outline. Dropped
-            the 5-stop "cylindrical shading" that made it look like a 3D
-            dowel; the page is editorial-flat, not glossy. */}
-        <rect
-          x="0.7" y="4" width="12.6" height="134"
-          rx="1.2" ry="1.2"
-          fill="#E6D6B0"
-          stroke="#1C1815"
-          strokeWidth="0.7"
-        />
-
-        {/* Top accent band — replaces the chunky red gradient cap with a
-            slim muted-shu stripe. Dusty terracotta (#C9817F) instead of the
-            full saturation #B3321D; the previous version fought with the
-            paper palette. */}
-        <rect
-          x="0.7" y="4" width="12.6" height="6"
-          fill="#C9817F"
-        />
-        {/* Hairline separating cap from body — keeps the band crisp */}
-        <line x1="0.7" y1="10" x2="13.3" y2="10" stroke="#1C1815" strokeWidth="0.6" />
-
-        {/* Kanji label */}
-        <text
-          x="7"
-          y="22"
-          textAnchor="middle"
-          fontFamily='"Shippori Mincho", serif'
-          fontSize="8"
-          fontWeight="700"
-          fill="#1C1815"
+        <svg
+          viewBox="0 0 14 140"
+          className="block h-full w-full"
+          preserveAspectRatio="none"
         >
-          {kanji}
-        </text>
-      </svg>
-    </span>
-  );
-}
-
-/* ───────────────────────────────────────────────────────────────────── */
-
-function SplashLayer() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute left-1/2 top-1/3 -translate-x-1/2"
-    >
-      {SPLASH.map((s) => (
-        <span
-          key={s.id}
-          className="absolute rounded-full bg-sumi-ink"
-          style={
-            {
-              width: s.size,
-              height: s.size,
-              left: 0,
-              top: 0,
-              marginLeft: -s.size / 2,
-              marginTop: -s.size / 2,
-              "--sx": `${s.sx}px`,
-              "--sy": `${s.sy}px`,
-              animation: `kuji-splash ${s.duration}s cubic-bezier(0.2,0.7,0.3,1) ${s.delay}s both`,
-              filter: "blur(0.5px)",
-              opacity: 0,
-            } as React.CSSProperties
-          }
-        />
-      ))}
-    </div>
+          {/* Stick body — flat warm wheat fill, sumi outline. */}
+          <rect
+            x="0.7" y="4" width="12.6" height="134"
+            rx="1.2" ry="1.2"
+            fill="#E6D6B0"
+            stroke="#1C1815"
+            strokeWidth="0.7"
+          />
+          {/* Top accent — slim dusty-shu stripe. */}
+          <rect x="0.7" y="4" width="12.6" height="6" fill="#C9817F" />
+          <line
+            x1="0.7" y1="10" x2="13.3" y2="10"
+            stroke="#1C1815" strokeWidth="0.6"
+          />
+          {/* Kanji label */}
+          <text
+            x="7"
+            y="22"
+            textAnchor="middle"
+            fontFamily='"Shippori Mincho", serif'
+            fontSize="8"
+            fontWeight="700"
+            fill="#1C1815"
+          >
+            {kanji}
+          </text>
+        </svg>
+      </span>
+    </motion.span>
   );
 }
 
@@ -548,29 +666,49 @@ function RevealedView({
   return (
     <div className="px-5 pt-6 pb-8">
       {/* Winner — oracle giraffe presents the 運勢吉 scroll above, then
-          brushed kanji 大吉 below. The mascot anchors the ceremony so the
-          result text reads as something she's revealing, not just a label. */}
-      <div className="flex flex-col items-center text-center">
-        <span
+          brushed kanji 大吉 below. Spring entry feels like a presented
+          gift, not a CSS pop. */}
+      <motion.div
+        className="flex flex-col items-center text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ staggerChildren: 0.12, delayChildren: 0.1 }}
+      >
+        <motion.span
           aria-hidden
-          className="animate-[kuji-oracle-bow_900ms_ease-out_both]"
           style={{ transformOrigin: "bottom center" }}
+          initial={{ opacity: 0, y: -16, scale: 0.7 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 16 }}
         >
           <Mascot variant="scroll-fortune" size="lg" />
-        </span>
-        <p className="font-mincho mt-1 text-[12px] tracking-[0.3em] text-sumi-fade">
+        </motion.span>
+        <motion.p
+          className="font-mincho mt-1 text-[12px] tracking-[0.3em] text-sumi-fade"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        >
           결과
-        </p>
-        <p
+        </motion.p>
+        <motion.p
           className="font-mincho mt-1 text-shu"
           style={{ fontSize: 38, fontWeight: 600, lineHeight: 1 }}
+          initial={{ opacity: 0, scale: 0.7 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 240, damping: 14, delay: 0.15 }}
         >
           大吉
-        </p>
-        <p className="font-mincho mt-2 text-[12px] text-sumi-mute break-keep">
+        </motion.p>
+        <motion.p
+          className="font-mincho mt-2 text-[12px] text-sumi-mute break-keep"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           오늘 한 집은 이쪽으로.
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
 
       {/* Pick card — reflects session.currentPick. Changes when user taps
           another candidate below. */}
