@@ -25,10 +25,9 @@ import type { PlaceLite } from "@/lib/places/types";
 const CANDIDATE_TTL_MS = 10 * 60 * 1000;
 
 /**
- * Lottery (제비뽑기) roll: same fetch + scoring pipeline as useRoll, but
- * returns N distinct candidates instead of 1. The KujiModal renders these
- * as sticks loaded into a cylinder; one is then drawn at random for the
- * final reveal.
+ * Lottery (야바위) roll: same fetch + scoring pipeline as useRoll, but
+ * returns N distinct candidates instead of 1. The YabawiModal stages
+ * the picks as 3 shell-game bowls; one bowl hides the winner mark.
  */
 export function useLotteryRoll() {
   const abortRef = useRef<AbortController | null>(null);

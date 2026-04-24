@@ -19,7 +19,7 @@ import { useLotteryRoll } from "@/hooks/useLotteryRoll";
 import { useLotteryStore, type StickCount } from "@/stores/useLotteryStore";
 import { haptic } from "@/lib/haptic";
 import { cn } from "@/lib/utils";
-import { KujiModal } from "./KujiModal";
+import { YabawiModal } from "./YabawiModal";
 import type { PlaceLite } from "@/lib/places/types";
 
 const STICK_OPTIONS: { value: StickCount; label: string }[] = [
@@ -271,7 +271,7 @@ export function LotteryShell() {
       </div>
 
       {picks && (
-        <KujiModal picks={picks} onClose={() => setPicks(null)} />
+        <YabawiModal picks={picks} onClose={() => setPicks(null)} />
       )}
     </div>
   );
