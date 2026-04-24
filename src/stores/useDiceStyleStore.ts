@@ -21,7 +21,10 @@ interface DiceStyleState {
 export const useDiceStyleStore = create<DiceStyleState>()(
   persist(
     (set) => ({
-      style: "classic",
+      // Default to rotating — kanji cycling reads as the "alive" version of
+      // the dice and most users prefer it once they see it. Existing users
+      // keep whatever they already chose (persist hydrates first).
+      style: "rotating",
       setStyle: (style) => set({ style }),
     }),
     { name: "rr-dice-style" },

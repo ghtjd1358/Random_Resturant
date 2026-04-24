@@ -3,6 +3,7 @@ import { Noto_Sans_KR, Gaegu, Shippori_Mincho, JetBrains_Mono } from "next/font/
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomTabBar } from "@/components/nav/BottomTabBar";
+import { InstallBanner } from "@/components/pwa/InstallBanner";
 import "./globals.css";
 
 const notoSans = Noto_Sans_KR({
@@ -97,6 +98,7 @@ export default function RootLayout({
           <main className="flex-1 pb-24">{children}</main>
           <BottomTabBar />
         </div>
+        <InstallBanner />
         <Toaster position="top-center" richColors />
       </body>
     </html>

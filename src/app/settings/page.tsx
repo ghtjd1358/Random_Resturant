@@ -34,6 +34,11 @@ export default function SettingsPage() {
           <InstallPrompt />
         </div>
 
+        <SectionLabel kanji="姿">표시</SectionLabel>
+        <SettingsGroup>
+          <DiceStyleToggle />
+        </SettingsGroup>
+
         <SectionLabel kanji="録">내 기록</SectionLabel>
         <SettingsGroup>
           <SettingsItem
@@ -41,11 +46,6 @@ export default function SettingsPage() {
             title="차단목록"
             subtitle="스킵한 가게 관리 · 복구"
           />
-        </SettingsGroup>
-
-        <SectionLabel kanji="姿">표시</SectionLabel>
-        <SettingsGroup>
-          <DiceStyleToggle />
         </SettingsGroup>
 
         <SectionLabel kanji="他">기타</SectionLabel>
@@ -90,21 +90,21 @@ function SectionLabel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mt-7 mb-2 flex items-baseline gap-2">
-      <span className="font-mincho text-[14px] font-medium text-sumi-ink">
+    <div className="mt-9 mb-3 flex items-baseline gap-2">
+      <span className="font-mincho text-[15px] font-medium text-sumi-ink">
         {kanji}
       </span>
-      <span className="font-mincho text-[12px] font-medium tracking-tight text-sumi-mute">
+      <span className="font-mincho text-[13px] font-medium tracking-tight text-sumi-ink">
         {children}
       </span>
-      <span className="ml-2 hairline-soft flex-1" />
+      <span className="ml-2 h-px flex-1 bg-sumi-ink/25" />
     </div>
   );
 }
 
 function SettingsGroup({ children }: { children: React.ReactNode }) {
   return (
-    <ul className="divide-y divide-hairline-soft border-y border-hairline-soft">
+    <ul className="divide-y divide-hairline border-y border-hairline">
       {children}
     </ul>
   );
