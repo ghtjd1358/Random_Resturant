@@ -44,6 +44,8 @@ const SIZE_PX: Record<NonNullable<MascotProps["size"]>, number> = {
 interface MascotProps {
   variant: MascotVariant;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
+  /** Override the box size in pixels — for custom-sized watermarks. */
+  px?: number;
   className?: string;
   priority?: boolean;
   decorative?: boolean;
@@ -58,11 +60,12 @@ interface MascotProps {
 export function Mascot({
   variant,
   size = "md",
+  px: customPx,
   className,
   priority = false,
   decorative = true,
 }: MascotProps) {
-  const px = SIZE_PX[size];
+  const px = customPx ?? SIZE_PX[size];
   return (
     <Image
       src={FILE_MAP[variant]}

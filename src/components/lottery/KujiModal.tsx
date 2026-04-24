@@ -248,27 +248,21 @@ function Stage({
             />
           )}
 
-          {/* Lantern-mascot companion — stands beside the tube. During
-              shake it sways gently (different rhythm from the cylinder so
-              they read as two separate objects). The mascot is decorative
-              and never blocks the tap target since it sits outside the
-              cylinder's centerline. */}
+          {/* Meditate-giraffe watermark — sits BEHIND the tube as a
+              silent witness to the draw. Faint enough that the tube + sticks
+              stay the focal point; large enough to anchor the empty space
+              behind them. No animation — she's the still center while the
+              ceremony shakes around her. */}
           <span
             aria-hidden
-            className={cn(
-              "pointer-events-none absolute",
-              phase === "shaking" &&
-                "animate-[kuji-lantern-sway_900ms_ease-in-out_infinite]",
-            )}
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2"
             style={{
-              left: -78,
-              bottom: 110,
-              transformOrigin: "top center",
-              opacity: phase === "drawing" ? 0.5 : 1,
-              transition: "opacity 600ms ease",
+              bottom: 30,
+              opacity: 0.12,
+              zIndex: 0,
             }}
           >
-            <Mascot variant="lantern" size="sm" />
+            <Mascot variant="meditate" px={340} />
           </span>
 
           {/* Sticks — only the *visible* tip protruding above the cylinder
@@ -305,14 +299,14 @@ function Stage({
 /* ───────────────────────────────────────────────────────────────────── */
 
 /**
- * Bamboo (竹籤) cylinder. Hand-painted SVG with layered shading:
- *   - 7-stop gradient for cylindrical curvature
- *   - Highlight stripe down the left side of the bright band
- *   - Raised node bands with sumi shadow + paper highlight
- *   - Vertical fiber hints
- *   - Inner mouth shadow with depth lines
- *   - Ground contact shadow underneath
- *   - 朱 hanko with subtle drop shadow
+ * Minimal kuji cylinder — kraft paper silhouette with sumi-ink hairlines.
+ *
+ * Design intent: match the rest of the editorial page (paper-deep + sumi),
+ * not pretend to be a 3D bamboo prop. We dropped the 7-stop bamboo green
+ * gradient, sheen overlay, hanko brand, fiber lines, and node-with-shadow
+ * 3D bands — they fought the page's quiet ink palette. What remains is just
+ * a hand-drawn jar shape: paper body, two thin node hairlines (still
+ * implies bamboo), dark mouth for depth, sumi outline.
  */
 function BambooCylinder() {
   return (
@@ -323,168 +317,63 @@ function BambooCylinder() {
       aria-hidden
     >
       <defs>
-        {/* 7-stop bamboo gradient — sharp left/right shadows + bright
-            highlight stripe slightly left of center (light source upper-left). */}
-        <linearGradient id="bamboo-body" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#7A8A60" />
-          <stop offset="8%"   stopColor="#94A876" />
-          <stop offset="22%"  stopColor="#B8C898" />
-          <stop offset="42%"  stopColor="#E2EAC6" />
-          <stop offset="58%"  stopColor="#D5DDB6" />
-          <stop offset="80%"  stopColor="#A8B888" />
-          <stop offset="100%" stopColor="#7A8A5C" />
+        {/* Subtle paper-tone body — barely-there tonal shift left → right
+            so the silhouette has SOME roundness, but it's not a glossy 3D
+            prop. */}
+        <linearGradient id="kuji-body" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#D4C5A4" />
+          <stop offset="50%"  stopColor="#E6DBC0" />
+          <stop offset="100%" stopColor="#C9BCA0" />
         </linearGradient>
 
-        {/* Subtle vertical sheen — slightly brightens the upper portion */}
-        <linearGradient id="bamboo-sheen" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"  stopColor="#FFFFFF" stopOpacity="0.18" />
-          <stop offset="40%" stopColor="#FFFFFF" stopOpacity="0.06" />
-          <stop offset="100%" stopColor="#000000" stopOpacity="0.08" />
-        </linearGradient>
-
-        {/* Inner mouth — deep into the tube */}
-        <radialGradient id="bamboo-hole" cx="0.5" cy="0.55" r="0.55">
-          <stop offset="0%"  stopColor="#0F0C0A" stopOpacity="0.96" />
-          <stop offset="55%" stopColor="#1C1815" stopOpacity="0.88" />
-          <stop offset="100%" stopColor="#3D332B" stopOpacity="0.45" />
+        {/* Mouth shadow — pure sumi-ink darkness with a soft edge so the
+            opening reads as "into the tube" without painting fake 3D. */}
+        <radialGradient id="kuji-mouth" cx="0.5" cy="0.5" r="0.55">
+          <stop offset="0%"   stopColor="#1C1815" stopOpacity="0.95" />
+          <stop offset="70%"  stopColor="#1C1815" stopOpacity="0.78" />
+          <stop offset="100%" stopColor="#1C1815" stopOpacity="0.55" />
         </radialGradient>
-
-        {/* Node band — raised ring (subtle 3D) */}
-        <linearGradient id="bamboo-node" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#5A6840" stopOpacity="0.6" />
-          <stop offset="50%"  stopColor="#3F4A2A" stopOpacity="0.85" />
-          <stop offset="100%" stopColor="#5A6840" stopOpacity="0.6" />
-        </linearGradient>
-
-        {/* Drop shadow filter for hanko + ground contact */}
-        <filter id="bamboo-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" />
-          <feOffset dx="0" dy="1" result="offsetblur" />
-          <feComponentTransfer>
-            <feFuncA type="linear" slope="0.4" />
-          </feComponentTransfer>
-          <feMerge>
-            <feMergeNode />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
       </defs>
 
-      {/* Ground shadow under the cylinder — anchors it visually */}
+      {/* Ground anchor — soft contact shadow */}
       <ellipse
         cx="80"
         cy="252"
-        rx="68"
-        ry="5"
+        rx="62"
+        ry="4"
         fill="#1C1815"
-        opacity="0.18"
-        style={{ filter: "blur(3px)" }}
+        opacity="0.14"
+        style={{ filter: "blur(2.5px)" }}
       />
 
-      {/* Cylinder body (back-to-front shading layered):
-          1) base body gradient
-          2) vertical sheen overlay
-          3) outline stroke */}
+      {/* Body silhouette — paper fill + sumi 1.5px outline */}
       <path
-        d="M 14 38 Q 80 28, 146 38 L 142 240 Q 80 252, 18 240 Z"
-        fill="url(#bamboo-body)"
+        d="M 18 38 Q 80 30, 142 38 L 138 240 Q 80 250, 22 240 Z"
+        fill="url(#kuji-body)"
       />
       <path
-        d="M 14 38 Q 80 28, 146 38 L 142 240 Q 80 252, 18 240 Z"
-        fill="url(#bamboo-sheen)"
-      />
-      <path
-        d="M 14 38 Q 80 28, 146 38 L 142 240 Q 80 252, 18 240 Z"
+        d="M 18 38 Q 80 30, 142 38 L 138 240 Q 80 250, 22 240 Z"
         fill="none"
         stroke="#1C1815"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeLinejoin="round"
       />
 
-      {/* Bamboo node bands — three raised rings (4-5px tall each).
-          Each band has a subtle gradient ring + shadow line below + highlight
-          line above, so it reads as raised ridge, not just a stroke. */}
-      {[92, 152, 212].map((y, i) => (
-        <g key={`node-${i}`}>
-          {/* Highlight on top edge (paper) */}
-          <line
-            x1="20" y1={y - 3} x2="140" y2={y - 3}
-            stroke="#F4F8DC" strokeWidth="0.7" opacity="0.55"
-          />
-          {/* The band itself — gradient ring */}
-          <rect x="14" y={y - 2} width="132" height="4" fill="url(#bamboo-node)" opacity="0.85" />
-          {/* Sharp shadow on bottom edge */}
-          <line
-            x1="20" y1={y + 3} x2="140" y2={y + 3}
-            stroke="#1C1815" strokeWidth="0.8" opacity="0.6"
-          />
-        </g>
+      {/* Two node hairlines — just enough to suggest bamboo segments without
+          painting fake raised ridges. 0.6px sumi at low opacity. */}
+      {[110, 180].map((y) => (
+        <line
+          key={`node-${y}`}
+          x1="22" y1={y} x2="138" y2={y}
+          stroke="#1C1815" strokeWidth="0.6" opacity="0.35"
+        />
       ))}
 
-      {/* Vertical fiber hints — uneven sumi pen strokes along the grain */}
-      <g stroke="#1C1815" strokeWidth="0.4" opacity="0.18" strokeLinecap="round">
-        <line x1="36" y1="44" x2="33" y2="236" />
-        <line x1="58" y1="42" x2="57" y2="240" />
-        <line x1="76" y1="44" x2="76" y2="240" />
-        <line x1="98" y1="42" x2="100" y2="238" />
-        <line x1="120" y1="44" x2="123" y2="236" />
-      </g>
-
-      {/* Side darkening — extra shadow at left and right edges for roundness */}
-      <path
-        d="M 14 38 Q 80 28, 146 38 L 142 240 Q 80 252, 18 240 Z"
-        fill="none"
-        stroke="#3F4A2A"
-        strokeWidth="0.6"
-        opacity="0.5"
-      />
-
-      {/* 朱 hanko brand near the lower-middle */}
-      <g transform="translate(80, 184)" filter="url(#bamboo-shadow)">
-        <rect
-          x="-15"
-          y="-15"
-          width="30"
-          height="30"
-          fill="#F4EAD0"
-          stroke="#B3321D"
-          strokeWidth="1.6"
-        />
-        <text
-          textAnchor="middle"
-          y="6"
-          fontFamily='"Shippori Mincho", serif'
-          fontSize="20"
-          fontWeight="600"
-          fill="#B3321D"
-        >
-          籤
-        </text>
-      </g>
-
-      {/* Inner mouth — dark "into the tube" depth + horizontal depth lines */}
-      <ellipse cx="80" cy="38" rx="66" ry="10" fill="url(#bamboo-hole)" />
-      {/* Depth hint lines inside the dark mouth */}
-      <line x1="22" y1="42" x2="138" y2="42" stroke="#000000" strokeWidth="0.5" opacity="0.5" />
-      <line x1="28" y1="45" x2="132" y2="45" stroke="#000000" strokeWidth="0.5" opacity="0.3" />
-
-      {/* Top lip — sharp sumi rim with subtle highlight on top */}
+      {/* Mouth ellipse — dark depth + sharp sumi rim on top */}
+      <ellipse cx="80" cy="38" rx="62" ry="9" fill="url(#kuji-mouth)" />
       <ellipse
-        cx="80"
-        cy="38"
-        rx="66"
-        ry="10"
-        fill="none"
-        stroke="#1C1815"
-        strokeWidth="2"
-      />
-      {/* Lip top highlight (catches light from above) */}
-      <path
-        d="M 16 38 Q 80 28, 144 38"
-        fill="none"
-        stroke="#F4F8DC"
-        strokeWidth="1.2"
-        opacity="0.7"
+        cx="80" cy="38" rx="62" ry="9"
+        fill="none" stroke="#1C1815" strokeWidth="1.5"
       />
     </svg>
   );
@@ -536,8 +425,8 @@ function Stick({
           animation,
           zIndex: isWinner && phase === "drawing" ? 5 : 1,
           filter: isWinner && phase === "drawing"
-            ? "drop-shadow(0 4px 8px rgba(179,50,29,0.4))"
-            : "drop-shadow(0 1px 1.5px rgba(28,24,21,0.25))",
+            ? "drop-shadow(0 4px 8px rgba(201,129,127,0.55))"
+            : "drop-shadow(0 1px 1.5px rgba(28,24,21,0.2))",
         } as React.CSSProperties
       }
     >
@@ -546,45 +435,27 @@ function Stick({
         className="block h-full w-full"
         preserveAspectRatio="none"
       >
-        <defs>
-          {/* Cylindrical shading on the stick (left dark, center bright,
-              right dark) so it reads as a round bamboo dowel. */}
-          <linearGradient id={`stick-body-${kanji}-${rot}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor="#D8C8A0" />
-            <stop offset="30%"  stopColor="#F0E5C4" />
-            <stop offset="55%"  stopColor="#F8EFD2" />
-            <stop offset="80%"  stopColor="#E2D4AC" />
-            <stop offset="100%" stopColor="#A8957A" />
-          </linearGradient>
-          {/* 朱 cap with radial highlight */}
-          <radialGradient id={`stick-cap-${kanji}-${rot}`} cx="0.35" cy="0.35" r="0.65">
-            <stop offset="0%"   stopColor="#E55A38" />
-            <stop offset="55%"  stopColor="#B3321D" />
-            <stop offset="100%" stopColor="#7A1D0F" />
-          </radialGradient>
-        </defs>
-
-        {/* Stick body — rounded rect with sumi outline */}
+        {/* Stick body — flat warm wheat fill with sumi outline. Dropped
+            the 5-stop "cylindrical shading" that made it look like a 3D
+            dowel; the page is editorial-flat, not glossy. */}
         <rect
-          x="0.7" y="6" width="12.6" height="132"
-          rx="1.5" ry="1.5"
-          fill={`url(#stick-body-${kanji}-${rot})`}
+          x="0.7" y="4" width="12.6" height="134"
+          rx="1.2" ry="1.2"
+          fill="#E6D6B0"
           stroke="#1C1815"
           strokeWidth="0.7"
         />
 
-        {/* Subtle vertical fiber line — implies bamboo grain */}
-        <line x1="7" y1="10" x2="7" y2="135" stroke="#1C1815" strokeWidth="0.3" opacity="0.18" />
-
-        {/* 朱 cap — flat-topped cylinder with radial highlight */}
-        <ellipse
-          cx="7" cy="6" rx="5.5" ry="2"
-          fill={`url(#stick-cap-${kanji}-${rot})`}
-          stroke="#1C1815"
-          strokeWidth="0.5"
+        {/* Top accent band — replaces the chunky red gradient cap with a
+            slim muted-shu stripe. Dusty terracotta (#C9817F) instead of the
+            full saturation #B3321D; the previous version fought with the
+            paper palette. */}
+        <rect
+          x="0.7" y="4" width="12.6" height="6"
+          fill="#C9817F"
         />
-        {/* Cap highlight dot for depth */}
-        <ellipse cx="5" cy="5" rx="1.4" ry="0.8" fill="#FFFFFF" opacity="0.5" />
+        {/* Hairline separating cap from body — keeps the band crisp */}
+        <line x1="0.7" y1="10" x2="13.3" y2="10" stroke="#1C1815" strokeWidth="0.6" />
 
         {/* Kanji label */}
         <text
@@ -598,9 +469,6 @@ function Stick({
         >
           {kanji}
         </text>
-
-        {/* Bottom hairline — anchors the stick visually */}
-        <line x1="2" y1="137" x2="12" y2="137" stroke="#1C1815" strokeWidth="0.4" opacity="0.5" />
       </svg>
     </span>
   );

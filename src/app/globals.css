@@ -494,13 +494,6 @@
   }
 }
 
-/* Mascot companion sway during shake — different rhythm from cylinder so
-   they read as two separate objects. Subtle so it never upstages the tube. */
-@keyframes kuji-lantern-sway {
-  0%, 100% { transform: rotate(-3deg) translateY(0); }
-  50%      { transform: rotate(3deg) translateY(-2px); }
-}
-
 /* Oracle giraffe enters with the reveal — small bow animation as if
    delivering the fortune scroll. */
 @keyframes kuji-oracle-bow {
