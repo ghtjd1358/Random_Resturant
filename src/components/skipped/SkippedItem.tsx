@@ -40,8 +40,8 @@ export function SkippedItem({ record, index, disabled, onRestore }: Props) {
         onClick={() => setOpen((v) => !v)}
         className="no-select flex w-full items-start gap-3 py-4 text-left transition-colors active:bg-sumi-ink/5"
       >
-        <span className="font-mincho mt-0.5 w-[22px] shrink-0 text-[12px] num-tabular text-sumi-fade">
-          {String(index).padStart(2, "0")}
+        <span className="font-mincho mt-0.5 w-[18px] shrink-0 text-[13px] num-tabular text-sumi-fade">
+          {index}
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-mincho text-[15px] font-medium tracking-tight text-sumi-ink">
@@ -59,7 +59,7 @@ export function SkippedItem({ record, index, disabled, onRestore }: Props) {
           className="hanko-square hanko-square-shu shrink-0"
           aria-label="제외됨"
         >
-          ×
+          不
         </span>
       </button>
 

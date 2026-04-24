@@ -120,7 +120,9 @@ function HomeHeader({ issueNo }: { issueNo: string }) {
 
         <div className="min-w-0 flex-1">
           <p className="eyebrow mb-1 text-sumi-fade">random · hankki</p>
-          <h1 className="font-mincho text-[2.4rem] font-semibold leading-none tracking-tight text-sumi-ink">
+          {/* h1 sits 7px above its baseline so the wordmark hugs the eyebrow
+              instead of drifting toward the mascot's chin. */}
+          <h1 className="-translate-y-[7px] font-mincho text-[2.4rem] font-semibold leading-none tracking-tight text-sumi-ink">
             랜덤<span className="text-shu">한</span>끼
           </h1>
         </div>

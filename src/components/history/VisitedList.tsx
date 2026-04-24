@@ -5,25 +5,18 @@ import { useVisitedRecords, type VisitedFilter } from "@/hooks/useVisitedRecords
 import { EmptyPlaceholder } from "@/components/common/EmptyPlaceholder";
 import { cn } from "@/lib/utils";
 
-const FILTERS: { key: VisitedFilter; label: string; suffix?: string }[] = [
-  { key: "all", label: "전체", suffix: "all" },
-  { key: "good", label: "좋아요", suffix: "good" },
-  { key: "bad", label: "싫어요", suffix: "bad" },
+const FILTERS: { key: VisitedFilter; label: string }[] = [
+  { key: "all", label: "전체" },
+  { key: "good", label: "좋아요" },
+  { key: "bad", label: "싫어요" },
 ];
 
 export function VisitedList() {
   const { records, filter, setFilter, remove, setFeedback } = useVisitedRecords();
-  const counts = records
-    ? {
-        all: records.length,
-        good: records.filter((r) => r.feedback === "good").length,
-        bad: records.filter((r) => r.feedback === "bad").length,
-      }
-    : { all: 0, good: 0, bad: 0 };
 
   return (
     <div className="flex flex-col gap-4">
-      <FilterTabs value={filter} counts={counts} onChange={setFilter} />
+      <FilterTabs value={filter} onChange={setFilter} />
 
       {records === null ? (
         <EmptyPlaceholder kanji="待" title="불러오는 중…" />
@@ -54,37 +47,26 @@ export function VisitedList() {
 
 function FilterTabs({
   value,
-  counts,
   onChange,
 }: {
   value: VisitedFilter;
-  counts: { all: number; good: number; bad: number };
   onChange: (f: VisitedFilter) => void;
 }) {
   return (
     <div className="flex items-baseline justify-between border-b border-hairline-soft pb-2.5">
-      {FILTERS.map(({ key, label, suffix }) => {
+      {FILTERS.map(({ key, label }) => {
         const active = value === key;
-        const count = counts[key];
         return (
           <button
             key={key}
             onClick={() => onChange(key)}
             className={cn(
-              "no-select font-mincho text-[13px] tracking-tight transition-colors",
+              "no-select font-mincho text-[14px] tracking-tight transition-colors",
               active ? "text-sumi-ink" : "text-sumi-fade hover:text-sumi-mute",
             )}
           >
             <span className={active ? "border-b-2 border-shu pb-1" : ""}>
               {label}
-            </span>
-            <span
-              className={cn(
-                "ml-1.5 text-[10px] num-tabular tracking-[0.15em]",
-                active ? "text-sumi-fade" : "text-sumi-fade/70",
-              )}
-            >
-              {suffix} {String(count).padStart(2, "0")}
             </span>
           </button>
         );

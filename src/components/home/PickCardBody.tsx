@@ -2,12 +2,13 @@
 
 import { AIReasonLine } from "./AIReasonLine";
 import { formatPrice, prettifyType } from "@/lib/format/place";
-import { guessCountryCode } from "@/lib/geo/region";
 import type { PlaceLite } from "@/lib/places/types";
 
 export function PickCardBody({ pick }: { pick: PlaceLite }) {
-  const country = guessCountryCode(pick.location.lat, pick.location.lng);
-  const price = formatPrice(pick.priceLevel, country);
+  // Force JP/¥ for price — every recommended place is in Japan, so the
+  // GPS-derived currency would just confuse non-traveling users by flipping
+  // between ₩/$/¥ depending on where they currently stand.
+  const price = formatPrice(pick.priceLevel, "JP");
   const cleanType = prettifyType(pick.primaryType);
   const walkMin = pick.distanceMeters
     ? Math.max(1, Math.round(pick.distanceMeters / 80))
@@ -29,28 +30,42 @@ export function PickCardBody({ pick }: { pick: PlaceLite }) {
         </p>
       )}
 
-      {/* Stats row — rating · count · walk · price, all hairline */}
-      <div className="mt-3.5 flex items-center gap-3 text-[12px] num-tabular text-sumi-ink">
+      {/* Stats row — explicit Korean labels so 4.6 / 1,275 / 6 / ¥¥ aren't
+          mistaken for distance or random numbers. */}
+      <div className="mt-3.5 flex flex-wrap items-baseline gap-x-4 gap-y-1.5 text-[12px] num-tabular text-sumi-ink">
         {pick.rating !== undefined && (
-          <span className="flex items-baseline gap-1.5">
-            <span className="font-mincho text-[15px] font-medium">
-              {pick.rating.toFixed(1)}
-            </span>
-            <span aria-hidden className="h-px w-4 bg-sumi-ink/60" />
-            {pick.userRatingCount !== undefined && (
-              <span className="text-sumi-fade">
-                {pick.userRatingCount.toLocaleString()}
-              </span>
-            )}
-          </span>
+          <Stat
+            label="평점"
+            value={
+              <>
+                <span className="text-shu">★</span>{" "}
+                <span className="font-mincho text-[14px] font-medium">
+                  {pick.rating.toFixed(1)}
+                </span>
+                {pick.userRatingCount !== undefined && (
+                  <span className="ml-1 text-sumi-fade">
+                    · 리뷰 {pick.userRatingCount.toLocaleString()}
+                  </span>
+                )}
+              </>
+            }
+          />
         )}
         {walkMin !== null && (
-          <span className="font-mincho text-sumi-mute">
-            徒歩 <span className="text-sumi-ink">{walkMin}</span>分
-          </span>
+          <Stat
+            label="거리"
+            value={
+              <span className="font-mincho">
+                도보 <span className="text-sumi-ink">{walkMin}</span>분
+              </span>
+            }
+          />
         )}
         {price && (
-          <span className="font-mincho text-sumi-ink">{price}</span>
+          <Stat
+            label="가격"
+            value={<span className="font-mincho text-sumi-ink">{price}</span>}
+          />
         )}
       </div>
 
@@ -59,5 +74,14 @@ export function PickCardBody({ pick }: { pick: PlaceLite }) {
 
       <AIReasonLine placeId={pick.id} />
     </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <span className="flex items-baseline gap-1.5">
+      <span className="eyebrow text-[9px]">{label}</span>
+      <span className="text-sumi-ink">{value}</span>
+    </span>
   );
 }

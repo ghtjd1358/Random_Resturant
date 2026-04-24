@@ -119,7 +119,7 @@ export function VisitedItem({ record, index, onFeedback, onDelete }: Props) {
 function FeedbackStamp({ feedback }: { feedback: Feedback }) {
   if (feedback === "good") {
     return (
-      <span className="hanko-square shrink-0" aria-label="또 갈래요">
+      <span className="hanko-square shrink-0" aria-label="좋아요">
         好
       </span>
     );
@@ -127,9 +127,9 @@ function FeedbackStamp({ feedback }: { feedback: Feedback }) {
   return (
     <span
       className="hanko-square hanko-square-shu shrink-0"
-      aria-label="별로였어요"
+      aria-label="싫어요"
     >
-      ×
+      不
     </span>
   );
 }

@@ -32,9 +32,9 @@ export function SkippedList() {
   return (
     <div className="flex flex-col">
       <div className="flex items-baseline justify-between border-b border-hairline-soft pb-2.5">
-        <p className="flex items-baseline gap-2">
-          <span className="font-mincho text-[14px] font-medium text-sumi-ink num-tabular">
-            {String(records.length).padStart(2, "0")}
+        <p className="flex items-baseline gap-1.5">
+          <span className="font-mincho text-[15px] font-medium text-sumi-ink num-tabular">
+            {records.length}
           </span>
           <span className="font-mincho text-[12px] text-sumi-mute">
             곳 제외됨
