@@ -91,9 +91,11 @@ export function weightedPick<T extends { id: string; score?: number }>(
   candidates: T[],
   opts: { topN?: number; avoidIds?: Set<string>; exponent?: number } = {},
 ): T | null {
-  // exponent 2 → 1.5: 점수 4 vs 3 의 weight 차이가 1.78× → 1.5× 로 줄어
-  // 1위 후보가 압도하지 않게. 같은 필터로 연속 굴려도 결과가 더 분산됨.
-  const { topN = 8, avoidIds, exponent = 1.5 } = opts;
+  // exponent 0 = uniform random (weights = score^0 = 1 for all). 도파민
+  // 앱 컨셉상 "별점 높은 게 자주" 같은 결정론은 사용자 학습 → 흥미 ↓.
+  // quality gate (isCandidateQualityOk) 가 이미 별로인 가게를 걸러내므로
+  // 통과한 후보들 중에선 동등 확률이 가장 도파민 친화적.
+  const { topN = 8, avoidIds, exponent = 0 } = opts;
 
   const pool = avoidIds
     ? candidates.filter((c) => !avoidIds.has(c.id))
@@ -127,7 +129,7 @@ export function weightedPickN<T extends { id: string; score?: number }>(
   count: number,
   opts: { topN?: number; avoidIds?: Set<string>; exponent?: number } = {},
 ): T[] {
-  const { topN = 15, avoidIds, exponent = 1.5 } = opts;
+  const { topN = 15, avoidIds, exponent = 0 } = opts;
 
   const pool = avoidIds
     ? candidates.filter((c) => !avoidIds.has(c.id))
