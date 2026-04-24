@@ -430,8 +430,42 @@
 }
 
 @keyframes kuji-loser-fade {
-  0%   { opacity: 1; }
-  100% { opacity: 0.18; }
+  0%   { opacity: 1; transform: rotate(var(--rot, 0deg)) translateY(0); }
+  60%  { opacity: 0.6; transform: rotate(var(--rot, 0deg)) translateY(6px); }
+  100% { opacity: 0.18; transform: rotate(var(--rot, 0deg)) translateY(10px); }
+}
+
+/* Headline scroll-in for the "引け" cue */
+@keyframes kuji-headline-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.04); }
+}
+
+/* Ink splash droplets that flick out during the shake */
+@keyframes kuji-splash {
+  0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  18%  { opacity: 0.85; }
+  100% {
+    opacity: 0;
+    transform: translate(var(--sx, 0), var(--sy, 0)) scale(1);
+  }
+}
+
+/* Winner ink halo — radial bloom behind the rising stick */
+@keyframes kuji-halo {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 0.55; transform: scale(1); }
+  100% { opacity: 0.45; transform: scale(1.08); }
+}
+
+/* Soft floating ash flakes during the entire ceremony */
+@keyframes kuji-ash-drift {
+  0%   { opacity: 0; transform: translateY(0) translateX(0) rotate(0); }
+  10%  { opacity: 0.4; }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px) translateX(var(--ash-x, 0)) rotate(var(--ash-rot, 180deg));
+  }
 }
 
 /* Sonner toast custom theme */
