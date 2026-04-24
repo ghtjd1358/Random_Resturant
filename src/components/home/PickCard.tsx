@@ -81,18 +81,25 @@ function Placeholder({ rolling }: { rolling: boolean }) {
       className="relative flex flex-col items-center border border-dashed border-hairline px-6 py-8 text-center"
     >
       {/* State-driven mascot — brush-desk = calculating, book-read = waiting.
-          On rolling we add a slow tilt so the giraffe looks like she's
-          actively writing your fortune. */}
-      <div
-        key={rolling ? "rolling" : "idle"}
-        className={
-          rolling
-            ? "animate-[mascot-write_2.4s_ease-in-out_infinite]"
-            : "animate-[mascot-idle-breathe_3.6s_ease-in-out_infinite]"
-        }
-      >
-        <Mascot variant={rolling ? "brush-desk" : "book-read"} size="md" />
-      </div>
+          AnimatePresence crossfades when phase flips so the variant doesn't
+          hard-swap. The infinite breath/write loops stay CSS — they're
+          pure ambient ticks, not orchestrated. */}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={rolling ? "rolling" : "idle"}
+          initial={{ opacity: 0, y: 6, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -4, scale: 0.96 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className={
+            rolling
+              ? "animate-[mascot-write_2.4s_ease-in-out_infinite]"
+              : "animate-[mascot-idle-breathe_3.6s_ease-in-out_infinite]"
+          }
+        >
+          <Mascot variant={rolling ? "brush-desk" : "book-read"} size="md" />
+        </motion.div>
+      </AnimatePresence>
 
       <p className="mt-3 leading-relaxed break-keep">
         {rolling ? (

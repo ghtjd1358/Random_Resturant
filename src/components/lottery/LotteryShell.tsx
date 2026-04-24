@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, RotateCcw } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { KanjiWatermark } from "@/components/common/KanjiWatermark";
@@ -193,17 +194,19 @@ export function LotteryShell() {
           </div>
         )}
 
-        {/* Big draw button */}
+        {/* Big draw button — motion whileTap + idle pulse + glyph animation
+            mirrors DiceButton's polish for consistency across pick/lottery. */}
         <section className="mt-10 flex flex-col items-center gap-3">
           <p className="eyebrow">탭해서 제비뽑기</p>
-          <button
+          <motion.button
             type="button"
             onClick={handleDraw}
             disabled={loading || !hasLocation}
+            whileTap={{ scale: 0.96 }}
             aria-label="제비뽑기 시작"
             className={cn(
               "no-select relative flex size-36 items-center justify-center rounded-full",
-              "bg-sumi-ink text-paper transition-opacity",
+              "bg-sumi-ink text-paper transition-opacity duration-200",
               "disabled:cursor-not-allowed disabled:opacity-50",
             )}
             style={{
@@ -216,21 +219,48 @@ export function LotteryShell() {
               aria-hidden
               className="absolute right-4 top-4 size-1.5 rounded-full bg-shu"
             />
-            <span
+            {/* 籤 wobbles softly while loading — small "shaking the can"
+                cue without a heavy spin. */}
+            <motion.span
               className="font-mincho text-paper"
-              style={{ fontSize: "3.5rem", fontWeight: 500, lineHeight: 1 }}
+              style={{
+                fontSize: "3.5rem",
+                fontWeight: 500,
+                lineHeight: 1,
+                display: "inline-block",
+              }}
+              animate={
+                loading
+                  ? { rotate: [0, -8, 7, -5, 0] }
+                  : { rotate: 0 }
+              }
+              transition={
+                loading
+                  ? { duration: 1.0, repeat: Infinity, ease: "easeInOut" }
+                  : { type: "spring", stiffness: 280, damping: 22 }
+              }
             >
               籤
-            </span>
-          </button>
-          <p
-            className={cn(
-              "font-mincho text-[12px] tracking-tight",
-              loading ? "text-sumi-ink" : "text-sumi-mute",
-            )}
-          >
-            {loading ? "후보를 모으는 중 …" : "통에 막대기를 채웁니다"}
-          </p>
+            </motion.span>
+          </motion.button>
+
+          {/* Helper text crossfades on phase swap so "통에 막대기를 채웁니다"
+              → "후보를 모으는 중 …" doesn't hard-jump. */}
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={loading ? "loading" : "idle"}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2 }}
+              className={cn(
+                "font-mincho text-[12px] tracking-tight",
+                loading ? "text-sumi-ink" : "text-sumi-mute",
+              )}
+            >
+              {loading ? "후보를 모으는 중 …" : "통에 막대기를 채웁니다"}
+            </motion.p>
+          </AnimatePresence>
         </section>
 
         <p className="font-mincho mx-auto mt-8 max-w-[280px] text-center text-[11px] leading-relaxed text-sumi-fade">

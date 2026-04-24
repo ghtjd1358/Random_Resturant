@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(cp -v public/mascot-giraffe.png public/mascot-giraffe.backup.png)",
+      "Bash(cp -v \"/c/Users/hoseo/Downloads/ChatGPT Image 2026년 4월 23일 오후 08_27_33.png\" public/mascot-giraffe.png)",
+      "Bash(node *)",
+      "WebFetch(domain:claude.ai)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "mcp__plugin_vercel_vercel__list_teams",
+      "mcp__plugin_vercel_vercel__list_projects",
+      "mcp__plugin_vercel_vercel__list_deployments",
+      "mcp__plugin_vercel_vercel__get_deployment",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(npx tsc *)",
+      "Bash(python -c \"from PIL import Image; print\\('Pillow', Image.__version__\\)\")",
+      "Bash(python -c \"import rembg; print\\('rembg', rembg.__version__\\)\")",
+      "Bash(python -c \"import numpy; print\\('numpy', numpy.__version__\\)\")",
+      "Bash(python -m pip install Pillow numpy)",
+      "Bash(python -m pip install --quiet rembg onnxruntime)",
+      "Bash(python *)",
+      "WebSearch",
+      "Bash(awk '{print $5, $9}')",
+      "Bash(git checkout *)"
+    ]
+  }
+}
