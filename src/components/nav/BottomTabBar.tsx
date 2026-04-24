@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/", label: "뽑기", kanji: "選" },
+  { href: "/lottery", label: "제비", kanji: "籤" },
   { href: "/history", label: "기록", kanji: "録" },
   { href: "/settings", label: "설정", kanji: "設" },
 ] as const;

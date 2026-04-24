@@ -112,6 +112,53 @@ export function weightedPick<T extends { id: string; score?: number }>(
   return top[top.length - 1];
 }
 
+/**
+ * Pick `count` distinct candidates with score-proportional weights — the
+ * 제비뽑기 (kuji) variant of weightedPick. Each round zeroes out the
+ * winner's weight so the next round can't pick it again.
+ *
+ * Result order is the order they were drawn (first draw = first stick), so
+ * the caller can render them as sticks loaded into a cylinder in sequence.
+ */
+export function weightedPickN<T extends { id: string; score?: number }>(
+  candidates: T[],
+  count: number,
+  opts: { topN?: number; avoidIds?: Set<string>; exponent?: number } = {},
+): T[] {
+  const { topN = 15, avoidIds, exponent = 2 } = opts;
+
+  const pool = avoidIds
+    ? candidates.filter((c) => !avoidIds.has(c.id))
+    : candidates;
+
+  const top = pool.slice(0, topN);
+  if (top.length === 0) return [];
+
+  const want = Math.min(count, top.length);
+  const remaining = [...top];
+  const weights = top.map((c) => Math.max(0.01, (c.score ?? 0) ** exponent));
+  const picks: T[] = [];
+
+  for (let drawn = 0; drawn < want; drawn++) {
+    const sum = weights.reduce((a, b) => a + b, 0);
+    if (sum <= 0) break;
+
+    let r = Math.random() * sum;
+    let chosen = remaining.length - 1;
+    for (let i = 0; i < remaining.length; i++) {
+      r -= weights[i];
+      if (r <= 0) {
+        chosen = i;
+        break;
+      }
+    }
+    picks.push(remaining[chosen]);
+    weights[chosen] = 0; // zero out so next round can't pick this one
+  }
+
+  return picks;
+}
+
 /** Mode-aware quality gate. Discovery mode relaxes almost everything. */
 export function isCandidateQualityOk(p: PlaceLite, mode: PickMode = "popular"): boolean {
   const count = p.userRatingCount ?? 0;
