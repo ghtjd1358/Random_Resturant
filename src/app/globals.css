@@ -468,12 +468,42 @@
   }
 }
 
-/* Sonner toast custom theme */
+/* Sonner toast custom theme — neutralize sonner's stock green/red and
+   re-skin every toast with the editorial 3-tone palette. success/error
+   keep an accent (朱) on the border so they're still distinguishable
+   without breaking the page's visual mood. */
 [data-sonner-toast] {
-  --normal-bg: var(--card) !important;
-  --normal-border: var(--border) !important;
-  --normal-text: var(--foreground) !important;
+  --normal-bg: var(--color-paper-soft) !important;
+  --normal-border: var(--color-hairline) !important;
+  --normal-text: var(--color-sumi-ink) !important;
+  --success-bg: var(--color-paper-soft) !important;
+  --success-border: var(--color-shu) !important;
+  --success-text: var(--color-sumi-ink) !important;
+  --error-bg: var(--color-paper-soft) !important;
+  --error-border: var(--color-shu-deep) !important;
+  --error-text: var(--color-sumi-ink) !important;
+  --info-bg: var(--color-paper-soft) !important;
+  --info-border: var(--color-hairline) !important;
+  --info-text: var(--color-sumi-ink) !important;
+  --warning-bg: var(--color-paper-soft) !important;
+  --warning-border: var(--color-shu) !important;
+  --warning-text: var(--color-sumi-ink) !important;
+  font-family: var(--font-mincho) !important;
+  border-radius: 0 !important;
+}
+[data-sonner-toast] [data-description] {
+  color: var(--color-sumi-mute) !important;
   font-family: var(--font-sans) !important;
+}
+[data-sonner-toast] [data-button] {
+  background: var(--color-sumi-ink) !important;
+  color: var(--color-paper) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-mincho) !important;
+}
+[data-sonner-toast] [data-cancel] {
+  background: transparent !important;
+  color: var(--color-sumi-mute) !important;
 }
 
 /* Slider thumb — sumi ink, matches the editorial 3-tone palette */

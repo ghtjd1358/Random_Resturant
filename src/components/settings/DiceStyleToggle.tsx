@@ -4,9 +4,11 @@ import { useDiceStyleStore, type DiceStyle } from "@/stores/useDiceStyleStore";
 import { haptic } from "@/lib/haptic";
 import { cn } from "@/lib/utils";
 
+// Default (rotating) goes first so it sits on the left — matches the
+// store's default and reads as "this is what you'd get out of the box".
 const OPTIONS: { key: DiceStyle; label: string; caption: string }[] = [
-  { key: "classic", label: "選 고정", caption: "조용한 도장" },
   { key: "rotating", label: "한자 굴리기", caption: "麺·寿·茶… 회전" },
+  { key: "classic", label: "選 고정", caption: "조용한 도장" },
 ];
 
 /**
