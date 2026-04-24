@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import { AlertCircle, ChevronDown, ChevronRight, Landmark, MapPin, Navigation, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PresetSheet } from "./PresetSheet";
@@ -32,20 +33,35 @@ export function LocationBanner() {
     request();
   };
 
-  if (coords) {
-    return (
-      <ActiveBanner
-        coords={coords}
-        preset={preset}
-        onRefresh={handleRefresh}
-        onBackToGps={handleBackToGps}
-      />
-    );
-  }
-  if (permission === "denied" || error) {
-    return <DeniedBanner message={error} onRetry={request} />;
-  }
-  return <PendingBanner />;
+  // Phase swap (pending → active / denied) crossfades via AnimatePresence
+  // so the banner doesn't hard-snap when GPS resolves. mode="wait" so the
+  // outgoing phase finishes before the new one slides in.
+  const phaseKey = coords ? "active" : permission === "denied" || error ? "denied" : "pending";
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={phaseKey}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {coords ? (
+          <ActiveBanner
+            coords={coords}
+            preset={preset}
+            onRefresh={handleRefresh}
+            onBackToGps={handleBackToGps}
+          />
+        ) : permission === "denied" || error ? (
+          <DeniedBanner message={error} onRetry={request} />
+        ) : (
+          <PendingBanner />
+        )}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 function ActiveBanner({
