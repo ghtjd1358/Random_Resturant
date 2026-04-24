@@ -84,8 +84,8 @@ export function KujiModal({ picks, onClose }: KujiModalProps) {
           <span className="font-mincho text-[12px] font-medium text-sumi-mute">
             제비뽑기
           </span>
-          <span className="eyebrow text-[9px] num-tabular">
-            {picks.length}本
+          <span className="font-mincho text-[11px] num-tabular text-sumi-fade">
+            {picks.length}장
           </span>
         </div>
         <button
@@ -107,11 +107,7 @@ export function KujiModal({ picks, onClose }: KujiModalProps) {
             onShake={handleShake}
           />
         ) : (
-          <RevealedView
-            winnerKanji={
-              winnerIdx !== null ? STICK_KANJI[winnerIdx % STICK_KANJI.length] : "吉"
-            }
-          />
+          <RevealedView picks={picks} winnerIdx={winnerIdx ?? 0} />
         )}
       </div>
     </div>
@@ -270,36 +266,141 @@ function Stick({
 
 /* ───────────────────────────────────────────────────────────────────── */
 
-function RevealedView({ winnerKanji }: { winnerKanji: string }) {
+function RevealedView({
+  picks,
+  winnerIdx,
+}: {
+  picks: PlaceLite[];
+  winnerIdx: number;
+}) {
+  const [showRest, setShowRest] = useState(false);
+  const setCurrentPick = useSessionStore((s) => s.setCurrentPick);
+  const currentPickId = useSessionStore((s) => s.currentPick?.id);
+  const winner = picks[winnerIdx];
+
   return (
     <div className="px-5 pt-6 pb-8">
-      {/* Winner stick + 大吉 stamp */}
-      <div className="flex flex-col items-center">
-        <span className="eyebrow mb-2">RESULT · 結果</span>
-        <div className="flex items-center gap-3">
-          <span
-            className="hanko-square hanko-square-shu"
-            style={{ width: 44, height: 44, fontSize: 22 }}
-            aria-hidden
-          >
-            大吉
-          </span>
-          <span
-            className="font-mincho text-sumi-ink"
-            style={{ fontSize: 26, fontWeight: 600 }}
-          >
-            {winnerKanji}
-          </span>
-        </div>
-        <p className="font-mincho mt-2 text-[12px] text-sumi-mute">
+      {/* Winner — no box, just brushed kanji */}
+      <div className="flex flex-col items-center text-center">
+        <p className="font-mincho text-[12px] tracking-[0.3em] text-sumi-fade">
+          결과
+        </p>
+        <p
+          className="font-mincho mt-1 text-shu"
+          style={{ fontSize: 38, fontWeight: 600, lineHeight: 1 }}
+        >
+          大吉
+        </p>
+        <p className="font-mincho mt-2 text-[12px] text-sumi-mute break-keep">
           오늘 한 집은 이쪽으로.
         </p>
       </div>
 
-      {/* Pick card — reuses Home's card so styling is identical */}
+      {/* Pick card — reuses Home's card so styling is identical. Reflects
+          whatever is currently in session.currentPick (winner by default;
+          changes if the user taps another candidate below). */}
       <div className="mt-6">
         <PickCard />
       </div>
+
+      {/* Toggle: 나머지 후보 보기 */}
+      {picks.length > 1 && (
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={() => setShowRest((v) => !v)}
+            aria-expanded={showRest}
+            className={cn(
+              "no-select font-mincho flex w-full items-center justify-between border-y border-hairline-soft py-2.5 text-[12px] tracking-tight text-sumi-mute transition-colors hover:text-sumi-ink",
+            )}
+          >
+            <span>
+              나머지 {picks.length - 1}곳 함께 보기
+            </span>
+            <span className="text-[10px] text-sumi-fade">
+              {showRest ? "닫기" : "펼치기"}
+            </span>
+          </button>
+
+          {showRest && (
+            <ul className="flex flex-col">
+              {picks.map((p, i) => {
+                const isWinner = i === winnerIdx;
+                const isCurrent = p.id === currentPickId;
+                return (
+                  <li
+                    key={p.id}
+                    className="border-b border-hairline-soft last:border-b-0"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPick(p)}
+                      className="no-select flex w-full items-center gap-3 py-3 text-left transition-colors active:bg-sumi-ink/5"
+                    >
+                      <span
+                        className={cn(
+                          "font-mincho mt-0.5 w-[20px] shrink-0 text-[12px] num-tabular",
+                          isCurrent ? "text-sumi-ink" : "text-sumi-fade",
+                        )}
+                      >
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={cn(
+                            "font-mincho truncate text-[14px] font-medium tracking-tight",
+                            isCurrent ? "text-sumi-ink" : "text-sumi-mute",
+                          )}
+                        >
+                          {p.name}
+                        </p>
+                        {(p.rating !== undefined ||
+                          p.distanceMeters !== undefined) && (
+                          <p className="mt-0.5 text-[11px] num-tabular text-sumi-fade">
+                            {p.rating !== undefined && (
+                              <span>
+                                <span className="text-shu">★</span>{" "}
+                                {p.rating.toFixed(1)}
+                              </span>
+                            )}
+                            {p.distanceMeters !== undefined && (
+                              <>
+                                <span className="mx-1.5">·</span>
+                                <span>
+                                  도보{" "}
+                                  {Math.max(
+                                    1,
+                                    Math.round(p.distanceMeters / 80),
+                                  )}
+                                  분
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        )}
+                      </div>
+                      {isWinner && (
+                        <span
+                          className="font-mincho shrink-0 text-[11px] tracking-tight text-shu"
+                          aria-label="뽑힌 곳"
+                        >
+                          뽑힘
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          {showRest && (
+            <p className="font-mincho mt-3 text-center text-[11px] text-sumi-fade break-keep">
+              항목을 누르면 위 카드가 그쪽으로 바뀝니다.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
