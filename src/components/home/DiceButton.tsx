@@ -6,6 +6,7 @@ import { haptic } from "@/lib/haptic";
 import { useSessionStore } from "@/stores/useSessionStore";
 import { useFiltersStore } from "@/stores/useFiltersStore";
 import { useLocationStore } from "@/stores/useLocationStore";
+import { useDiceStyleStore } from "@/stores/useDiceStyleStore";
 import { useRoll } from "@/hooks/useRoll";
 import { useDiceSpin } from "@/hooks/useDiceSpin";
 
@@ -15,8 +16,14 @@ export function DiceButton() {
   const setCurrentPick = useSessionStore((s) => s.setCurrentPick);
   const hasLocation = useLocationStore((s) => s.coords !== null);
   const category = useFiltersStore((s) => s.category);
+  const diceStyle = useDiceStyleStore((s) => s.style);
   const { roll, reveal } = useRoll();
-  const { controls, phaseText, spin, isSpinning } = useDiceSpin(category);
+  const { glyph, controls, phaseText, spin, isSpinning } = useDiceSpin(category);
+
+  // In rotating style, the cycling kanji takes over while spinning. When idle
+  // (and in classic style always), the signature 選 sits in the center.
+  const displayGlyph =
+    diceStyle === "rotating" && isSpinning ? glyph : "選";
 
   const disabled = !hasLocation || isSpinning || status === "rolling";
   const idleHelp = hasPick ? "다시 굴리기" : "맡겨주세요";
@@ -64,7 +71,7 @@ export function DiceButton() {
           className="font-mincho text-[3.5rem] font-medium leading-none text-paper"
           style={{ display: "inline-block" }}
         >
-          選
+          {displayGlyph}
         </motion.span>
       </motion.button>
 

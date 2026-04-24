@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { KanjiWatermark } from "@/components/common/KanjiWatermark";
 import { TokyoArrivalResetItem } from "@/components/settings/TokyoArrivalResetItem";
 import { TokyoArrivalPreviewItem } from "@/components/settings/TokyoArrivalPreviewItem";
+import { DiceStyleToggle } from "@/components/settings/DiceStyleToggle";
 
 export const metadata = { title: "설정 · 랜덤한끼" };
 
@@ -40,6 +41,11 @@ export default function SettingsPage() {
             title="차단목록"
             subtitle="스킵한 가게 관리 · 복구"
           />
+        </SettingsGroup>
+
+        <SectionLabel kanji="姿">표시</SectionLabel>
+        <SettingsGroup>
+          <DiceStyleToggle />
         </SettingsGroup>
 
         <SectionLabel kanji="他">기타</SectionLabel>

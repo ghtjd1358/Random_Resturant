@@ -14,6 +14,11 @@ const CAFE_EMOJIS = [
   "☕", "🍵", "🧋", "🧁", "🍰", "🎂", "🥐", "🥞", "🧇", "🍮", "🍩", "🍪",
 ];
 
+// Kanji cycle sets used by the "rotating" dice style. Curated for legibility
+// at the dice button's display size (each glyph reads cleanly in Mincho).
+const FOOD_KANJI = ["食", "麺", "丼", "寿", "鮨", "肉", "魚", "鍋", "飯", "串", "天", "蕎"];
+const CAFE_KANJI = ["茶", "珈", "菓", "麭", "甘", "湯", "氷", "酒"];
+
 const SPIN_INTERVAL_MS = 90;
 const SPIN_MIN_MS = 2200;
 const SPIN_MAX_MS = 3800;
@@ -34,9 +39,11 @@ function pickDifferent(list: string[], prev: string): string {
   return list[(idx + 1) % list.length];
 }
 
+export type DiceGlyphMode = "emoji" | "kanji";
+
 export interface UseDiceSpin {
-  /** Current emoji on display. */
-  emoji: string;
+  /** Current cycling glyph (emoji or kanji depending on mode). */
+  glyph: string;
   /** Animation controls to bind to the spinning element. */
   controls: AnimationControls;
   /** Active phase text during a spin, or null when idle. */
@@ -48,21 +55,32 @@ export interface UseDiceSpin {
 }
 
 /**
- * Encapsulates the dice UI: emoji cycle, phase labels, scale/rotate animation,
- * and minimum-duration guarantee. Returns just the bindings the view needs.
+ * Encapsulates the dice UI: glyph cycle, phase labels, scale/rotate animation,
+ * and minimum-duration guarantee. The glyph set depends on `mode` — emoji for
+ * legacy palette, kanji for the editorial sumi style.
  */
-export function useDiceSpin(category: Category): UseDiceSpin {
-  const emojis = category === "food" ? FOOD_EMOJIS : CAFE_EMOJIS;
+export function useDiceSpin(
+  category: Category,
+  mode: DiceGlyphMode = "kanji",
+): UseDiceSpin {
+  const glyphs =
+    mode === "kanji"
+      ? category === "food"
+        ? FOOD_KANJI
+        : CAFE_KANJI
+      : category === "food"
+        ? FOOD_EMOJIS
+        : CAFE_EMOJIS;
   const controls = useAnimationControls();
   const spinningRef = useRef(false);
-  const [emoji, setEmoji] = useState(() => emojis[0]);
+  const [glyph, setGlyph] = useState(() => glyphs[0]);
   const [phaseText, setPhaseText] = useState<string | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
 
-  // Reshuffle idle emoji on category change
+  // Reshuffle idle glyph on category or mode change
   useEffect(() => {
-    setEmoji(emojis[Math.floor(Math.random() * emojis.length)]);
-  }, [emojis, category]);
+    setGlyph(glyphs[Math.floor(Math.random() * glyphs.length)]);
+  }, [glyphs, category, mode]);
 
   const spin = useCallback(
     async <T,>(job: () => Promise<T>): Promise<T | undefined> => {
@@ -73,7 +91,7 @@ export function useDiceSpin(category: Category): UseDiceSpin {
       const duration = SPIN_MIN_MS + Math.random() * (SPIN_MAX_MS - SPIN_MIN_MS);
 
       const cycle = window.setInterval(() => {
-        setEmoji((prev) => pickDifferent(emojis, prev));
+        setGlyph((prev) => pickDifferent(glyphs, prev));
       }, SPIN_INTERVAL_MS);
 
       const phaseTimers = PHASES.map(({ at, text }) =>
@@ -120,8 +138,8 @@ export function useDiceSpin(category: Category): UseDiceSpin {
         spinningRef.current = false;
       }
     },
-    [controls, emojis],
+    [controls, glyphs],
   );
 
-  return { emoji, controls, phaseText, spin, isSpinning };
+  return { glyph, controls, phaseText, spin, isSpinning };
 }

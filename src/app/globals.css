@@ -374,6 +374,30 @@
   }
 }
 
+/* Sumi ink wash — bleeds outward from center, like wet brush on washi */
+@keyframes arrival-ink-bloom {
+  0%   { opacity: 0; transform: scale(0.55); filter: blur(14px); }
+  60%  { opacity: 1; filter: blur(2px); }
+  100% { opacity: 0.92; transform: scale(1); filter: blur(0); }
+}
+
+/* Brush kanji — wet ink fading in, slight settle */
+@keyframes arrival-brush-in {
+  0%   { opacity: 0; transform: translateY(16px) scale(0.96); filter: blur(6px); }
+  55%  { opacity: 1; filter: blur(0.5px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* Small ink droplets that flick outward from the main stroke */
+@keyframes arrival-droplet {
+  0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  20%  { opacity: 0.7; }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx, 0), var(--dy, 0)) scale(1);
+  }
+}
+
 /* Sonner toast custom theme */
 [data-sonner-toast] {
   --normal-bg: var(--card) !important;

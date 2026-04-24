@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { ExternalLink, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { buildMapUrl } from "@/lib/places/mapUrl";
 import { formatVisitDate } from "@/lib/format/time";
@@ -76,9 +76,10 @@ export function VisitedItem({ record, index, onFeedback, onDelete }: Props) {
           <button
             type="button"
             onClick={handleOpen}
-            className="font-mincho text-sumi-mute transition-opacity hover:opacity-70"
+            className="font-mincho inline-flex items-center gap-1 text-sumi-mute transition-opacity hover:opacity-70"
           >
             지도에서 열기
+            <ExternalLink className="size-3" strokeWidth={1.5} />
           </button>
           <span className="hairline-soft h-3 w-px" />
           <button
