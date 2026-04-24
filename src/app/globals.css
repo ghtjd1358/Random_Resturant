@@ -299,6 +299,24 @@
     border-color: var(--color-shu);
     color: var(--color-shu);
   }
+  /* Matcha green hanko — positive feedback marker. Pairs with shu for the
+     bad/good binary so users can scan a list and tell at a glance. */
+  .hanko-square-matcha {
+    border-color: var(--color-matcha-deep);
+    color: var(--color-matcha-deep);
+  }
+  /* Filled feedback chips — used in 기록 list. Outline-only versions are
+     too easy to miss while scanning a long list. */
+  .hanko-square-good-filled {
+    background: var(--color-matcha-deep);
+    border-color: var(--color-matcha-deep);
+    color: var(--color-paper);
+  }
+  .hanko-square-bad-filled {
+    background: var(--color-shu);
+    border-color: var(--color-shu);
+    color: var(--color-paper);
+  }
 
   /* Round 朱 stamp — bigger right-side decorative seal (一食 / 訪問 etc).
      Default is a 64×64 circle with safe inner padding so kanji + romaji

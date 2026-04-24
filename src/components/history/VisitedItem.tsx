@@ -118,16 +118,21 @@ export function VisitedItem({ record, index, onFeedback, onDelete }: Props) {
 }
 
 function FeedbackStamp({ feedback }: { feedback: Feedback }) {
+  // Filled variants — outline-only stamps were too easy to mistake for each
+  // other while scanning the 전체 list. Matcha green = good, shu red = bad.
   if (feedback === "good") {
     return (
-      <span className="hanko-square shrink-0" aria-label="좋아요">
+      <span
+        className="hanko-square hanko-square-good-filled shrink-0"
+        aria-label="좋아요"
+      >
         好
       </span>
     );
   }
   return (
     <span
-      className="hanko-square hanko-square-shu shrink-0"
+      className="hanko-square hanko-square-bad-filled shrink-0"
       aria-label="싫어요"
     >
       不
