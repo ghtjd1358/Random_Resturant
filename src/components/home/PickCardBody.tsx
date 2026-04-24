@@ -72,7 +72,14 @@ export function PickCardBody({ pick }: { pick: PlaceLite }) {
       {/* Hairline before AI line */}
       <div className="hairline-soft mt-4" />
 
-      <AIReasonLine placeId={pick.id} />
+      {/* Reserved slot for the AI line — min-height locks card size BEFORE
+          the AI box mounts. Without this, the card grew once when the
+          green box appeared and again when text/disclaimer rendered, which
+          shook the whole page. Now the card is steady from first paint and
+          the AI box just fades into existing space. */}
+      <div className="mt-3.5 min-h-[78px]">
+        <AIReasonLine placeId={pick.id} />
+      </div>
     </div>
   );
 }
