@@ -1,5 +1,6 @@
 import "server-only";
 import { generateText } from "ai";
+import { groq } from "@ai-sdk/groq";
 
 export interface ReasonInput {
   name: string;
@@ -9,7 +10,11 @@ export interface ReasonInput {
   reviewTexts: string[];
 }
 
-const MODEL = "anthropic/claude-haiku-4-5";
+// Groq's free tier — no credit card required, Llama 3.3 70B is generous
+// for short Korean one-liner generation. Direct provider (not Vercel AI
+// Gateway) because the gateway requires a CC on file even for free credits.
+// GROQ_API_KEY env var is auto-read by the @ai-sdk/groq package.
+const MODEL = groq("llama-3.3-70b-versatile");
 
 export async function generateReason(input: ReasonInput): Promise<string> {
   const reviewBlock = input.reviewTexts
