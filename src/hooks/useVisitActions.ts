@@ -42,7 +42,7 @@ export function useVisitActions(place: PlaceLite) {
       toast.error("기록 저장에 실패했어요.");
       return;
     }
-    toast.success("좋았어요 👍 기록했어요", {
+    toast.success("好 또 갈래요로 기록했어요", {
       description: `${place.name} · 방문 기록에 저장`,
       duration: 3500,
     });
@@ -57,7 +57,7 @@ export function useVisitActions(place: PlaceLite) {
       toast.error("기록 저장에 실패했어요.");
       return;
     }
-    toast("별로였어요 👎 기록했어요", {
+    toast("否 별로였어요로 기록했어요", {
       description: "방문 기록에 남았고, 다시는 뽑기에 안 나와요.",
       action: {
         label: "되돌리기",

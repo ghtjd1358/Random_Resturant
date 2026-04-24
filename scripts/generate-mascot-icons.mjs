@@ -22,8 +22,12 @@ const SRC_FACE = path.join(ROOT, "public/mascot-source-face.png");
 
 const LOW = 235;
 const HIGH = 252;
+// Face had a faint icon-frame ring around it from the source image; a more
+// aggressive low keys it out without chewing into the line art.
+const FACE_LOW = 205;
+const FACE_HIGH = 250;
 
-async function softKeyWhite(inputPath) {
+async function softKeyWhite(inputPath, { low = LOW, high = HIGH } = {}) {
   const { data, info } = await sharp(inputPath)
     .ensureAlpha()
     .raw()
@@ -32,10 +36,10 @@ async function softKeyWhite(inputPath) {
   for (let i = 0; i < data.length; i += 4) {
     const r = data[i], g = data[i + 1], b = data[i + 2];
     const min = Math.min(r, g, b);
-    if (min >= HIGH) {
+    if (min >= high) {
       data[i + 3] = 0;
-    } else if (min >= LOW) {
-      const t = (HIGH - min) / (HIGH - LOW); // 1 at LOW, 0 at HIGH
+    } else if (min >= low) {
+      const t = (high - min) / (high - low); // 1 at low, 0 at high
       data[i + 3] = Math.round(255 * t);
     }
   }
@@ -63,10 +67,15 @@ async function main() {
   console.log("wrote public/mascot-giraffe.png (full body, transparent)");
 
   // Face — separate output for the inline header avatar.
-  const faceBase = await softKeyWhite(SRC_FACE);
-  const faceBuf = await faceBase.toBuffer();
+  // After soft-keying the icon-frame white, trim() crops the remaining
+  // transparent padding so the face sits tight in its box. Without the
+  // trim, the inline <Image> container shows a large empty border and the
+  // face looks small inside the masthead.
+  const faceBase = await softKeyWhite(SRC_FACE, { low: FACE_LOW, high: FACE_HIGH });
+  const faceRaw = await faceBase.toBuffer();
+  const faceBuf = await sharp(faceRaw).trim().toBuffer();
   await writeFile(path.join(ROOT, "public/mascot-giraffe-face.png"), faceBuf);
-  console.log("wrote public/mascot-giraffe-face.png (face only, transparent)");
+  console.log("wrote public/mascot-giraffe-face.png (face, trimmed, transparent)");
 
   // App icons — face fits squares much better than the tall full body.
   const sizes = [

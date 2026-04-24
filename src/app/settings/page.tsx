@@ -40,31 +40,19 @@ export default function SettingsPage() {
             title="다시는 안 볼 곳"
             subtitle="스킵한 가게 관리 · 복구"
           />
-          <SettingsItem
-            title="기본 거리"
-            subtitle="800m · 홈에서 바로 바꿀 수 있어요"
-          />
-        </SettingsGroup>
-
-        <SectionLabel kanji="好">취향 학습</SectionLabel>
-        <SettingsGroup>
-          <SettingsItem
-            title="지금까지 학습된 취향"
-            subtitle="또 갈래요 0 · 별로 0"
-          />
-          <SettingsItem
-            title="처음부터 다시 배우게 하기"
-            subtitle="학습 기록을 모두 지워요"
-            accent
-          />
         </SettingsGroup>
 
         <SectionLabel kanji="他">기타</SectionLabel>
         <SettingsGroup>
           <SettingsItem
+            href="/settings/price-guide"
+            title="가격대 기준"
+            subtitle="¥ · ¥¥ · ¥¥¥ · ¥¥¥¥ 가 뭔지"
+          />
+          <SettingsItem
             href="/privacy"
-            title="안내 · 案内"
-            subtitle="가격 기준 · 개인정보 · AI 면책"
+            title="이용허락 · 개인정보"
+            subtitle="어떤 정보를 어떻게 쓰는지"
           />
           <TokyoArrivalResetItem />
           {process.env.NODE_ENV !== "production" && <TokyoArrivalPreviewItem />}

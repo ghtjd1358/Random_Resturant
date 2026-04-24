@@ -30,7 +30,7 @@ export function SkippedItem({ record, disabled, onRestore }: Props) {
   const subtitle = (
     <span className="flex items-center gap-1">
       <Ban className="size-3" />
-      {record.reason === "bad_feedback" ? "👎 피드백" : "수동 스킵"}
+      {record.reason === "bad_feedback" ? "否 피드백" : "수동 스킵"}
       <span className="mx-1">·</span>
       {formatShortDate(record.skippedAt)}
     </span>

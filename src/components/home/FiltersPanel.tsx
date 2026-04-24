@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, RotateCcw } from "lucide-react";
 import { CategoryToggle } from "./CategoryToggle";
 import { SubcategoryChips } from "./SubcategoryChips";
 import { ModeToggle } from "./ModeToggle";
 import { PriceFilter } from "./PriceFilter";
 import { RadiusSlider } from "./RadiusSlider";
 import { OpenNowToggle } from "./OpenNowToggle";
-import { useFiltersStore } from "@/stores/useFiltersStore";
+import { isFiltersDefault, useFiltersStore } from "@/stores/useFiltersStore";
+import { haptic } from "@/lib/haptic";
 import { cn } from "@/lib/utils";
 
 /**
@@ -33,6 +34,13 @@ export function FiltersPanel() {
   const setOpenNowOnly = useFiltersStore((s) => s.setOpenNowOnly);
   const togglePriceLevel = useFiltersStore((s) => s.togglePriceLevel);
   const clearPriceLevels = useFiltersStore((s) => s.clearPriceLevels);
+  const resetFilters = useFiltersStore((s) => s.resetFilters);
+  const isDefault = useFiltersStore(isFiltersDefault);
+
+  const handleReset = () => {
+    haptic.tap();
+    resetFilters();
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -61,6 +69,22 @@ export function FiltersPanel() {
           />
           <RadiusSlider value={radius} onChange={setRadius} />
           <OpenNowToggle value={openNowOnly} onChange={setOpenNowOnly} />
+
+          {/* Reset row — only meaningful when something diverged from defaults */}
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={isDefault}
+            className={cn(
+              "no-select group mt-1 flex items-center justify-center gap-1.5 border py-2.5 text-[12px] font-mincho tracking-tight transition-colors",
+              isDefault
+                ? "border-hairline-soft text-sumi-fade cursor-not-allowed"
+                : "border-shu/40 text-shu hover:bg-shu/5",
+            )}
+          >
+            <RotateCcw className="size-3.5" strokeWidth={1.5} />
+            {isDefault ? "기본값입니다" : "필터 초기화 · 初期化"}
+          </button>
         </div>
       )}
     </div>

@@ -1,80 +1,41 @@
 import { PageHeader } from "@/components/common/PageHeader";
 import { KanjiWatermark } from "@/components/common/KanjiWatermark";
-import { PRICE_BUCKETS } from "@/lib/places/types";
 
-export const metadata = { title: "안내 · 랜덤한끼" };
+export const metadata = { title: "이용허락 · 개인정보 · 랜덤한끼" };
 
-export default function AboutPage() {
+export default function PrivacyPage() {
   return (
     <div className="relative px-5 pt-5 pb-6">
-      <KanjiWatermark glyph="案" />
+      <KanjiWatermark glyph="私" />
       <div className="relative z-10">
         <PageHeader
           eyebrow="random · hankki"
-          kanji="案"
+          kanji="私"
           jpLabel={
             <>
-              안내
+              이용허락
               <span className="mx-1.5 text-sumi-fade/60">/</span>
-              <span className="text-sumi-fade">ABOUT</span>
+              <span className="text-sumi-fade">PRIVACY</span>
             </>
           }
-          title="안내"
-          sealKanji="案内"
-          sealRomaji="ANNAI"
-          subtitle="가격 기준 · 개인정보 · AI 면책. 한 페이지에 모았습니다."
+          title="이용허락"
+          sealKanji="私事"
+          sealRomaji="SHIJI"
+          subtitle="어떤 정보를 어떻게 쓰는지 한 번에 요약."
           backHref="/settings"
           backLabel="설정"
         />
 
-        {/* ── 가격대 기준 ────────────────────────────────────── */}
-        <SectionTitle kanji="價" labelKr="가격대 기준" labelEn="PRICE GUIDE">
-          일본 외식 한 끼 기준입니다. 참고용 대략치예요.
-        </SectionTitle>
-
-        <div className="flex flex-col">
-          {PRICE_BUCKETS.map((b) => (
-            <article
-              key={b.key}
-              className="flex items-start gap-3 border-b border-hairline-soft py-3.5 last:border-b-0"
-            >
-              <div
-                aria-hidden
-                className="hanko-square shrink-0 mt-0.5"
-              >
-                {b.label}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                  <span className="font-mincho text-[14px] font-medium tracking-tight text-sumi-ink">
-                    {b.description}
-                  </span>
-                  <span className="text-[11px] num-tabular text-shu">
-                    {b.approxRange}
-                  </span>
-                </div>
-                <p className="mt-1 text-[12px] leading-relaxed text-sumi-mute break-keep">
-                  {b.longDescription}
-                </p>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        <p className="mt-3 border border-dashed border-hairline px-3 py-2 text-[11px] leading-relaxed text-sumi-fade break-keep">
-          가격 정보가 없는 가게는 필터가 켜져 있어도 후보에 포함됩니다.
-          정확한 가격은 현지에서 확인해 주세요.
-        </p>
-
-        {/* ── 한 줄 요약 ─────────────────────────────────────── */}
         <SectionTitle kanji="要" labelKr="한 줄 요약" labelEn="SUMMARY" />
         <p className="text-[13px] leading-relaxed text-sumi-ink break-keep">
-          이 앱은 <strong className="font-medium text-sumi-ink">서버에 개인정보를 저장하지 않습니다.</strong>{" "}
+          이 앱은{" "}
+          <strong className="font-medium text-sumi-ink">
+            서버에 개인정보를 저장하지 않습니다.
+          </strong>{" "}
           위치는 식당 검색용으로만 순간적으로 사용되고, 방문·스킵 기록은 오직
           사용자의 기기(IndexedDB)에만 저장됩니다.
         </p>
 
-        {/* ── 수집하는 정보 ───────────────────────────────────── */}
         <SectionTitle kanji="収" labelKr="수집하는 정보" labelEn="COLLECTED" />
         <BulletList>
           <Bullet
@@ -91,7 +52,6 @@ export default function AboutPage() {
           />
         </BulletList>
 
-        {/* ── 수집하지 않는 것 ─────────────────────────────────── */}
         <SectionTitle kanji="否" labelKr="수집하지 않는 것" labelEn="NEVER" />
         <BulletList>
           <Bullet body="이름, 이메일, 전화번호 등 식별 정보 (회원 가입 자체가 없음)" />
@@ -99,7 +59,6 @@ export default function AboutPage() {
           <Bullet body="이동 경로, 방문 히스토리의 서버 전송" />
         </BulletList>
 
-        {/* ── 외부 서비스 ─────────────────────────────────────── */}
         <SectionTitle kanji="外" labelKr="외부 서비스" labelEn="EXTERNAL" />
         <BulletList>
           <Bullet
@@ -114,7 +73,7 @@ export default function AboutPage() {
                   className="text-shu underline-offset-2 hover:underline"
                 >
                   Google 개인정보 처리방침
-                </a>{" "}
+                </a>
                 에 따라 처리됩니다.
               </>
             }
@@ -129,24 +88,26 @@ export default function AboutPage() {
           />
         </BulletList>
 
-        {/* ── 기록 삭제 ───────────────────────────────────────── */}
         <SectionTitle kanji="消" labelKr="기록 삭제" labelEn="DELETE" />
         <p className="text-[13px] leading-relaxed text-sumi-ink break-keep">
           브라우저 설정에서 이 사이트의 데이터(Site Data)를 지우면 IndexedDB에
           저장된 모든 방문·스킵 기록이 삭제됩니다. 앱 내에서도 각 기록을 개별
-          삭제할 수 있어요 (<em className="not-italic font-mincho text-shu">기록</em>{" "}
-          탭 및 <em className="not-italic font-mincho text-shu">다시는 안 볼 곳</em>{" "}
+          삭제할 수 있어요 (
+          <em className="not-italic font-mincho text-shu">기록</em> 탭 및{" "}
+          <em className="not-italic font-mincho text-shu">다시는 안 볼 곳</em>{" "}
           페이지).
         </p>
 
-        {/* ── AI 면책 ──────────────────────────────────────── */}
-        <SectionTitle kanji="注" labelKr="AI 생성 콘텐츠 면책" labelEn="AI NOTICE" />
+        <SectionTitle
+          kanji="注"
+          labelKr="AI 생성 콘텐츠 면책"
+          labelEn="AI NOTICE"
+        />
         <p className="text-[13px] leading-relaxed text-sumi-ink break-keep">
           추천 카드의 한 줄 설명은 AI가 리뷰를 바탕으로 생성합니다. 실제 가게의
           특성과 다를 수 있으며, 최종 판단은 사용자에게 있습니다.
         </p>
 
-        {/* ── 문의 ────────────────────────────────────────── */}
         <SectionTitle kanji="尋" labelKr="문의" labelEn="CONTACT" />
         <p className="text-[12px] text-sumi-fade break-keep">
           개인 프로젝트로 운영되는 앱이며, 별도의 고객 지원은 없습니다.
@@ -167,27 +128,20 @@ function SectionTitle({
   kanji,
   labelKr,
   labelEn,
-  children,
 }: {
   kanji: string;
   labelKr: string;
   labelEn: string;
-  children?: React.ReactNode;
 }) {
   return (
-    <div className="mt-7 mb-3">
-      <div className="flex items-baseline gap-2">
-        <span className="font-mincho text-[14px] font-medium text-sumi-ink">
-          {kanji}
-        </span>
-        <span className="font-mincho text-[13px] font-medium tracking-tight text-sumi-ink">
-          {labelKr}
-        </span>
-        <span className="eyebrow text-[9px]">/ {labelEn}</span>
-      </div>
-      {children && (
-        <p className="mt-1 text-[12px] text-sumi-mute break-keep">{children}</p>
-      )}
+    <div className="mt-7 mb-3 flex items-baseline gap-2">
+      <span className="font-mincho text-[14px] font-medium text-sumi-ink">
+        {kanji}
+      </span>
+      <span className="font-mincho text-[13px] font-medium tracking-tight text-sumi-ink">
+        {labelKr}
+      </span>
+      <span className="eyebrow text-[9px]">/ {labelEn}</span>
     </div>
   );
 }
@@ -202,7 +156,9 @@ function Bullet({ head, body }: { head?: string; body: React.ReactNode }) {
       <span aria-hidden className="mt-2 size-1 shrink-0 rounded-full bg-shu" />
       <span>
         {head && (
-          <span className="font-mincho font-medium text-sumi-ink">{head}: </span>
+          <span className="font-mincho font-medium text-sumi-ink">
+            {head}:{" "}
+          </span>
         )}
         <span className="text-sumi-mute">{body}</span>
       </span>

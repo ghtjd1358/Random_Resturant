@@ -28,17 +28,17 @@ export function PickCard() {
             <span aria-hidden className="shu-tab" />
 
             {/* Full-body mascot watermark — anchored bottom-right of the
-                card, very low opacity so it sits behind text but signals
-                the brand. pointer-events-none keeps it out of the way. */}
+                card. Bigger + slightly more opaque so the giraffe is
+                visible as a quiet illustration behind the editorial text. */}
             <div
               aria-hidden
-              className="pointer-events-none absolute -right-6 bottom-0 size-44 select-none opacity-[0.07]"
+              className="pointer-events-none absolute -right-4 -bottom-2 size-56 select-none opacity-[0.13]"
             >
               <Image
                 src="/mascot-giraffe.png"
                 alt=""
                 fill
-                sizes="176px"
+                sizes="224px"
                 className="object-contain object-bottom"
               />
             </div>
