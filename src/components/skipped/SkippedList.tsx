@@ -31,7 +31,7 @@ export function SkippedList() {
   if (records.length === 0)
     return (
       <EmptyPlaceholder
-        kanji="清"
+        mascot="meditate"
         title="스킵한 가게가 없어요"
         hint="별로였거나 안 가고 싶은 곳을 제외하면 여기에 쌓여요"
       />

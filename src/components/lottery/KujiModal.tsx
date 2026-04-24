@@ -344,6 +344,10 @@ function Stage({
                     marginTop: -s.size / 2,
                     filter: "blur(0.5px)",
                   }}
+                  // initial="ready" so each splash starts at center; without
+                  // this motion would mount it already-displaced (parent's
+                  // animate="shaking" applies on first render).
+                  initial="ready"
                   custom={{ sx: s.sx, sy: s.sy }}
                   variants={splashVariants}
                 />
@@ -666,45 +670,69 @@ function RevealedView({
   return (
     <div className="px-5 pt-6 pb-8">
       {/* Winner — oracle giraffe presents the 運勢吉 scroll above, then
-          brushed kanji 大吉 below. Spring entry feels like a presented
-          gift, not a CSS pop. */}
+          brushed kanji 大吉 below. Parent variants + named child variants
+          so staggerChildren actually works (it's a no-op when children have
+          their own animate prop). */}
       <motion.div
         className="flex flex-col items-center text-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ staggerChildren: 0.12, delayChildren: 0.1 }}
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.12, delayChildren: 0.1 },
+          },
+        }}
       >
         <motion.span
           aria-hidden
           style={{ transformOrigin: "bottom center" }}
-          initial={{ opacity: 0, y: -16, scale: 0.7 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 16 }}
+          variants={{
+            hidden: { opacity: 0, y: -16, scale: 0.7 },
+            show: {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              transition: { type: "spring", stiffness: 200, damping: 16 },
+            },
+          }}
         >
-          <Mascot variant="scroll-fortune" size="lg" />
+          <Mascot variant="scroll-fortune" size="lg" decorative={false} />
         </motion.span>
         <motion.p
           className="font-mincho mt-1 text-[12px] tracking-[0.3em] text-sumi-fade"
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          variants={{
+            hidden: { opacity: 0, y: 6 },
+            show: {
+              opacity: 1,
+              y: 0,
+              transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+            },
+          }}
         >
           결과
         </motion.p>
         <motion.p
           className="font-mincho mt-1 text-shu"
           style={{ fontSize: 38, fontWeight: 600, lineHeight: 1 }}
-          initial={{ opacity: 0, scale: 0.7 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 240, damping: 14, delay: 0.15 }}
+          variants={{
+            hidden: { opacity: 0, scale: 0.7 },
+            show: {
+              opacity: 1,
+              scale: 1,
+              transition: { type: "spring", stiffness: 240, damping: 14 },
+            },
+          }}
         >
           大吉
         </motion.p>
         <motion.p
           className="font-mincho mt-2 text-[12px] text-sumi-mute break-keep"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          variants={{
+            hidden: { opacity: 0 },
+            show: { opacity: 1, transition: { duration: 0.5 } },
+          }}
         >
           오늘 한 집은 이쪽으로.
         </motion.p>

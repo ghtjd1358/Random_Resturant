@@ -119,13 +119,13 @@ function emptyMessage(filter: VisitedFilter): {
   }
   if (filter === "good") {
     return {
-      kanji: "善",
+      mascot: "book-read",
       title: "아직 또 갈래요 한 곳이 없어요",
       hint: "좋았던 집은 두고두고 기록됩니다",
     };
   }
   return {
-    kanji: "否",
+    mascot: "meditate",
     title: "아직 별로였어요 한 곳이 없어요",
     hint: "별로였던 집은 앞으로 뽑기에 안 나와요",
   };

@@ -6,6 +6,7 @@ import { KanjiWatermark } from "@/components/common/KanjiWatermark";
 import { TokyoArrivalResetItem } from "@/components/settings/TokyoArrivalResetItem";
 import { TokyoArrivalPreviewItem } from "@/components/settings/TokyoArrivalPreviewItem";
 import { DiceStyleToggle } from "@/components/settings/DiceStyleToggle";
+import { Mascot } from "@/components/common/Mascot";
 
 export const metadata = { title: "설정 · 랜덤한끼" };
 
@@ -64,7 +65,10 @@ export default function SettingsPage() {
           {process.env.NODE_ENV !== "production" && <TokyoArrivalPreviewItem />}
         </SettingsGroup>
 
-        <footer className="mt-10 text-center">
+        <footer className="mt-10 flex flex-col items-center text-center">
+          {/* Brush-standing mascot signs off the page — small, decorative
+              hero before the version line. */}
+          <Mascot variant="brush-stand" size="md" className="mb-3" />
           <div className="hairline-soft mx-auto mb-3 w-12" />
           <p className="font-mincho text-[12px] font-medium tracking-tight text-sumi-mute">
             랜덤한끼 · v0.1.0

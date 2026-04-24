@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { BottomTabBar } from "@/components/nav/BottomTabBar";
 import { InstallBanner } from "@/components/pwa/InstallBanner";
 import { BackToExit } from "@/components/common/BackToExit";
+import { MotionRoot } from "@/components/common/MotionRoot";
 import "./globals.css";
 
 const notoSans = Noto_Sans_KR({
@@ -95,13 +96,15 @@ export default function RootLayout({
       )}
     >
       <body className="bg-paper">
-        <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col safe-pt">
-          <main className="flex-1 pb-24">{children}</main>
-          <BottomTabBar />
-        </div>
-        <InstallBanner />
-        <BackToExit />
-        <Toaster position="top-center" richColors />
+        <MotionRoot>
+          <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col safe-pt">
+            <main className="flex-1 pb-24">{children}</main>
+            <BottomTabBar />
+          </div>
+          <InstallBanner />
+          <BackToExit />
+          <Toaster position="top-center" richColors />
+        </MotionRoot>
       </body>
     </html>
   );

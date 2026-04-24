@@ -23,7 +23,9 @@ export function EmptyPlaceholder({ kanji = "空", title, hint, mascot }: Props) 
     <div className="relative overflow-hidden rounded-xl border border-dashed border-border/70 bg-card/40 bg-washi-soft px-6 py-10 text-center">
       {mascot ? (
         <div className="mx-auto mb-3 flex justify-center animate-[mascot-idle-breathe_3.6s_ease-in-out_infinite]">
-          <Mascot variant={mascot} size="md" />
+          {/* Hero mascot for the empty state — meaningful, not decorative,
+              so screen readers announce it via the variant's alt. */}
+          <Mascot variant={mascot} size="md" decorative={false} />
         </div>
       ) : (
         <div

@@ -2,6 +2,21 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Respect OS-level "reduce motion" preference. motion/react animations are
+   handled separately via <MotionConfig reducedMotion="user">. This block
+   neutralizes our CSS-driven keyframes (mascot breathing, ash drift,
+   arrival sequence, etc) for users who set the system preference. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -329,89 +344,9 @@
   }
 }
 
-/* ── 시부야 도착 easter-egg keyframes ─────────────────────────────── */
-@keyframes arrival-sun {
-  0%   { opacity: 0; transform: translateY(20px) scale(0.85); }
-  30%  { opacity: 1; transform: translateY(0)    scale(1); }
-  100% { opacity: 1; transform: translateY(-10px) scale(1.02); }
-}
-
-@keyframes arrival-cloud-drift {
-  0%   { opacity: 0; transform: translateX(0); }
-  20%  { opacity: 0.85; }
-  100% { opacity: 0.85; transform: translateX(120px); }
-}
-
-@keyframes arrival-skyline-rise {
-  0%   { opacity: 0; transform: translateY(60%); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes arrival-stamp-drop {
-  0%   { opacity: 0; transform: translateY(-160%) rotate(-22deg) scale(1.4); }
-  70%  { opacity: 1; transform: translateY(0)      rotate(-5deg)  scale(1.08); }
-  85%  {             transform: translateY(0)      rotate(-9deg)  scale(0.98); }
-  100% { opacity: 1; transform: translateY(0)      rotate(-8deg)  scale(1); }
-}
-
-@keyframes arrival-headline {
-  0%   { opacity: 0; transform: translateY(14px) scale(0.9); }
-  60%  { opacity: 1; transform: translateY(-2px) scale(1.04); }
-  100% { opacity: 1; transform: translateY(0)    scale(1); }
-}
-
-@keyframes arrival-fade-up {
-  0%   { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes arrival-confetti {
-  0%   { opacity: 0; transform: translate(0, 0) rotate(0); }
-  8%   { opacity: 1; }
-  100% {
-    opacity: 0;
-    transform: translate(var(--tx, 0), var(--ty, 0)) rotate(var(--rot, 0));
-  }
-}
-
-/* Sumi ink wash — bleeds outward from center, like wet brush on washi */
-@keyframes arrival-ink-bloom {
-  0%   { opacity: 0; transform: scale(0.55); filter: blur(14px); }
-  60%  { opacity: 1; filter: blur(2px); }
-  100% { opacity: 0.92; transform: scale(1); filter: blur(0); }
-}
-
-/* Brush kanji — wet ink fading in, slight settle */
-@keyframes arrival-brush-in {
-  0%   { opacity: 0; transform: translateY(16px) scale(0.96); filter: blur(6px); }
-  55%  { opacity: 1; filter: blur(0.5px); }
-  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-}
-
-/* Small ink droplets that flick outward from the main stroke */
-@keyframes arrival-droplet {
-  0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
-  20%  { opacity: 0.7; }
-  100% {
-    opacity: 0;
-    transform: translate(var(--dx, 0), var(--dy, 0)) scale(1);
-  }
-}
-
-/* Brush-painter mascot pop-in — emerges from below as if she just stepped
-   forward after the brush stroke. Slight overshoot so she feels alive. */
-@keyframes arrival-mascot-pop {
-  0%   { opacity: 0; transform: translateY(24px) scale(0.7) rotate(-4deg); }
-  60%  { opacity: 1; transform: translateY(-3px) scale(1.05) rotate(2deg); }
-  100% { opacity: 1; transform: translateY(0)   scale(1)    rotate(0); }
-}
-
-/* Idle breathing sway after the entry — keeps her alive while the
-   text reveals roll in. Very subtle so she doesn't compete with copy. */
-@keyframes arrival-mascot-breathe {
-  0%, 100% { transform: translateY(0) rotate(-1deg); }
-  50%      { transform: translateY(-2px) rotate(1deg); }
-}
+/* TokyoArrival keyframes were ALL removed — that component is now pure
+   motion/react. Pure-CSS mascot loops below stay because they're used in
+   PickCard placeholder + EmptyPlaceholder where motion would be overkill. */
 
 /* PickCard placeholder mascots — "writing your fortune" while rolling
    (small tilt, like brush is moving), gentle breath while idle. */

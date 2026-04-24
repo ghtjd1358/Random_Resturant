@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -11,8 +12,23 @@ const TABS = [
   { href: "/settings", label: "설정", kanji: "設" },
 ] as const;
 
+function isActive(href: string, pathname: string) {
+  return href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
+
 export function BottomTabBar() {
   const pathname = usePathname();
+  // Optimistic active tab. Next.js's usePathname doesn't update until the
+  // new route commits, so clicking 제비 → 뽑기 left the OLD tab highlighted
+  // for a noticeable beat while the heavy lottery page tore down. We track
+  // the user's *intent* on click and clear it once pathname catches up.
+  const [intent, setIntent] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (intent && isActive(intent, pathname)) setIntent(null);
+  }, [pathname, intent]);
+
+  const effective = intent ?? pathname;
 
   return (
     <nav
@@ -21,12 +37,16 @@ export function BottomTabBar() {
     >
       <ul className="flex items-stretch justify-around px-2 pt-2.5 pb-2">
         {TABS.map(({ href, label, kanji }) => {
-          const active =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
+          const active = isActive(href, effective);
           return (
             <li key={href} className="relative flex-1">
               <Link
                 href={href}
+                onClick={() => {
+                  // Same-tab tap shouldn't flicker — only set intent if
+                  // navigating somewhere else.
+                  if (!isActive(href, pathname)) setIntent(href);
+                }}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "no-select relative flex flex-col items-center gap-1 px-3 py-1 transition-colors",
