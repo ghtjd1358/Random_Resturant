@@ -119,7 +119,10 @@ function HomeHeader({ issueNo }: { issueNo: string }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="eyebrow mb-1 text-sumi-fade">random · hankki</p>
+          {/* `random · hankki` is JetBrains Mono with letter-spacing; that
+              spacing also adds a half-space at the very start, so the text
+              sits ~2px left of the Mincho h1 below. Pad to align. */}
+          <p className="eyebrow mb-1 pl-[2px] text-sumi-fade">random · hankki</p>
           {/* h1 sits 7px above its baseline so the wordmark hugs the eyebrow
               instead of drifting toward the mascot's chin. */}
           <h1 className="-translate-y-[7px] font-mincho text-[2.4rem] font-semibold leading-none tracking-tight text-sumi-ink">

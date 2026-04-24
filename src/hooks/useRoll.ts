@@ -114,7 +114,7 @@ export function useRoll() {
           });
         } else if (result.reason === "only_skipped_left") {
           toast.info("남은 후보가 전부 스킵된 곳이에요.", {
-            description: "설정 → 다시는 안 볼 곳에서 일부를 복구해 보세요.",
+            description: "설정 → 차단목록에서 일부를 복구해 보세요.",
           });
         }
         s.setCandidates(result.candidates);

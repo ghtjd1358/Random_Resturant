@@ -37,7 +37,7 @@ export default function SettingsPage() {
         <SettingsGroup>
           <SettingsItem
             href="/settings/skipped"
-            title="다시는 안 볼 곳"
+            title="차단목록"
             subtitle="스킵한 가게 관리 · 복구"
           />
         </SettingsGroup>

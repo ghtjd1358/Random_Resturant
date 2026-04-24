@@ -94,7 +94,7 @@ export default function PrivacyPage() {
           저장된 모든 방문·스킵 기록이 삭제됩니다. 앱 내에서도 각 기록을 개별
           삭제할 수 있어요 (
           <em className="not-italic font-mincho text-shu">기록</em> 탭 및{" "}
-          <em className="not-italic font-mincho text-shu">다시는 안 볼 곳</em>{" "}
+          <em className="not-italic font-mincho text-shu">차단목록</em>{" "}
           페이지).
         </p>
 
