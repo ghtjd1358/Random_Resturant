@@ -66,9 +66,9 @@ export default function SettingsPage() {
         </SettingsGroup>
 
         <footer className="mt-10 flex flex-col items-center text-center">
-          {/* Brush-standing mascot signs off the page — small, decorative
-              hero before the version line. */}
-          <Mascot variant="brush-stand" size="md" className="mb-3" />
+          {/* Lantern mascot signs off the page — small, decorative hero
+              before the version line. */}
+          <Mascot variant="lantern" size="md" className="mb-3" />
           <div className="hairline-soft mx-auto mb-3 w-12" />
           <p className="font-mincho text-[12px] font-medium tracking-tight text-sumi-mute">
             랜덤한끼 · v0.1.0
