@@ -398,6 +398,32 @@
   }
 }
 
+/* Brush-painter mascot pop-in — emerges from below as if she just stepped
+   forward after the brush stroke. Slight overshoot so she feels alive. */
+@keyframes arrival-mascot-pop {
+  0%   { opacity: 0; transform: translateY(24px) scale(0.7) rotate(-4deg); }
+  60%  { opacity: 1; transform: translateY(-3px) scale(1.05) rotate(2deg); }
+  100% { opacity: 1; transform: translateY(0)   scale(1)    rotate(0); }
+}
+
+/* Idle breathing sway after the entry — keeps her alive while the
+   text reveals roll in. Very subtle so she doesn't compete with copy. */
+@keyframes arrival-mascot-breathe {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-2px) rotate(1deg); }
+}
+
+/* PickCard placeholder mascots — "writing your fortune" while rolling
+   (small tilt, like brush is moving), gentle breath while idle. */
+@keyframes mascot-write {
+  0%, 100% { transform: rotate(-2deg) translateY(0); }
+  50%      { transform: rotate(2deg) translateY(-1px); }
+}
+@keyframes mascot-idle-breathe {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50%      { transform: scale(1.02) translateY(-2px); }
+}
+
 /* ── Kuji (제비뽑기) modal animations ──────────────────────────────── */
 @keyframes kuji-stick-drop {
   0%   { opacity: 0; transform: translateY(-30px) rotate(var(--rot, 0deg)); }
@@ -466,6 +492,21 @@
     opacity: 0;
     transform: translateY(-120px) translateX(var(--ash-x, 0)) rotate(var(--ash-rot, 180deg));
   }
+}
+
+/* Mascot companion sway during shake — different rhythm from cylinder so
+   they read as two separate objects. Subtle so it never upstages the tube. */
+@keyframes kuji-lantern-sway {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50%      { transform: rotate(3deg) translateY(-2px); }
+}
+
+/* Oracle giraffe enters with the reveal — small bow animation as if
+   delivering the fortune scroll. */
+@keyframes kuji-oracle-bow {
+  0%   { transform: translateY(-10px) scale(0.7); opacity: 0; }
+  60%  { transform: translateY(2px)   scale(1.04); opacity: 1; }
+  100% { transform: translateY(0)     scale(1);    opacity: 1; }
 }
 
 /* Sonner toast custom theme — neutralize sonner's stock green/red and

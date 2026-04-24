@@ -105,13 +105,14 @@ function FilterTabs({
 }
 
 function emptyMessage(filter: VisitedFilter): {
-  kanji: string;
+  kanji?: string;
   title: string;
   hint?: string;
+  mascot?: import("@/components/common/Mascot").MascotVariant;
 } {
   if (filter === "all") {
     return {
-      kanji: "初",
+      mascot: "butterfly",
       title: "아직 방문 기록이 없어요",
       hint: "첫 한 집을 뽑아서 다녀와 보세요",
     };

@@ -5,6 +5,7 @@ import {
   startTokyoArrivalChime,
   type ChimeController,
 } from "@/lib/audio/tokyoArrivalChime";
+import { Mascot } from "@/components/common/Mascot";
 
 interface TokyoArrivalProps {
   /** Fires after the sequence finishes (or user taps to skip). Always called exactly once. */
@@ -37,7 +38,9 @@ const DROPLETS = Array.from({ length: 9 }, (_, i) => {
  *   0.4 – 1.6  big sumi ink wash blooms outward from center
  *   1.0 – 1.8  着 brush kanji wet-fades in over the wash
  *   1.4 – 2.4  ink droplets flick outward from the brush
- *   1.8 – 2.4  朱 東京 hanko stamps lower-right
+ *   1.6 – 2.2  brush-wink giraffe pops in lower-left, brush still raised
+ *               — narratively "she just painted the 着 you're seeing"
+ *   1.8 – 2.4  朱 東京 hanko stamps lower-right (mirrors mascot — balance)
  *   2.0 – 2.8  도쿄 도착 Korean greeting fades in
  *   2.6 – 3.2  ようこそ · 東京 sub-line
  *   3.2 – 4.5  hold + graceful fade-out
@@ -88,6 +91,12 @@ export function TokyoArrival({ onComplete }: TokyoArrivalProps) {
 
       {/* Ink droplets flicked from the brush */}
       <InkDroplets />
+
+      {/* Wink giraffe — brush still in hand. Pops in just as the kanji
+          finishes appearing, so she reads as the calligrapher who just
+          finished the stroke. Lower-left to balance the hanko on the
+          right. */}
+      <BrushPainter />
 
       {/* 朱 東京 hanko — small, lower-right corner like a signed stamp */}
       <HankoCorner />
@@ -238,6 +247,35 @@ function InkDroplets() {
             }
           />
         ))}
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────────────────────────────────── */
+
+/**
+ * Wink giraffe holding a brush — pops in at 1.6s as if she just finished
+ * painting the 着 kanji at center. After the entry bounce she idles with
+ * a slow breathing sway so she stays alive through the text reveals.
+ */
+function BrushPainter() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute bottom-[12vh] left-[6vw] sm:left-[10vw]"
+    >
+      <div
+        className="animate-[arrival-mascot-pop_0.7s_cubic-bezier(0.3,1.4,0.4,1)_both]"
+        style={{
+          animationDelay: "1.6s",
+          opacity: 0,
+          transformOrigin: "bottom center",
+        }}
+      >
+        <div className="animate-[arrival-mascot-breathe_3.2s_ease-in-out_infinite]">
+          <Mascot variant="brush-wink" size="lg" />
+        </div>
       </div>
     </div>
   );

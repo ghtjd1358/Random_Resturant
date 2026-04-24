@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
 import { useSessionStore } from "@/stores/useSessionStore";
 import { PickCard } from "@/components/home/PickCard";
+import { Mascot } from "@/components/common/Mascot";
 import type { PlaceLite } from "@/lib/places/types";
 
 // Omikuji-style fortune kanji rotated through the sticks. The winner gets
@@ -246,6 +247,29 @@ function Stage({
               }}
             />
           )}
+
+          {/* Lantern-mascot companion — stands beside the tube. During
+              shake it sways gently (different rhythm from the cylinder so
+              they read as two separate objects). The mascot is decorative
+              and never blocks the tap target since it sits outside the
+              cylinder's centerline. */}
+          <span
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute",
+              phase === "shaking" &&
+                "animate-[kuji-lantern-sway_900ms_ease-in-out_infinite]",
+            )}
+            style={{
+              left: -78,
+              bottom: 110,
+              transformOrigin: "top center",
+              opacity: phase === "drawing" ? 0.5 : 1,
+              transition: "opacity 600ms ease",
+            }}
+          >
+            <Mascot variant="lantern" size="sm" />
+          </span>
 
           {/* Sticks — only the *visible* tip protruding above the cylinder
               opening. The hidden lower portion is implied (real omikuji
@@ -655,8 +679,17 @@ function RevealedView({
 
   return (
     <div className="px-5 pt-6 pb-8">
-      {/* Winner — no box, just brushed kanji */}
-      <div className="flex flex-col items-center text-center">
+      {/* Winner — brushed kanji + the oracle giraffe holding the
+          運勢吉 scroll. Mascot sits to the right of the headline so the
+          "結果 / 大吉" column stays visually centered on its own axis. */}
+      <div className="relative flex flex-col items-center text-center">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute right-0 top-0 animate-[kuji-oracle-bow_900ms_ease-out_both]"
+          style={{ transformOrigin: "bottom center" }}
+        >
+          <Mascot variant="scroll-fortune" size="md" />
+        </span>
         <p className="font-mincho text-[12px] tracking-[0.3em] text-sumi-fade">
           결과
         </p>

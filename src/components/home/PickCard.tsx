@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { useSessionStore } from "@/stores/useSessionStore";
+import { Mascot } from "@/components/common/Mascot";
 import { ActionBar } from "./ActionBar";
 import { PickCardBody } from "./PickCardBody";
 
@@ -77,9 +78,23 @@ function Placeholder({ rolling }: { rolling: boolean }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="relative border border-dashed border-hairline px-6 py-12 text-center"
+      className="relative flex flex-col items-center border border-dashed border-hairline px-6 py-8 text-center"
     >
-      <p className="leading-relaxed break-keep">
+      {/* State-driven mascot — brush-desk = calculating, book-read = waiting.
+          On rolling we add a slow tilt so the giraffe looks like she's
+          actively writing your fortune. */}
+      <div
+        key={rolling ? "rolling" : "idle"}
+        className={
+          rolling
+            ? "animate-[mascot-write_2.4s_ease-in-out_infinite]"
+            : "animate-[mascot-idle-breathe_3.6s_ease-in-out_infinite]"
+        }
+      >
+        <Mascot variant={rolling ? "brush-desk" : "book-read"} size="md" />
+      </div>
+
+      <p className="mt-3 leading-relaxed break-keep">
         {rolling ? (
           <>
             <span className="font-mincho text-[15px] font-medium text-sumi-ink">
