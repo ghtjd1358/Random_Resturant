@@ -34,9 +34,12 @@ import type { PlaceLite } from "@/lib/places/types";
  *   revealed  → result screen with PickCard
  */
 
-const SHUFFLE_MS = 1900;
-const SETTLED_PAUSE_MS = 280;
-const REVEAL_MS = 900;
+// Slowed down so the shuffle is actually perceivable. v1 was 1.9s for 4
+// swaps = ~475ms each, which felt instant. 2.6s gives each swap a
+// satisfying ~650ms beat with anticipation + arc + landing all readable.
+const SHUFFLE_MS = 2600;
+const SETTLED_PAUSE_MS = 320;
+const REVEAL_MS = 1000;
 
 // 3-bowl version — shell game tradition. We always render 3 visually
 // regardless of how many candidates were drawn (extra picks still appear
@@ -74,18 +77,18 @@ export function YabawiModal({ picks, onClose }: YabawiModalProps) {
   // memo'd because it only depends on NUM_BOWLS and the static sequence.
   const slotTrajectory = useMemo(() => buildTrajectory(NUM_BOWLS), []);
 
-  // shuffling → settled → revealing
+  // shuffling → settled. Winner is decided in handleStart (BEFORE phase
+  // change) so isWinner doesn't toggle mid-animation — that was making
+  // variants re-memo and motion silently restart from the current state,
+  // which looked like "no shuffle".
   useEffect(() => {
     if (phase !== "shuffling") return;
-    // Pick winner from the picks the user actually drew (cap at NUM_BOWLS).
-    const idx = Math.floor(Math.random() * Math.min(picks.length, NUM_BOWLS));
-    setWinnerIdx(idx);
     const t = window.setTimeout(() => {
       setPhase("settled");
       haptic.tap();
     }, SHUFFLE_MS);
     return () => window.clearTimeout(t);
-  }, [phase, picks]);
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "settled") return;
@@ -117,6 +120,11 @@ export function YabawiModal({ picks, onClose }: YabawiModalProps) {
   const handleStart = () => {
     if (phase !== "ready") return;
     haptic.rollStart();
+    // Decide winner UPFRONT so isWinner is stable from the moment the
+    // shuffling animation starts. Setting it inside the shuffling effect
+    // caused mid-shuffle re-renders that aborted the keyframe animation.
+    const idx = Math.floor(Math.random() * Math.min(picks.length, NUM_BOWLS));
+    setWinnerIdx(idx);
     setPhase("shuffling");
   };
 
@@ -403,11 +411,13 @@ const Bowl = memo(function Bowl({
       xFrames.push(startX);
       rotFrames.push(0);
 
-      // Arc apex — bowl is mid-air (over) or mid-dip (under)
-      yFrames.push(goesOver ? -42 : 18);
+      // Arc apex — bowl is mid-air (over) or mid-dip (under). Heights
+      // bumped from -42/+18 to -68/+24 because the smaller arcs were
+      // imperceptible at 2.6s, especially against the bowl's ~75px height.
+      yFrames.push(goesOver ? -68 : 24);
       xFrames.push((startX + endX) / 2);
       // Tilt in direction of motion (rolling cue) — over bowls tip more
-      rotFrames.push(direction * (goesOver ? 12 : 6));
+      rotFrames.push(direction * (goesOver ? 14 : 7));
 
       // Landing — bowl returns to rest height at the new slot, slight
       // counter-rotate as it settles
