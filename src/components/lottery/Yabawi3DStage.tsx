@@ -81,10 +81,10 @@ export function Yabawi3DStage({ phase, winnerIdx, onStart }: StageProps) {
         {/* Subtle environment for ceramic reflections */}
         <Environment preset="apartment" />
 
-        {/* Wooden table surface */}
-        <Table />
-
-        {/* Soft contact shadow under all bowls */}
+        {/* Soft contact shadow under all bowls — no explicit table mesh
+            (the brown wood plane was overpowering the editorial palette).
+            ContactShadows render on the canvas's own ground plane against
+            the modal's paper-cream bg, which reads cleaner. */}
         <ContactShadows
           position={[0, -0.49, 0]}
           opacity={0.45}
@@ -114,25 +114,6 @@ export function Yabawi3DStage({ phase, winnerIdx, onStart }: StageProps) {
         ))}
       </Canvas>
     </div>
-  );
-}
-
-/* ───────────────────────────────────────────────────────────────────── */
-
-/**
- * Wooden table — large plane with subtle radial darkening at the edges
- * (vignette). Material is rough wood-tone, no metalness.
- */
-function Table() {
-  return (
-    <mesh receiveShadow rotation-x={-Math.PI / 2} position-y={-0.5}>
-      <planeGeometry args={[14, 14]} />
-      <meshStandardMaterial
-        color="#5d4f37"
-        roughness={0.85}
-        metalness={0.05}
-      />
-    </mesh>
   );
 }
 

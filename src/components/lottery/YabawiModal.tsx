@@ -1,20 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
 import { useSessionStore } from "@/stores/useSessionStore";
+import { useLotteryStore } from "@/stores/useLotteryStore";
 import { PickCard } from "@/components/home/PickCard";
 import { Mascot } from "@/components/common/Mascot";
 import type { PlaceLite } from "@/lib/places/types";
 
-// Three.js scene — lazy-loaded via dynamic import so the ~150KB R3F bundle
-// only ships when the user actually opens the lottery modal.
+// Three.js scenes — lazy-loaded so the ~150KB R3F bundle only ships when
+// the user opens the lottery modal. Both stages share the same R3F deps,
+// so loading one warms the cache for the other.
 const Yabawi3DStage = dynamic(
   () => import("./Yabawi3DStage").then((m) => m.Yabawi3DStage),
+  { ssr: false },
+);
+const Kuji3DStage = dynamic(
+  () => import("./Kuji3DStage").then((m) => m.Kuji3DStage),
   { ssr: false },
 );
 
@@ -65,6 +71,8 @@ export function YabawiModal({ picks, onClose }: YabawiModalProps) {
   const [phase, setPhase] = useState<Phase>("ready");
   const [winnerIdx, setWinnerIdx] = useState<number | null>(null);
   const setCurrentPick = useSessionStore((s) => s.setCurrentPick);
+  const style = useLotteryStore((s) => s.style);
+  const isYabawi = style === "yabawi";
 
   // shuffling → settled. Winner is decided in handleStart (BEFORE phase
   // change) so isWinner doesn't toggle mid-animation — that was making
@@ -106,13 +114,19 @@ export function YabawiModal({ picks, onClose }: YabawiModalProps) {
     };
   }, []);
 
+  // Cap the winner pool at the visible mesh count: yabawi shows 3 bowls,
+  // kuji shows whatever the user picked (up to picks.length sticks).
+  const visibleCount = isYabawi
+    ? Math.min(picks.length, NUM_BOWLS)
+    : picks.length;
+
   const handleStart = () => {
     if (phase !== "ready") return;
     haptic.rollStart();
     // Decide winner UPFRONT so isWinner is stable from the moment the
-    // shuffling animation starts. Setting it inside the shuffling effect
-    // caused mid-shuffle re-renders that aborted the keyframe animation.
-    const idx = Math.floor(Math.random() * Math.min(picks.length, NUM_BOWLS));
+    // animation starts. Setting it inside an effect caused mid-animation
+    // re-renders that aborted the keyframe sequence.
+    const idx = Math.floor(Math.random() * visibleCount);
     setWinnerIdx(idx);
     setPhase("shuffling");
   };
@@ -125,20 +139,21 @@ export function YabawiModal({ picks, onClose }: YabawiModalProps) {
   return (
     <div
       role="dialog"
-      aria-label="야바위"
+      aria-label={isYabawi ? "야바위" : "제비뽑기"}
       className="fixed inset-0 z-[80] flex flex-col bg-paper"
     >
-      {/* Top bar */}
+      {/* Top bar — kanji + label + count change with the active style */}
       <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
         <div className="flex items-baseline gap-2">
           <span className="font-mincho text-[15px] font-medium text-sumi-ink">
-            椀
+            {isYabawi ? "椀" : "籤"}
           </span>
           <span className="font-mincho text-[12px] font-medium text-sumi-mute">
-            야바위
+            {isYabawi ? "야바위" : "제비뽑기"}
           </span>
           <span className="font-mincho text-[11px] num-tabular text-sumi-fade">
-            {Math.min(picks.length, NUM_BOWLS)}그릇
+            {visibleCount}
+            {isYabawi ? "그릇" : "장"}
           </span>
         </div>
         <button
@@ -167,6 +182,8 @@ export function YabawiModal({ picks, onClose }: YabawiModalProps) {
                 phase={phase}
                 winnerIdx={winnerIdx}
                 onStart={handleStart}
+                isYabawi={isYabawi}
+                count={visibleCount}
               />
             </motion.div>
           ) : (
@@ -195,19 +212,32 @@ function Stage({
   phase,
   winnerIdx,
   onStart,
+  isYabawi,
+  count,
 }: {
   phase: "ready" | "shuffling" | "settled" | "revealing";
   winnerIdx: number | null;
   onStart: () => void;
+  isYabawi: boolean;
+  count: number;
 }) {
-  const headlineCopy =
-    phase === "ready"
+  // Headline copy is style-specific so the JP kanji + KR sub matches the
+  // metaphor (椀/籤, 그릇/막대, etc).
+  const headlineCopy = isYabawi
+    ? phase === "ready"
       ? { jp: "選べ", kr: "그릇을 탭해서 셔플 시작" }
       : phase === "shuffling"
         ? { jp: "混", kr: "셔플 중 …" }
         : phase === "settled"
           ? { jp: "止", kr: "어디일까요" }
-          : { jp: "出", kr: "한 그릇이 들립니다" };
+          : { jp: "出", kr: "한 그릇이 들립니다" }
+    : phase === "ready"
+      ? { jp: "引け", kr: "통을 탭해서 흔들어주세요" }
+      : phase === "shuffling"
+        ? { jp: "振れ", kr: "운명이 섞이는 중 …" }
+        : phase === "settled"
+          ? { jp: "止", kr: "한 본이 솟아오릅니다" }
+          : { jp: "当たり", kr: "한 본이 솟아올랐어요" };
 
   return (
     <div className="relative flex h-full flex-col items-center justify-between px-5 py-6">
@@ -265,14 +295,24 @@ function Stage({
           <Mascot variant="meditate" px={280} />
         </span>
 
-        {/* The 3D canvas itself. Sized so it dominates the available
-            vertical real estate without crowding the headline above. */}
+        {/* The 3D canvas itself. The Stage swaps between the two scenes
+            based on the user's chosen style. Both scenes share the same
+            R3F Canvas footprint, so layout stays consistent. */}
         <div className="relative z-10 h-[360px] w-full max-w-[440px]">
-          <Yabawi3DStage
-            phase={phase}
-            winnerIdx={winnerIdx}
-            onStart={onStart}
-          />
+          {isYabawi ? (
+            <Yabawi3DStage
+              phase={phase}
+              winnerIdx={winnerIdx}
+              onStart={onStart}
+            />
+          ) : (
+            <Kuji3DStage
+              phase={phase}
+              winnerIdx={winnerIdx}
+              count={count}
+              onStart={onStart}
+            />
+          )}
         </div>
 
         <p className="font-mincho mt-2 text-[11px] tracking-[0.3em] text-sumi-fade">

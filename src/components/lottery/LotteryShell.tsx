@@ -16,7 +16,11 @@ import { isFiltersDefault, useFiltersStore } from "@/stores/useFiltersStore";
 import { useLocationStore } from "@/stores/useLocationStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useLotteryRoll } from "@/hooks/useLotteryRoll";
-import { useLotteryStore, type StickCount } from "@/stores/useLotteryStore";
+import {
+  useLotteryStore,
+  type StickCount,
+  type LotteryStyle,
+} from "@/stores/useLotteryStore";
 import { haptic } from "@/lib/haptic";
 import { cn } from "@/lib/utils";
 import { YabawiModal } from "./YabawiModal";
@@ -25,6 +29,11 @@ import type { PlaceLite } from "@/lib/places/types";
 const STICK_OPTIONS: { value: StickCount; label: string }[] = [
   { value: 3, label: "3本" },
   { value: 5, label: "5本" },
+];
+
+const STYLE_OPTIONS: { value: LotteryStyle; kanji: string; label: string }[] = [
+  { value: "kuji", kanji: "籤", label: "제비" },
+  { value: "yabawi", kanji: "椀", label: "야바위" },
 ];
 
 export function LotteryShell() {
@@ -47,6 +56,8 @@ export function LotteryShell() {
   const isDefault = useFiltersStore(isFiltersDefault);
   const stickCount = useLotteryStore((s) => s.stickCount);
   const setStickCount = useLotteryStore((s) => s.setStickCount);
+  const style = useLotteryStore((s) => s.style);
+  const setStyle = useLotteryStore((s) => s.setStyle);
   const hasLocation = useLocationStore((s) => s.coords !== null);
 
   const { drawN } = useLotteryRoll();
@@ -110,16 +121,57 @@ export function LotteryShell() {
           />
         </div>
 
-        {/* Stick count toggle */}
+        {/* Style toggle — kuji 籤 (cylinder + sticks) vs yabawi 椀
+            (3-bowl shell game). Both are 3D R3F scenes; user picks. */}
         <div className="mt-5 flex items-baseline justify-between">
+          <div className="flex items-baseline gap-2">
+            <span className="font-mincho text-[14px] font-medium text-sumi-ink">
+              式
+            </span>
+            <span className="font-mincho text-[12px] font-medium tracking-tight text-sumi-mute">
+              뽑기 방식
+            </span>
+            <span className="eyebrow text-[9px]">/ STYLE</span>
+          </div>
+          <div role="radiogroup" aria-label="뽑기 방식" className="flex gap-1.5">
+            {STYLE_OPTIONS.map(({ value, kanji, label }) => {
+              const active = style === value;
+              return (
+                <button
+                  key={value}
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => {
+                    if (style !== value) {
+                      haptic.select();
+                      setStyle(value);
+                    }
+                  }}
+                  className={cn(
+                    "no-select font-mincho inline-flex items-baseline gap-1 border px-3 py-1 text-[12px] tracking-tight transition-colors",
+                    active
+                      ? "border-sumi-ink bg-sumi-ink text-paper"
+                      : "border-hairline text-sumi-ink hover:border-sumi-ink/40",
+                  )}
+                >
+                  <span className="text-[14px]">{kanji}</span>
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Stick count toggle */}
+        <div className="mt-3 flex items-baseline justify-between">
           <div className="flex items-baseline gap-2">
             <span className="font-mincho text-[14px] font-medium text-sumi-ink">
               本
             </span>
             <span className="font-mincho text-[12px] font-medium tracking-tight text-sumi-mute">
-              막대기 개수
+              {style === "kuji" ? "막대기 개수" : "그릇 개수"}
             </span>
-            <span className="eyebrow text-[9px]">/ STICKS</span>
+            <span className="eyebrow text-[9px]">/ COUNT</span>
           </div>
           <div role="radiogroup" aria-label="막대기 개수" className="flex gap-1.5">
             {STICK_OPTIONS.map(({ value, label }) => {
