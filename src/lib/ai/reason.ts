@@ -10,12 +10,13 @@ export interface ReasonInput {
   reviewTexts: string[];
 }
 
-// Groq free tier. Picked Kimi K2 over Llama 3.3 — Llama's Korean reads
-// like a literal review excerpt (e.g. "친절한 로비 데스크 직원들"); Kimi
-// K2 (Moonshot) is trained more heavily on CJK and produces punchier
-// recommender copy. Same generateText API, just a different provider/model
-// string. GROQ_API_KEY env is auto-read.
-const MODEL = groq("moonshotai/kimi-k2-instruct");
+// Groq free tier. Tried Kimi K2 first (better Korean) but the Groq plan
+// returns 404 "does not exist or you do not have access" for that model —
+// it's gated behind paid tiers despite appearing in the free model list.
+// Falling back to Llama 3.3 70B which is universally available + free.
+// We compensate for Llama's literal Korean tendency with the few-shot
+// prompt below (5 example outputs in the desired punchy tone).
+const MODEL = groq("llama-3.3-70b-versatile");
 
 export async function generateReason(input: ReasonInput): Promise<string> {
   const reviewBlock = input.reviewTexts
