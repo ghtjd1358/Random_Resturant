@@ -275,17 +275,45 @@ function Stage({
           <Mascot variant="meditate" px={300} />
         </span>
 
-        {/* Wooden table line — gives the bowls something to sit on */}
+        {/* Wooden table — three layered hairlines + soft surface tint
+            give the suggestion of a tea ceremony tray without painting an
+            actual wood texture. */}
         <div
           aria-hidden
-          className="absolute"
+          className="absolute pointer-events-none"
           style={{
-            bottom: 38,
+            bottom: 28,
+            left: -SLOT_WIDTH * 1.7,
+            right: -SLOT_WIDTH * 1.7,
+            height: 28,
+            background:
+              "linear-gradient(180deg, transparent 0%, rgba(122,109,82,0.05) 40%, rgba(122,109,82,0.08) 100%)",
+          }}
+        />
+        {/* Top edge of the surface */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            bottom: 56,
             left: -SLOT_WIDTH * 1.7,
             right: -SLOT_WIDTH * 1.7,
             height: 1,
             background:
-              "linear-gradient(90deg, transparent, rgba(28,24,21,0.25) 20%, rgba(28,24,21,0.25) 80%, transparent)",
+              "linear-gradient(90deg, transparent, rgba(28,24,21,0.32) 18%, rgba(28,24,21,0.32) 82%, transparent)",
+          }}
+        />
+        {/* Subtle grain ridge below */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            bottom: 48,
+            left: -SLOT_WIDTH * 1.5,
+            right: -SLOT_WIDTH * 1.5,
+            height: 1,
+            background:
+              "linear-gradient(90deg, transparent, rgba(28,24,21,0.1) 30%, rgba(28,24,21,0.1) 70%, transparent)",
           }}
         />
 
@@ -352,26 +380,40 @@ const Bowl = memo(function Bowl({
   phase: "ready" | "shuffling" | "settled" | "revealing";
   isWinner: boolean;
 }) {
-  // Compose x and y keyframes for the shuffle. Each swap takes ~SHUFFLE_MS
-  // / SWAP_SEQUENCE.length time. y arcs go up for "front" bowls and down
-  // for "back" bowls so they cross without overlap (alternates by step).
+  // Compose x/y/rotate keyframes for the shuffle. Each swap = anticipation
+  // pre-lift + arc crossing + landing settle. Bowls also rotate slightly in
+  // the direction of motion so they read as "rolling" rather than gliding.
   const variants: Variants = useMemo(() => {
     const xKeyframes = trajectory.map((slot) => SLOT_X[slot]);
-    // Arc heights — alternate sign per swap step so half the bowls go
-    // over and half under, giving the visual cross-over of a real shell
-    // shuffle. The bowl's idx % 2 sets which half it's in.
-    const yKeyframes: number[] = [0];
+
+    const yFrames: number[] = [0]; // start position (resting)
+    const xFrames: number[] = [xKeyframes[0]];
+    const rotFrames: number[] = [0];
+
     for (let step = 0; step < SWAP_SEQUENCE.length; step++) {
       const goesOver =
         idx === SWAP_SEQUENCE[step][0] === (step % 2 === 0);
-      yKeyframes.push(goesOver ? -28 : 14, 0);
-    }
-    // Match xKeyframes length to yKeyframes by inserting midpoints
-    const xExpanded: number[] = [xKeyframes[0]];
-    for (let step = 0; step < SWAP_SEQUENCE.length; step++) {
-      const start = xKeyframes[step];
-      const end = xKeyframes[step + 1];
-      xExpanded.push((start + end) / 2, end);
+
+      const startX = xKeyframes[step];
+      const endX = xKeyframes[step + 1];
+      const direction = endX > startX ? 1 : endX < startX ? -1 : 0;
+
+      // Anticipation tick — bowl lifts slightly before the swap arc
+      yFrames.push(-4);
+      xFrames.push(startX);
+      rotFrames.push(0);
+
+      // Arc apex — bowl is mid-air (over) or mid-dip (under)
+      yFrames.push(goesOver ? -42 : 18);
+      xFrames.push((startX + endX) / 2);
+      // Tilt in direction of motion (rolling cue) — over bowls tip more
+      rotFrames.push(direction * (goesOver ? 12 : 6));
+
+      // Landing — bowl returns to rest height at the new slot, slight
+      // counter-rotate as it settles
+      yFrames.push(0);
+      xFrames.push(endX);
+      rotFrames.push(direction * -3);
     }
 
     return {
@@ -383,33 +425,42 @@ const Bowl = memo(function Bowl({
         transition: { type: "spring", stiffness: 240, damping: 22, delay: idx * 0.08 },
       },
       shuffling: {
-        x: xExpanded,
-        y: yKeyframes,
-        rotate: 0,
+        x: xFrames,
+        y: yFrames,
+        rotate: rotFrames,
         transition: {
           duration: SHUFFLE_MS / 1000,
-          ease: [0.5, 0, 0.5, 1],
-          times: stepsToTimes(yKeyframes.length),
+          ease: [0.45, 0, 0.55, 1], // cubic-bezier closer to cubic, more snappy
+          times: stepsToTimes(yFrames.length),
         },
       },
       settled: {
         x: SLOT_X[trajectory[trajectory.length - 1]],
-        y: [0, -2, 0],
-        rotate: 0,
-        transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+        // Tiny landing bounce — sells weight after the shuffle stops
+        y: [0, -3, 0, -1, 0],
+        rotate: [0, -1, 0],
+        transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
       },
       revealing: isWinner
         ? {
             x: SLOT_X[trajectory[trajectory.length - 1]],
-            y: -90,
-            rotate: -8,
-            transition: { type: "spring", stiffness: 200, damping: 16 },
+            // 3-stage lift: anticipation dip → big rise → slight tilt back
+            y: [0, 6, -130, -125],
+            rotate: [0, 2, -18, -15],
+            scale: [1, 0.98, 1.05, 1.04],
+            transition: {
+              duration: REVEAL_MS / 1000,
+              times: [0, 0.12, 0.7, 1],
+              ease: [0.22, 1, 0.36, 1],
+            },
           }
         : {
             x: SLOT_X[trajectory[trajectory.length - 1]],
             y: 0,
-            opacity: 0.5,
-            transition: { duration: 0.4 },
+            opacity: 0.4,
+            scale: 0.95,
+            filter: "saturate(0.5) blur(0.4px)",
+            transition: { duration: 0.5, ease: [0.4, 0, 0.6, 1] },
           },
     };
   }, [trajectory, idx, isWinner]);
@@ -434,74 +485,108 @@ const Bowl = memo(function Bowl({
 /* ───────────────────────────────────────────────────────────────────── */
 
 /**
- * Tea bowl SVG — chawan-style upside-down cup. Paper-tan body with sumi
- * outline, subtle inner shading at the rim, and a soft ground shadow.
+ * Premium tea bowl SVG — chawan with ceramic glaze, foot ring, and
+ * hand-painted 朱 dot. Bigger viewBox (90×80) than v1 for more detail
+ * room. Built around a radial gradient that simulates light hitting the
+ * upper-left of the glaze, plus a specular highlight arc for the wet
+ * ceramic look — this is what separates "shape" from "object".
  */
 function BowlSvg() {
   return (
-    <svg viewBox="0 0 72 72" width={72} height={72} aria-hidden>
+    <svg
+      viewBox="0 0 90 80"
+      width={84}
+      height={75}
+      aria-hidden
+    >
       <defs>
-        {/* Body — 4-stop with warmer left side (light source upper-left) */}
-        <linearGradient id="bowl-body" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#C9BCA0" />
-          <stop offset="35%"  stopColor="#E2D6B8" />
-          <stop offset="70%"  stopColor="#D9CCAE" />
-          <stop offset="100%" stopColor="#B8AB8E" />
+        {/* Radial glaze — light source upper-left, deepens toward the
+            lower-right. Three stops give a soft bell curve falloff that
+            reads as "ceramic" not "flat color". */}
+        <radialGradient id="bowl-glaze" cx="32%" cy="22%" r="92%">
+          <stop offset="0%"   stopColor="#F2E8CD" />
+          <stop offset="38%"  stopColor="#DDCFB0" />
+          <stop offset="78%"  stopColor="#A89A78" />
+          <stop offset="100%" stopColor="#6E624A" />
+        </radialGradient>
+        {/* Foot ring — slightly darker than body, 2-stop vertical for
+            grounded depth */}
+        <linearGradient id="bowl-foot" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#7A6D52" />
+          <stop offset="100%" stopColor="#3F3829" />
         </linearGradient>
-        {/* Bottom shadow inside the rim — gives the cup interior depth */}
-        <linearGradient id="bowl-rim-shade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1C1815" stopOpacity="0.3" />
+        {/* Inner mouth shadow at the very bottom rim (cup opens
+            downward in the upside-down position) */}
+        <linearGradient id="bowl-mouth-shade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1C1815" stopOpacity="0.45" />
           <stop offset="100%" stopColor="#1C1815" stopOpacity="0" />
         </linearGradient>
       </defs>
 
-      {/* Ground contact shadow */}
+      {/* Two-layer ground shadow — sharp tight + diffuse halo. Real
+          ceramic on a wood table casts both. */}
       <ellipse
-        cx="36" cy="62" rx="28" ry="2.5"
-        fill="#1C1815" opacity="0.18"
-        style={{ filter: "blur(2px)" }}
+        cx="45" cy="73" rx="32" ry="2.5"
+        fill="#1C1815" opacity="0.28"
+        style={{ filter: "blur(1.5px)" }}
+      />
+      <ellipse
+        cx="45" cy="76" rx="44" ry="4"
+        fill="#1C1815" opacity="0.1"
+        style={{ filter: "blur(4px)" }}
       />
 
-      {/* Bowl body — dome shape (upside-down cup) */}
+      {/* Body — chawan silhouette with subtle taper toward the foot.
+          Wider mid-section, narrower at top + bottom = classic tea bowl
+          proportion (not a perfect dome). */}
       <path
-        d="M 8 58 Q 8 12, 36 12 Q 64 12, 64 58 L 60 60 L 12 60 Z"
-        fill="url(#bowl-body)"
+        d="M 14 66 Q 7 18, 45 12 Q 83 18, 76 66 L 70 68 L 20 68 Z"
+        fill="url(#bowl-glaze)"
       />
+
+      {/* Foot ring — small lip the bowl sits on, gives base weight */}
+      <ellipse cx="45" cy="68" rx="26" ry="1.8" fill="url(#bowl-foot)" />
+
+      {/* Sumi outline — slightly variable weight at 1.6 for hand-drawn feel */}
       <path
-        d="M 8 58 Q 8 12, 36 12 Q 64 12, 64 58 L 60 60 L 12 60 Z"
+        d="M 14 66 Q 7 18, 45 12 Q 83 18, 76 66 L 70 68 L 20 68 Z"
         fill="none"
         stroke="#1C1815"
-        strokeWidth="1.4"
+        strokeWidth="1.6"
         strokeLinejoin="round"
       />
 
-      {/* Top highlight catches the light */}
+      {/* Specular highlight — small bright arc on the upper-left curve.
+          THIS is the detail that turns a flat shape into glazed ceramic.
+          White at low opacity, arc shape, soft cap. */}
       <path
-        d="M 14 24 Q 36 14, 58 24"
+        d="M 22 22 Q 30 14, 40 16"
         fill="none"
-        stroke="#F4ECD2"
-        strokeWidth="0.8"
-        opacity="0.4"
+        stroke="#FFFFFF"
+        strokeWidth="2"
+        opacity="0.65"
+        strokeLinecap="round"
       />
 
-      {/* Inner rim shading near the bottom (the open mouth, facing down) */}
-      <ellipse cx="36" cy="59" rx="26" ry="3" fill="url(#bowl-rim-shade)" />
+      {/* Diffuse top highlight — broader, fainter sheen along the upper rim */}
+      <path
+        d="M 18 30 Q 45 16, 75 30"
+        fill="none"
+        stroke="#F8EFD2"
+        strokeWidth="0.7"
+        opacity="0.5"
+      />
 
-      {/* Sumi rim line — sharp underside */}
-      <line x1="10" y1="59" x2="62" y2="59" stroke="#1C1815" strokeWidth="1.3" />
+      {/* Bottom mouth shading — dark fade where the cup opens
+          downward (the mouth facing the table) */}
+      <ellipse cx="45" cy="67" rx="29" ry="3" fill="url(#bowl-mouth-shade)" />
 
-      {/* Tiny calligrapher's mark — 運 (fortune) on the lower-right side */}
-      <text
-        x="50"
-        y="50"
-        fontFamily='"Shippori Mincho", serif'
-        fontSize="10"
-        fontWeight="500"
-        fill="#1C1815"
-        opacity="0.6"
-      >
-        運
-      </text>
+      {/* Hand-painted 朱 dot at the very top crown — like a kintsugi
+          repair mark or a calligrapher's signature dot. Single color
+          accent that ties to the rest of the page's 朱 vocabulary
+          without shouting. */}
+      <circle cx="45" cy="20" r="2.2" fill="#B3321D" opacity="0.9" />
+      <circle cx="44.3" cy="19" r="0.9" fill="#FFFFFF" opacity="0.45" />
     </svg>
   );
 }
@@ -520,31 +605,50 @@ function RevealMark({ x, visible }: { x: number; visible: boolean }) {
           aria-hidden
           className="pointer-events-none absolute"
           style={{
-            bottom: 24,
+            bottom: 28,
             left: "50%",
-            marginLeft: x - 12,
-            width: 24,
-            height: 24,
+            marginLeft: x - 16,
+            width: 32,
+            height: 32,
             zIndex: 0,
           }}
-          initial={{ opacity: 0, scale: 0.4 }}
+          initial={{ opacity: 0, scale: 0.3 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* Halo */}
-          <span
-            className="absolute inset-0 -m-3 rounded-full"
+          {/* Outer warm glow — large soft halo, slow pulse for "alive light" */}
+          <motion.span
+            className="absolute inset-0 -m-8 rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(232,185,74,0.5) 0%, rgba(232,185,74,0) 70%)",
+                "radial-gradient(circle, rgba(232,185,74,0.55) 0%, rgba(232,185,74,0.18) 35%, rgba(232,185,74,0) 70%)",
+              filter: "blur(3px)",
+            }}
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* Inner shu halo — tighter, deeper red */}
+          <span
+            className="absolute inset-0 -m-2 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(179,50,29,0.55) 0%, rgba(179,50,29,0) 65%)",
               filter: "blur(2px)",
             }}
           />
-          {/* Dot */}
+          {/* Dot — solid 朱 with strong shadow for depth */}
           <span
-            className="absolute inset-0 m-1.5 rounded-full bg-shu"
-            style={{ boxShadow: "0 0 12px rgba(179,50,29,0.6)" }}
+            className="absolute inset-0 m-2.5 rounded-full bg-shu"
+            style={{
+              boxShadow:
+                "0 0 14px rgba(179,50,29,0.75), 0 2px 4px rgba(28,24,21,0.4)",
+            }}
+          />
+          {/* Tiny specular point on the dot */}
+          <span
+            className="absolute m-3 rounded-full bg-paper"
+            style={{ width: 4, height: 4, opacity: 0.55 }}
           />
         </motion.div>
       )}
