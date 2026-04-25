@@ -1,14 +1,22 @@
 "use client";
 
-import { memo, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { X } from "lucide-react";
-import { AnimatePresence, motion, type Variants } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
 import { useSessionStore } from "@/stores/useSessionStore";
 import { PickCard } from "@/components/home/PickCard";
 import { Mascot } from "@/components/common/Mascot";
 import type { PlaceLite } from "@/lib/places/types";
+
+// Three.js scene — lazy-loaded via dynamic import so the ~150KB R3F bundle
+// only ships when the user actually opens the lottery modal.
+const Yabawi3DStage = dynamic(
+  () => import("./Yabawi3DStage").then((m) => m.Yabawi3DStage),
+  { ssr: false },
+);
 
 /**
  * 三つ椀 (mitsu-wan) — 3-bowl shell game ("야바위") variant of the picker.
@@ -41,25 +49,10 @@ const SHUFFLE_MS = 2600;
 const SETTLED_PAUSE_MS = 320;
 const REVEAL_MS = 1000;
 
-// 3-bowl version — shell game tradition. We always render 3 visually
-// regardless of how many candidates were drawn (extra picks still appear
-// in the "나머지 후보" list at reveal time).
+// 3-bowl version — shell game tradition. The 3D Stage owns the slot
+// math (positions, swap sequence, trajectories) so this constant is just
+// a cap for the winner picker.
 const NUM_BOWLS = 3;
-
-// Predefined swap sequence — 4 swaps that thoroughly mix the 3 slots.
-// Each entry is a pair (a, b) meaning: bowls currently at slot a and slot b
-// swap. Using a fixed sequence (not random) keeps the timing predictable
-// and the trajectories choreographed.
-const SWAP_SEQUENCE: Array<[number, number]> = [
-  [0, 1], // first swap: left ↔ middle
-  [1, 2], // second: middle ↔ right
-  [0, 2], // third: left ↔ right (longest arc)
-  [0, 1], // fourth: left ↔ middle
-];
-
-// Slot positions in pixels (relative to center). 3 slots evenly spaced.
-const SLOT_WIDTH = 92;
-const SLOT_X = [-SLOT_WIDTH, 0, SLOT_WIDTH] as const;
 
 interface YabawiModalProps {
   picks: PlaceLite[];
@@ -72,10 +65,6 @@ export function YabawiModal({ picks, onClose }: YabawiModalProps) {
   const [phase, setPhase] = useState<Phase>("ready");
   const [winnerIdx, setWinnerIdx] = useState<number | null>(null);
   const setCurrentPick = useSessionStore((s) => s.setCurrentPick);
-
-  // Compute each bowl's slot trajectory through the swap sequence —
-  // memo'd because it only depends on NUM_BOWLS and the static sequence.
-  const slotTrajectory = useMemo(() => buildTrajectory(NUM_BOWLS), []);
 
   // shuffling → settled. Winner is decided in handleStart (BEFORE phase
   // change) so isWinner doesn't toggle mid-animation — that was making
@@ -177,7 +166,6 @@ export function YabawiModal({ picks, onClose }: YabawiModalProps) {
               <Stage
                 phase={phase}
                 winnerIdx={winnerIdx}
-                slotTrajectory={slotTrajectory}
                 onStart={handleStart}
               />
             </motion.div>
@@ -206,12 +194,10 @@ export function YabawiModal({ picks, onClose }: YabawiModalProps) {
 function Stage({
   phase,
   winnerIdx,
-  slotTrajectory,
   onStart,
 }: {
   phase: "ready" | "shuffling" | "settled" | "revealing";
   winnerIdx: number | null;
-  slotTrajectory: number[][];
   onStart: () => void;
 }) {
   const headlineCopy =
@@ -266,403 +252,34 @@ function Stage({
         </AnimatePresence>
       </div>
 
-      {/* Bowl stage — tappable when ready */}
-      <button
-        type="button"
-        onClick={onStart}
-        disabled={phase !== "ready"}
-        aria-label="야바위 시작"
-        className="no-select relative z-10 flex flex-col items-center"
-      >
-        {/* Meditate-giraffe watermark — silent witness behind the table */}
+      {/* 3D bowl stage — Three.js Canvas with real meshes, lighting,
+          shadows. Mascot watermark sits behind in 2D. */}
+      <div className="relative z-10 flex w-full flex-1 flex-col items-center">
+        {/* Meditate-giraffe watermark — sits behind the 3D scene at low
+            opacity. Pure 2D, no 3D conflict. */}
         <span
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ opacity: 0.1, zIndex: 0 }}
+          style={{ opacity: 0.08, zIndex: 0 }}
         >
-          <Mascot variant="meditate" px={300} />
+          <Mascot variant="meditate" px={280} />
         </span>
 
-        {/* Wooden table — three layered hairlines + soft surface tint
-            give the suggestion of a tea ceremony tray without painting an
-            actual wood texture. */}
-        <div
-          aria-hidden
-          className="absolute pointer-events-none"
-          style={{
-            bottom: 28,
-            left: -SLOT_WIDTH * 1.7,
-            right: -SLOT_WIDTH * 1.7,
-            height: 28,
-            background:
-              "linear-gradient(180deg, transparent 0%, rgba(122,109,82,0.05) 40%, rgba(122,109,82,0.08) 100%)",
-          }}
-        />
-        {/* Top edge of the surface */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute"
-          style={{
-            bottom: 56,
-            left: -SLOT_WIDTH * 1.7,
-            right: -SLOT_WIDTH * 1.7,
-            height: 1,
-            background:
-              "linear-gradient(90deg, transparent, rgba(28,24,21,0.32) 18%, rgba(28,24,21,0.32) 82%, transparent)",
-          }}
-        />
-        {/* Subtle grain ridge below */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute"
-          style={{
-            bottom: 48,
-            left: -SLOT_WIDTH * 1.5,
-            right: -SLOT_WIDTH * 1.5,
-            height: 1,
-            background:
-              "linear-gradient(90deg, transparent, rgba(28,24,21,0.1) 30%, rgba(28,24,21,0.1) 70%, transparent)",
-          }}
-        />
-
-        {/* Bowl row container */}
-        <div
-          className="relative flex items-end justify-center"
-          style={{ width: SLOT_WIDTH * 3 + 60, height: 320 }}
-        >
-          {/* The 朱 reveal mark — sits at the WINNER's current slot.
-              Hidden until revealing; then it glows up as the winning
-              bowl lifts off. */}
-          {winnerIdx !== null && (
-            <RevealMark
-              x={
-                phase === "shuffling"
-                  ? SLOT_X[slotTrajectory[winnerIdx][SWAP_SEQUENCE.length]]
-                  : SLOT_X[slotTrajectory[winnerIdx][SWAP_SEQUENCE.length]]
-              }
-              visible={phase === "revealing"}
-            />
-          )}
-
-          {Array.from({ length: NUM_BOWLS }).map((_, idx) => {
-            const trajectory = slotTrajectory[idx];
-            const isWinner = winnerIdx === idx;
-            return (
-              <Bowl
-                key={idx}
-                idx={idx}
-                trajectory={trajectory}
-                phase={phase}
-                isWinner={isWinner}
-              />
-            );
-          })}
+        {/* The 3D canvas itself. Sized so it dominates the available
+            vertical real estate without crowding the headline above. */}
+        <div className="relative z-10 h-[360px] w-full max-w-[440px]">
+          <Yabawi3DStage
+            phase={phase}
+            winnerIdx={winnerIdx}
+            onStart={onStart}
+          />
         </div>
 
-        <p className="font-mincho mt-4 text-[11px] tracking-[0.3em] text-sumi-fade">
-          {phase === "ready" ? "TAP" : "─"}
+        <p className="font-mincho mt-2 text-[11px] tracking-[0.3em] text-sumi-fade">
+          {phase === "ready" ? "TAP TO SHUFFLE" : "─"}
         </p>
-      </button>
-
-      <span aria-hidden />
+      </div>
     </div>
-  );
-}
-
-/* ───────────────────────────────────────────────────────────────────── */
-
-/**
- * Single tea bowl — premium SVG with 2-stop paper body, sumi outline, and
- * a soft contact shadow. Uses the slotTrajectory to drive x position
- * across the swap sequence; pairs of bowls travel arcs (one over, one
- * under) so they read as physically swapping rather than teleporting.
- */
-const Bowl = memo(function Bowl({
-  idx,
-  trajectory,
-  phase,
-  isWinner,
-}: {
-  idx: number;
-  trajectory: number[];
-  phase: "ready" | "shuffling" | "settled" | "revealing";
-  isWinner: boolean;
-}) {
-  // Compose x/y/rotate keyframes for the shuffle. Each swap = anticipation
-  // pre-lift + arc crossing + landing settle. Bowls also rotate slightly in
-  // the direction of motion so they read as "rolling" rather than gliding.
-  const variants: Variants = useMemo(() => {
-    const xKeyframes = trajectory.map((slot) => SLOT_X[slot]);
-
-    const yFrames: number[] = [0]; // start position (resting)
-    const xFrames: number[] = [xKeyframes[0]];
-    const rotFrames: number[] = [0];
-
-    for (let step = 0; step < SWAP_SEQUENCE.length; step++) {
-      const goesOver =
-        idx === SWAP_SEQUENCE[step][0] === (step % 2 === 0);
-
-      const startX = xKeyframes[step];
-      const endX = xKeyframes[step + 1];
-      const direction = endX > startX ? 1 : endX < startX ? -1 : 0;
-
-      // Anticipation tick — bowl lifts slightly before the swap arc
-      yFrames.push(-4);
-      xFrames.push(startX);
-      rotFrames.push(0);
-
-      // Arc apex — bowl is mid-air (over) or mid-dip (under). Heights
-      // bumped from -42/+18 to -68/+24 because the smaller arcs were
-      // imperceptible at 2.6s, especially against the bowl's ~75px height.
-      yFrames.push(goesOver ? -68 : 24);
-      xFrames.push((startX + endX) / 2);
-      // Tilt in direction of motion (rolling cue) — over bowls tip more
-      rotFrames.push(direction * (goesOver ? 14 : 7));
-
-      // Landing — bowl returns to rest height at the new slot, slight
-      // counter-rotate as it settles
-      yFrames.push(0);
-      xFrames.push(endX);
-      rotFrames.push(direction * -3);
-    }
-
-    return {
-      ready: {
-        x: SLOT_X[idx],
-        y: 0,
-        rotate: 0,
-        opacity: 1,
-        transition: { type: "spring", stiffness: 240, damping: 22, delay: idx * 0.08 },
-      },
-      shuffling: {
-        x: xFrames,
-        y: yFrames,
-        rotate: rotFrames,
-        transition: {
-          duration: SHUFFLE_MS / 1000,
-          ease: [0.45, 0, 0.55, 1], // cubic-bezier closer to cubic, more snappy
-          times: stepsToTimes(yFrames.length),
-        },
-      },
-      settled: {
-        x: SLOT_X[trajectory[trajectory.length - 1]],
-        // Tiny landing bounce — sells weight after the shuffle stops
-        y: [0, -3, 0, -1, 0],
-        rotate: [0, -1, 0],
-        transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
-      },
-      revealing: isWinner
-        ? {
-            x: SLOT_X[trajectory[trajectory.length - 1]],
-            // 3-stage lift: anticipation dip → big rise → slight tilt back
-            y: [0, 6, -130, -125],
-            rotate: [0, 2, -18, -15],
-            scale: [1, 0.98, 1.05, 1.04],
-            transition: {
-              duration: REVEAL_MS / 1000,
-              times: [0, 0.12, 0.7, 1],
-              ease: [0.22, 1, 0.36, 1],
-            },
-          }
-        : {
-            x: SLOT_X[trajectory[trajectory.length - 1]],
-            y: 0,
-            opacity: 0.4,
-            scale: 0.95,
-            filter: "saturate(0.5) blur(0.4px)",
-            transition: { duration: 0.5, ease: [0.4, 0, 0.6, 1] },
-          },
-    };
-  }, [trajectory, idx, isWinner]);
-
-  return (
-    <motion.span
-      className="absolute bottom-12 left-1/2 transform-gpu"
-      style={{
-        marginLeft: -36,
-        zIndex: phase === "revealing" && isWinner ? 5 : idx + 1,
-        willChange: "transform",
-      }}
-      initial={{ y: -60, opacity: 0, x: SLOT_X[idx] }}
-      variants={variants}
-      animate={phase}
-    >
-      <BowlSvg />
-    </motion.span>
-  );
-});
-
-/* ───────────────────────────────────────────────────────────────────── */
-
-/**
- * Premium tea bowl SVG — chawan with ceramic glaze, foot ring, and
- * hand-painted 朱 dot. Bigger viewBox (90×80) than v1 for more detail
- * room. Built around a radial gradient that simulates light hitting the
- * upper-left of the glaze, plus a specular highlight arc for the wet
- * ceramic look — this is what separates "shape" from "object".
- */
-function BowlSvg() {
-  return (
-    <svg
-      viewBox="0 0 90 80"
-      width={84}
-      height={75}
-      aria-hidden
-    >
-      <defs>
-        {/* Radial glaze — light source upper-left, deepens toward the
-            lower-right. Three stops give a soft bell curve falloff that
-            reads as "ceramic" not "flat color". */}
-        <radialGradient id="bowl-glaze" cx="32%" cy="22%" r="92%">
-          <stop offset="0%"   stopColor="#F2E8CD" />
-          <stop offset="38%"  stopColor="#DDCFB0" />
-          <stop offset="78%"  stopColor="#A89A78" />
-          <stop offset="100%" stopColor="#6E624A" />
-        </radialGradient>
-        {/* Foot ring — slightly darker than body, 2-stop vertical for
-            grounded depth */}
-        <linearGradient id="bowl-foot" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#7A6D52" />
-          <stop offset="100%" stopColor="#3F3829" />
-        </linearGradient>
-        {/* Inner mouth shadow at the very bottom rim (cup opens
-            downward in the upside-down position) */}
-        <linearGradient id="bowl-mouth-shade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1C1815" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="#1C1815" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-
-      {/* Two-layer ground shadow — sharp tight + diffuse halo. Real
-          ceramic on a wood table casts both. */}
-      <ellipse
-        cx="45" cy="73" rx="32" ry="2.5"
-        fill="#1C1815" opacity="0.28"
-        style={{ filter: "blur(1.5px)" }}
-      />
-      <ellipse
-        cx="45" cy="76" rx="44" ry="4"
-        fill="#1C1815" opacity="0.1"
-        style={{ filter: "blur(4px)" }}
-      />
-
-      {/* Body — chawan silhouette with subtle taper toward the foot.
-          Wider mid-section, narrower at top + bottom = classic tea bowl
-          proportion (not a perfect dome). */}
-      <path
-        d="M 14 66 Q 7 18, 45 12 Q 83 18, 76 66 L 70 68 L 20 68 Z"
-        fill="url(#bowl-glaze)"
-      />
-
-      {/* Foot ring — small lip the bowl sits on, gives base weight */}
-      <ellipse cx="45" cy="68" rx="26" ry="1.8" fill="url(#bowl-foot)" />
-
-      {/* Sumi outline — slightly variable weight at 1.6 for hand-drawn feel */}
-      <path
-        d="M 14 66 Q 7 18, 45 12 Q 83 18, 76 66 L 70 68 L 20 68 Z"
-        fill="none"
-        stroke="#1C1815"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-
-      {/* Specular highlight — small bright arc on the upper-left curve.
-          THIS is the detail that turns a flat shape into glazed ceramic.
-          White at low opacity, arc shape, soft cap. */}
-      <path
-        d="M 22 22 Q 30 14, 40 16"
-        fill="none"
-        stroke="#FFFFFF"
-        strokeWidth="2"
-        opacity="0.65"
-        strokeLinecap="round"
-      />
-
-      {/* Diffuse top highlight — broader, fainter sheen along the upper rim */}
-      <path
-        d="M 18 30 Q 45 16, 75 30"
-        fill="none"
-        stroke="#F8EFD2"
-        strokeWidth="0.7"
-        opacity="0.5"
-      />
-
-      {/* Bottom mouth shading — dark fade where the cup opens
-          downward (the mouth facing the table) */}
-      <ellipse cx="45" cy="67" rx="29" ry="3" fill="url(#bowl-mouth-shade)" />
-
-      {/* Hand-painted 朱 dot at the very top crown — like a kintsugi
-          repair mark or a calligrapher's signature dot. Single color
-          accent that ties to the rest of the page's 朱 vocabulary
-          without shouting. */}
-      <circle cx="45" cy="20" r="2.2" fill="#B3321D" opacity="0.9" />
-      <circle cx="44.3" cy="19" r="0.9" fill="#FFFFFF" opacity="0.45" />
-    </svg>
-  );
-}
-
-/* ───────────────────────────────────────────────────────────────────── */
-
-/**
- * The 朱 reveal mark — small dot that sits on the table where the
- * winning bowl ends up. Glows up as the bowl lifts off.
- */
-function RevealMark({ x, visible }: { x: number; visible: boolean }) {
-  return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute"
-          style={{
-            bottom: 28,
-            left: "50%",
-            marginLeft: x - 16,
-            width: 32,
-            height: 32,
-            zIndex: 0,
-          }}
-          initial={{ opacity: 0, scale: 0.3 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {/* Outer warm glow — large soft halo, slow pulse for "alive light" */}
-          <motion.span
-            className="absolute inset-0 -m-8 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(232,185,74,0.55) 0%, rgba(232,185,74,0.18) 35%, rgba(232,185,74,0) 70%)",
-              filter: "blur(3px)",
-            }}
-            animate={{ scale: [1, 1.15, 1] }}
-            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-          />
-          {/* Inner shu halo — tighter, deeper red */}
-          <span
-            className="absolute inset-0 -m-2 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(179,50,29,0.55) 0%, rgba(179,50,29,0) 65%)",
-              filter: "blur(2px)",
-            }}
-          />
-          {/* Dot — solid 朱 with strong shadow for depth */}
-          <span
-            className="absolute inset-0 m-2.5 rounded-full bg-shu"
-            style={{
-              boxShadow:
-                "0 0 14px rgba(179,50,29,0.75), 0 2px 4px rgba(28,24,21,0.4)",
-            }}
-          />
-          {/* Tiny specular point on the dot */}
-          <span
-            className="absolute m-3 rounded-full bg-paper"
-            style={{ width: 4, height: 4, opacity: 0.55 }}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
   );
 }
 
@@ -897,36 +514,3 @@ function RevealedView({
   );
 }
 
-/* ───────────────────────────────────────────────────────────────────── */
-/* Helpers                                                              */
-/* ───────────────────────────────────────────────────────────────────── */
-
-/**
- * For each bowl, build the trajectory of slot indices it visits across
- * the swap sequence. Result: trajectory[bowl] = [startSlot, ...afterEachSwap]
- * with length = SWAP_SEQUENCE.length + 1.
- */
-function buildTrajectory(numBowls: number): number[][] {
-  const traj: number[][] = Array.from({ length: numBowls }, (_, i) => [i]);
-  // current slot map: slotOf[bowl] = current slot
-  const slotOf = Array.from({ length: numBowls }, (_, i) => i);
-  for (const [a, b] of SWAP_SEQUENCE) {
-    const bowlAtA = slotOf.findIndex((s) => s === a);
-    const bowlAtB = slotOf.findIndex((s) => s === b);
-    if (bowlAtA >= 0) slotOf[bowlAtA] = b;
-    if (bowlAtB >= 0) slotOf[bowlAtB] = a;
-    for (let i = 0; i < numBowls; i++) {
-      traj[i].push(slotOf[i]);
-    }
-  }
-  return traj;
-}
-
-/**
- * Even time-distributed array for motion's `times` prop. Spreads N
- * keyframes uniformly between 0 and 1.
- */
-function stepsToTimes(n: number): number[] {
-  if (n <= 1) return [0];
-  return Array.from({ length: n }, (_, i) => i / (n - 1));
-}
