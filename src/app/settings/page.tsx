@@ -6,6 +6,7 @@ import { KanjiWatermark } from "@/components/common/KanjiWatermark";
 import { TokyoArrivalResetItem } from "@/components/settings/TokyoArrivalResetItem";
 import { TokyoArrivalPreviewItem } from "@/components/settings/TokyoArrivalPreviewItem";
 import { DiceStyleToggle } from "@/components/settings/DiceStyleToggle";
+import { LotteryStyleToggle } from "@/components/settings/LotteryStyleToggle";
 import { Mascot } from "@/components/common/Mascot";
 
 export const metadata = { title: "설정 · 랜덤한끼" };
@@ -38,6 +39,7 @@ export default function SettingsPage() {
         <SectionLabel kanji="姿">표시</SectionLabel>
         <SettingsGroup>
           <DiceStyleToggle />
+          <LotteryStyleToggle />
         </SettingsGroup>
 
         <SectionLabel kanji="録">내 기록</SectionLabel>
