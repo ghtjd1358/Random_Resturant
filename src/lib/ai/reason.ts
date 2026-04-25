@@ -10,11 +10,12 @@ export interface ReasonInput {
   reviewTexts: string[];
 }
 
-// Groq's free tier — no credit card required, Llama 3.3 70B is generous
-// for short Korean one-liner generation. Direct provider (not Vercel AI
-// Gateway) because the gateway requires a CC on file even for free credits.
-// GROQ_API_KEY env var is auto-read by the @ai-sdk/groq package.
-const MODEL = groq("llama-3.3-70b-versatile");
+// Groq free tier. Picked Kimi K2 over Llama 3.3 — Llama's Korean reads
+// like a literal review excerpt (e.g. "친절한 로비 데스크 직원들"); Kimi
+// K2 (Moonshot) is trained more heavily on CJK and produces punchier
+// recommender copy. Same generateText API, just a different provider/model
+// string. GROQ_API_KEY env is auto-read.
+const MODEL = groq("moonshotai/kimi-k2-instruct");
 
 export async function generateReason(input: ReasonInput): Promise<string> {
   const reviewBlock = input.reviewTexts
@@ -22,9 +23,26 @@ export async function generateReason(input: ReasonInput): Promise<string> {
     .map((r) => `- ${truncate(r, 300)}`)
     .join("\n");
 
+  // Few-shot examples replace generic instructions — the model imitates
+  // the cadence of the examples (punchy carnival-barker tone with one
+  // concrete detail) instead of regurgitating a review fragment.
   const prompt = [
-    "너는 일본 여행 가이드다. 아래 가게의 리뷰를 바탕으로 '왜 이 집을 가봐야 하는지' 한 줄(40자 이내, 한국어)로 써라.",
-    "과장 금지, 구체적 디테일 1개 포함. 리뷰에 없는 사실을 지어내지 말 것. 이모지 금지.",
+    "너는 일본 여행 가게를 한 줄로 추천하는 카피라이터다.",
+    "리뷰를 보고 \"왜 가야 하는지\" 한 줄로만 답해라.",
+    "",
+    "규칙:",
+    "- 한국어, 30자 안팎",
+    "- 매력 포인트 + 구체 디테일 (메뉴/분위기/특징) 하나",
+    "- 카피 톤. 리뷰 인용·설명조 X",
+    "- 리뷰에 없는 사실 지어내지 말 것",
+    "- 이모지·따옴표·하이픈 시작 금지",
+    "",
+    "예시:",
+    "- 30년 장인이 끓이는 진한 돈코츠 한 그릇",
+    "- 카운터 8석, 셰프 혼자 잡는 작은 스시야",
+    "- 주말 줄 서는 두꺼운 가츠동 한 접시",
+    "- 새벽 5시까지 여는 골목 라멘집",
+    "- 토종 흑돼지로 만든 두툼한 카츠",
     "",
     `가게: ${input.name}${input.primaryType ? ` (${input.primaryType})` : ""}`,
     input.rating != null
