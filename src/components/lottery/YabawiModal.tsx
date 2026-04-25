@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -10,19 +9,9 @@ import { useSessionStore } from "@/stores/useSessionStore";
 import { useLotteryStore } from "@/stores/useLotteryStore";
 import { PickCard } from "@/components/home/PickCard";
 import { Mascot } from "@/components/common/Mascot";
+import { Yabawi2DStage } from "./Yabawi2DStage";
+import { Kuji2DStage } from "./Kuji2DStage";
 import type { PlaceLite } from "@/lib/places/types";
-
-// Three.js scenes — lazy-loaded so the ~150KB R3F bundle only ships when
-// the user opens the lottery modal. Both stages share the same R3F deps,
-// so loading one warms the cache for the other.
-const Yabawi3DStage = dynamic(
-  () => import("./Yabawi3DStage").then((m) => m.Yabawi3DStage),
-  { ssr: false },
-);
-const Kuji3DStage = dynamic(
-  () => import("./Kuji3DStage").then((m) => m.Kuji3DStage),
-  { ssr: false },
-);
 
 /**
  * 三つ椀 (mitsu-wan) — 3-bowl shell game ("야바위") variant of the picker.
@@ -300,13 +289,13 @@ function Stage({
             R3F Canvas footprint, so layout stays consistent. */}
         <div className="relative z-10 h-[360px] w-full max-w-[440px]">
           {isYabawi ? (
-            <Yabawi3DStage
+            <Yabawi2DStage
               phase={phase}
               winnerIdx={winnerIdx}
               onStart={onStart}
             />
           ) : (
-            <Kuji3DStage
+            <Kuji2DStage
               phase={phase}
               winnerIdx={winnerIdx}
               count={count}
