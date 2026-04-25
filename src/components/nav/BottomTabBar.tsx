@@ -7,7 +7,11 @@ import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/", label: "뽑기", kanji: "選" },
-  { href: "/lottery", label: "제비", kanji: "籤" },
+  // 제비 탭 일시 숨김 — kuji/yabawi 애니가 currentlly 톤 부족 ("겁나
+  // 촌스럽다" 피드백). 디자이너 에셋 또는 premium Lottie 받기 전까진
+  // 사용자 진입 막음. 페이지 자체(/lottery)와 코드는 유지 — 작업
+  // 재개할 때 줄만 풀면 바로 복귀.
+  // { href: "/lottery", label: "제비", kanji: "籤" },
   { href: "/history", label: "기록", kanji: "録" },
   { href: "/settings", label: "설정", kanji: "設" },
 ] as const;
