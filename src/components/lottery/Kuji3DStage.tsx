@@ -62,7 +62,9 @@ export function Kuji3DStage({ phase, winnerIdx, count, onStart }: StageProps) {
       <Canvas
         shadows
         dpr={[1, 2]}
-        camera={{ position: [0, 2.4, 5.2], fov: 38 }}
+        // Camera bumped up + back so the winner stick doesn't clip when it
+        // rises (was getting its top cut off). FOV widened for more headroom.
+        camera={{ position: [0, 2.0, 6.2], fov: 44 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: "transparent" }}
       >
@@ -158,8 +160,13 @@ function Cylinder({ phase }: { phase: StageProps["phase"] }) {
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.5, 0]}>
-      {/* Cylinder body — open at top, paper-tan with subtle taper */}
+    // Cylinder sits lower (position-y -0.85) so the visible composition
+    // gives more headroom for the winner stick rise without clipping.
+    <group ref={groupRef} position={[0, -0.85, 0]}>
+      {/* Cylinder body — open at top, paper-tan with subtle taper.
+          Slightly transparent (opacity 0.92) for a softer editorial feel
+          per user request — the watermark mascot behind shows through
+          a touch. */}
       <mesh castShadow receiveShadow>
         <cylinderGeometry args={[0.55, 0.6, 1.6, 48, 1, true]} />
         <meshPhysicalMaterial
@@ -169,6 +176,8 @@ function Cylinder({ phase }: { phase: StageProps["phase"] }) {
           clearcoat={0.2}
           clearcoatRoughness={0.7}
           side={THREE.DoubleSide}
+          transparent
+          opacity={0.92}
         />
       </mesh>
       {/* Inner cavity darkness — slightly smaller cylinder inside
@@ -273,12 +282,14 @@ function Stick({ idx, angleOffset, phase, isWinner }: StickProps) {
     groupRef.current.rotation.z = rotZ;
     groupRef.current.scale.setScalar(scale);
 
-    // Apply opacity to all child meshes
+    // Apply opacity scaling to all child meshes — multiplies the
+    // material's base opacity (0.92) by the phase-driven loser fade.
     groupRef.current.traverse((child) => {
       if ((child as THREE.Mesh).material) {
         const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
         if (mat.transparent !== true) mat.transparent = true;
-        mat.opacity = opacity;
+        // Base opacity 0.92 (editorial soft) × phase opacity for losers
+        mat.opacity = 0.92 * opacity;
       }
     });
   });
@@ -286,17 +297,30 @@ function Stick({ idx, angleOffset, phase, isWinner }: StickProps) {
   // Position sticks slightly behind/in front of center for fan layout
   const xOffset = angleOffset * 0.7;
 
+  // Sticks share the cylinder's lowered base — anchor them to the same
+  // group offset so they sit inside the can naturally.
   return (
-    <group ref={groupRef} position={[xOffset, 0, 0]}>
-      {/* Stick body — thin cylinder, wheat-toned wood */}
+    <group ref={groupRef} position={[xOffset, -0.85, 0]}>
+      {/* Stick body — thin cylinder, wheat-toned wood. Slight opacity
+          for the same softer editorial feel as the cylinder. */}
       <mesh castShadow scale={[0.04, 1.1, 0.04]}>
         <cylinderGeometry args={[1, 1, 1, 8]} />
-        <meshStandardMaterial color="#E6D6B0" roughness={0.6} />
+        <meshStandardMaterial
+          color="#E6D6B0"
+          roughness={0.6}
+          transparent
+          opacity={0.92}
+        />
       </mesh>
       {/* Top cap — dusty-shu band at the very top */}
       <mesh position-y={0.55} scale={[0.045, 0.06, 0.045]}>
         <cylinderGeometry args={[1, 1, 1, 8]} />
-        <meshStandardMaterial color="#C9817F" roughness={0.5} />
+        <meshStandardMaterial
+          color="#C9817F"
+          roughness={0.5}
+          transparent
+          opacity={0.92}
+        />
       </mesh>
       {/* Cherry-blossom mark at the very tip — small 朱 sphere */}
       <mesh position-y={0.59} scale={0.025}>
@@ -305,6 +329,8 @@ function Stick({ idx, angleOffset, phase, isWinner }: StickProps) {
           color="#B3321D"
           emissive="#B3321D"
           emissiveIntensity={0.15}
+          transparent
+          opacity={0.95}
         />
       </mesh>
     </group>
