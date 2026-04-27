@@ -144,6 +144,50 @@ export async function deleteVisited(placeId: string): Promise<void> {
 }
 
 /**
+ * Bulk delete a set of visited records. Mirrors the single-row `remove` flow
+ * in useVisitedRecords: bad-feedback rows must also drop their `skipped`
+ * twin (only when the skip was reason="bad_feedback") so the place returns
+ * to the lottery pool.
+ */
+export async function deleteVisitedMany(placeIds: string[]): Promise<void> {
+  if (placeIds.length === 0) return;
+  const db = await getDB();
+  const tx = db.transaction(["visited", "skipped"], "readwrite");
+  const visited = tx.objectStore("visited");
+  const skipped = tx.objectStore("skipped");
+
+  for (const id of placeIds) {
+    const v = await visited.get(id);
+    if (v?.feedback === "bad") {
+      const s = await skipped.get(id);
+      if (s && s.reason === "bad_feedback") await skipped.delete(id);
+    }
+    await visited.delete(id);
+  }
+  await tx.done;
+}
+
+/**
+ * Wipe every visited record. Bad-feedback skips that exist solely because
+ * of a visit are also dropped — same rationale as deleteVisitedMany.
+ */
+export async function clearAllVisited(): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction(["visited", "skipped"], "readwrite");
+  const visited = tx.objectStore("visited");
+  const skipped = tx.objectStore("skipped");
+
+  for await (const cur of visited.iterate()) {
+    if (cur.value.feedback === "bad") {
+      const s = await skipped.get(cur.value.placeId);
+      if (s && s.reason === "bad_feedback") await skipped.delete(cur.value.placeId);
+    }
+  }
+  await visited.clear();
+  await tx.done;
+}
+
+/**
  * Flip the feedback on an existing visited record. Also syncs the skipped
  * store so 👍→👎 auto-skips and 👎→👍 un-skips (when the skip was caused
  * by bad feedback).

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   listVisited,
   deleteVisited,
+  deleteVisitedMany,
+  clearAllVisited,
   unskipPlace,
   updateVisitedFeedback,
 } from "@/lib/db/repo";
@@ -28,6 +30,8 @@ export interface UseVisitedRecords {
   setFilter: (f: VisitedFilter) => void;
   refresh: () => Promise<void>;
   remove: (r: VisitedRecord) => Promise<void>;
+  removeMany: (placeIds: string[]) => Promise<void>;
+  removeAll: () => Promise<void>;
   setFeedback: (r: VisitedRecord, target: Feedback) => Promise<void>;
 }
 
@@ -73,6 +77,19 @@ export function useVisitedRecords(): UseVisitedRecords {
     [refresh],
   );
 
+  const removeMany = useCallback(
+    async (placeIds: string[]) => {
+      await deleteVisitedMany(placeIds);
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const removeAll = useCallback(async () => {
+    await clearAllVisited();
+    await refresh();
+  }, [refresh]);
+
   const setFeedback = useCallback(
     async (r: VisitedRecord, target: Feedback) => {
       if (r.feedback === target) return;
@@ -82,5 +99,15 @@ export function useVisitedRecords(): UseVisitedRecords {
     [refresh],
   );
 
-  return { records, counts, filter, setFilter, refresh, remove, setFeedback };
+  return {
+    records,
+    counts,
+    filter,
+    setFilter,
+    refresh,
+    remove,
+    removeMany,
+    removeAll,
+    setFeedback,
+  };
 }
