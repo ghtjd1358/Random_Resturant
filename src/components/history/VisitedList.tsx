@@ -34,7 +34,6 @@ export function VisitedList() {
     setFilter,
     remove,
     removeMany,
-    removeAll,
     setFeedback,
   } = useVisitedRecords();
 
@@ -101,11 +100,14 @@ export function VisitedList() {
   // exitSelect() after success, and filter switching does the same.
 
   const handleDeleteAll = useCallback(async () => {
-    const n = counts?.all ?? 0;
-    await removeAll();
+    // "전체 삭제"는 현재 필터의 전체. 좋아요 탭에서 누르면 좋아요만 사라짐.
+    // 필터 무관 일괄 삭제는 "전체" 탭에서 다시 누르면 됨.
+    const ids = sortedRecords?.map((r) => r.placeId) ?? [];
+    if (ids.length === 0) return;
+    await removeMany(ids);
     exitSelect();
-    if (n > 0) toast.success(`${n}건의 기록을 모두 삭제했어요`, { duration: 1800 });
-  }, [counts, removeAll, exitSelect]);
+    toast.success(`${ids.length}건의 기록을 삭제했어요`, { duration: 1800 });
+  }, [sortedRecords, removeMany, exitSelect]);
 
   const handleDeleteSelected = useCallback(async () => {
     const ids = Array.from(selected);
@@ -190,16 +192,21 @@ export function VisitedList() {
               <span className="eyebrow text-[10px]">CONFIRM</span>
             </div>
             <DialogTitle className="font-mincho mt-3 text-[1.4rem] font-medium leading-tight tracking-tight text-sumi-ink">
-              {confirm === "all" ? "기록을 모두 지울까요?" : "선택한 기록을 지울까요?"}
+              {confirm === "all"
+                ? `${filterScopeLabel(filter)}을 모두 지울까요?`
+                : "선택한 기록을 지울까요?"}
             </DialogTitle>
             <p className="mt-2 text-[12.5px] leading-relaxed text-sumi-mute break-keep">
               {confirm === "all" ? (
                 <>
-                  지금까지 쌓인{" "}
+                  지금 보고있는{" "}
+                  <span className="font-mincho text-sumi-ink">
+                    {filterScopeLabel(filter)}
+                  </span>{" "}
                   <span className="font-mincho text-sumi-ink num-tabular">
-                    {counts?.all ?? 0}곳
+                    {sortedRecords?.length ?? 0}곳
                   </span>
-                  의 방문 기록이 모두 사라집니다. 되돌릴 수 없어요.
+                  이 사라집니다. 되돌릴 수 없어요.
                 </>
               ) : (
                 <>
@@ -367,6 +374,12 @@ function ActionBar({
       </div>
     </div>
   );
+}
+
+function filterScopeLabel(filter: VisitedFilter): string {
+  if (filter === "good") return "좋아요 기록";
+  if (filter === "bad") return "싫어요 기록";
+  return "기록";
 }
 
 function emptyMessage(filter: VisitedFilter): {

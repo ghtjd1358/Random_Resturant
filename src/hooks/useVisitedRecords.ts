@@ -5,7 +5,6 @@ import {
   listVisited,
   deleteVisited,
   deleteVisitedMany,
-  clearAllVisited,
   unskipPlace,
   updateVisitedFeedback,
 } from "@/lib/db/repo";
@@ -31,7 +30,6 @@ export interface UseVisitedRecords {
   refresh: () => Promise<void>;
   remove: (r: VisitedRecord) => Promise<void>;
   removeMany: (placeIds: string[]) => Promise<void>;
-  removeAll: () => Promise<void>;
   setFeedback: (r: VisitedRecord, target: Feedback) => Promise<void>;
 }
 
@@ -46,9 +44,19 @@ export function useVisitedRecords(): UseVisitedRecords {
     setAllRecords(rows);
   }, []);
 
+  // Mount-time load. Async IIFE keeps setState off the synchronous effect
+  // path (react-hooks/set-state-in-effect); cancelled flag guards against
+  // unmount during the IndexedDB roundtrip.
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    let cancelled = false;
+    void (async () => {
+      const rows = await listVisited();
+      if (!cancelled) setAllRecords(rows);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const records = useMemo(() => {
     if (allRecords === null) return null;
@@ -85,11 +93,6 @@ export function useVisitedRecords(): UseVisitedRecords {
     [refresh],
   );
 
-  const removeAll = useCallback(async () => {
-    await clearAllVisited();
-    await refresh();
-  }, [refresh]);
-
   const setFeedback = useCallback(
     async (r: VisitedRecord, target: Feedback) => {
       if (r.feedback === target) return;
@@ -107,7 +110,6 @@ export function useVisitedRecords(): UseVisitedRecords {
     refresh,
     remove,
     removeMany,
-    removeAll,
     setFeedback,
   };
 }

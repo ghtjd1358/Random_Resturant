@@ -168,26 +168,6 @@ export async function deleteVisitedMany(placeIds: string[]): Promise<void> {
 }
 
 /**
- * Wipe every visited record. Bad-feedback skips that exist solely because
- * of a visit are also dropped — same rationale as deleteVisitedMany.
- */
-export async function clearAllVisited(): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction(["visited", "skipped"], "readwrite");
-  const visited = tx.objectStore("visited");
-  const skipped = tx.objectStore("skipped");
-
-  for await (const cur of visited.iterate()) {
-    if (cur.value.feedback === "bad") {
-      const s = await skipped.get(cur.value.placeId);
-      if (s && s.reason === "bad_feedback") await skipped.delete(cur.value.placeId);
-    }
-  }
-  await visited.clear();
-  await tx.done;
-}
-
-/**
  * Flip the feedback on an existing visited record. Also syncs the skipped
  * store so 👍→👎 auto-skips and 👎→👍 un-skips (when the skip was caused
  * by bad feedback).
