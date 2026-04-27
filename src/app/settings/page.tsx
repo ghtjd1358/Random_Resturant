@@ -6,7 +6,8 @@ import { KanjiWatermark } from "@/components/common/KanjiWatermark";
 import { TokyoArrivalResetItem } from "@/components/settings/TokyoArrivalResetItem";
 import { TokyoArrivalPreviewItem } from "@/components/settings/TokyoArrivalPreviewItem";
 import { DiceStyleToggle } from "@/components/settings/DiceStyleToggle";
-import { LotteryStyleToggle } from "@/components/settings/LotteryStyleToggle";
+// 제비 탭이 숨겨진 동안 뽑기 방식 토글도 비활성 — 탭 자체가 안 보이는데 토글만 남기면 죽은 옵션이 됨
+// import { LotteryStyleToggle } from "@/components/settings/LotteryStyleToggle";
 import { Mascot } from "@/components/common/Mascot";
 
 export const metadata = { title: "설정 · 랜덤한끼" };
@@ -39,7 +40,7 @@ export default function SettingsPage() {
         <SectionLabel kanji="姿">표시</SectionLabel>
         <SettingsGroup>
           <DiceStyleToggle />
-          <LotteryStyleToggle />
+          {/* <LotteryStyleToggle /> — 제비 탭과 함께 일시 비활성 */}
         </SettingsGroup>
 
         <SectionLabel kanji="録">내 기록</SectionLabel>
