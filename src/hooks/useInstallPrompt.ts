@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -52,14 +52,24 @@ function detectPlatform(): Platform {
   return "desktop";
 }
 
+// Stable no-op subscribe: platform never changes after first client render,
+// so we don't need to re-snapshot. useSyncExternalStore handles SSR vs
+// client snapshot natively (no hydration mismatch) and avoids the
+// set-state-in-effect lint rule triggered by useEffect+setState.
+const subscribePlatform = () => () => {};
+const getPlatformSnapshot = () => detectPlatform();
+const getPlatformServerSnapshot = (): Platform => "unknown";
+
 /** Captures beforeinstallprompt and exposes a prompt() trigger. */
 export function useInstallPrompt() {
-  const [platform, setPlatform] = useState<Platform>("unknown");
+  const platform = useSyncExternalStore(
+    subscribePlatform,
+    getPlatformSnapshot,
+    getPlatformServerSnapshot,
+  );
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    setPlatform(detectPlatform());
-
     const onPrompt = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);

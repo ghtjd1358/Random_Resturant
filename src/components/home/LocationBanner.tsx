@@ -5,7 +5,7 @@ import { AlertCircle, ChevronDown, ChevronRight, Landmark, MapPin, Navigation, R
 import { Button } from "@/components/ui/button";
 import { PresetSheet } from "./PresetSheet";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { useTicker } from "@/hooks/useTicker";
+import { useNow } from "@/hooks/useTicker";
 import { guessRegion } from "@/lib/geo/region";
 import { findPreset, type LocationPreset } from "@/lib/geo/presets";
 import { LOCATION_STALE_MS, useLocationStore } from "@/stores/useLocationStore";
@@ -18,7 +18,9 @@ export function LocationBanner() {
   const source = useLocationStore((s) => s.source);
   const presetId = useLocationStore((s) => s.presetId);
   const clearPreset = useLocationStore((s) => s.clearPreset);
-  useTicker(20_000, coords !== null && source === "gps");
+  // 20s ticker for the "n분 전" age display — useSyncExternalStore-backed so
+  // Date.now() doesn't appear directly in render (react-hooks/purity).
+  const now = useNow(20_000, coords !== null && source === "gps");
 
   const preset = source === "preset" && presetId ? findPreset(presetId) ?? null : null;
 
@@ -51,6 +53,7 @@ export function LocationBanner() {
           <ActiveBanner
             coords={coords}
             preset={preset}
+            now={now}
             onRefresh={handleRefresh}
             onBackToGps={handleBackToGps}
           />
@@ -67,16 +70,19 @@ export function LocationBanner() {
 function ActiveBanner({
   coords,
   preset,
+  now,
   onRefresh,
   onBackToGps,
 }: {
   coords: { lat: number; lng: number; updatedAt: number };
   preset: LocationPreset | null;
+  /** Wall-clock from useNow — passed in so render stays pure. */
+  now: number;
   onRefresh: () => void;
   onBackToGps: () => void;
 }) {
   const region = preset ? preset.city : guessRegion(coords.lat, coords.lng);
-  const age = Date.now() - coords.updatedAt;
+  const age = now - coords.updatedAt;
   // Presets don't go stale — they're static reference points.
   const stale = !preset && age > LOCATION_STALE_MS;
 

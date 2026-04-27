@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -26,11 +26,18 @@ export function BottomTabBar() {
   // new route commits, so clicking 제비 → 뽑기 left the OLD tab highlighted
   // for a noticeable beat while the heavy lottery page tore down. We track
   // the user's *intent* on click and clear it once pathname catches up.
+  //
+  // Intent cleanup runs during render via the React 19 "Adjusting state on
+  // a prop change" pattern — the if-guard makes setState non-cascading and
+  // sidesteps the set-state-in-effect lint rule. Clearing on match is
+  // load-bearing for external navigation (browser back/programmatic push)
+  // where intent would otherwise stay stuck on a stale destination.
   const [intent, setIntent] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     if (intent && isActive(intent, pathname)) setIntent(null);
-  }, [pathname, intent]);
+  }
 
   const effective = intent ?? pathname;
 

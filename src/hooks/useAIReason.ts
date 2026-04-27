@@ -19,15 +19,21 @@ export function useAIReason(placeId: string | null | undefined): AIReasonState {
     status: "loading",
   });
 
+  // Reset to loading on placeId change — done during render via the
+  // "Adjusting state when a prop changes" pattern from React 19 docs so
+  // the lint rule (set-state-in-effect) stays happy. The effect below
+  // handles the async fetch; its setState calls fire on a microtask
+  // (.then) which is allowed.
+  const [prevPlaceId, setPrevPlaceId] = useState<typeof placeId>(placeId);
+  if (prevPlaceId !== placeId) {
+    setPrevPlaceId(placeId);
+    setState({ reason: null, status: "loading" });
+  }
+
   useEffect(() => {
-    if (!placeId) {
-      setState({ reason: null, status: "loading" });
-      return;
-    }
+    if (!placeId) return;
 
     let cancelled = false;
-    setState({ reason: null, status: "loading" });
-
     const ctrl = new AbortController();
     fetch("/api/ai/reason", {
       method: "POST",

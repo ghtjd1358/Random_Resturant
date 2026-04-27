@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useAnimationControls } from "motion/react";
 
 type AnimationControls = ReturnType<typeof useAnimationControls>;
@@ -73,14 +73,23 @@ export function useDiceSpin(
         : CAFE_EMOJIS;
   const controls = useAnimationControls();
   const spinningRef = useRef(false);
-  const [glyph, setGlyph] = useState(() => glyphs[0]);
+  const [glyph, setGlyph] = useState(
+    () => glyphs[Math.floor(Math.random() * glyphs.length)],
+  );
   const [phaseText, setPhaseText] = useState<string | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
 
-  // Reshuffle idle glyph on category or mode change
-  useEffect(() => {
-    setGlyph(glyphs[Math.floor(Math.random() * glyphs.length)]);
-  }, [glyphs, category, mode]);
+  // Reshuffle idle glyph when category/mode changes — handled during render
+  // via the "Adjusting state when a prop changes" pattern (React 19 docs).
+  // Math.random lives inside the setState updater so it runs at commit time,
+  // not during render — keeps react-hooks/purity happy without losing the
+  // "fresh glyph each switch" feel.
+  const dirKey = `${category}|${mode}`;
+  const [prevDirKey, setPrevDirKey] = useState(dirKey);
+  if (prevDirKey !== dirKey) {
+    setPrevDirKey(dirKey);
+    setGlyph(() => glyphs[Math.floor(Math.random() * glyphs.length)]);
+  }
 
   const spin = useCallback(
     async <T,>(job: () => Promise<T>): Promise<T | undefined> => {

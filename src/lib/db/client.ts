@@ -13,7 +13,6 @@ export function getDB(): Promise<IDBPDatabase<RRSchema>> {
     dbPromise = openDB<RRSchema>(DB_NAME, DB_VERSION, {
       upgrade(db, oldVersion) {
         // Each case falls through intentionally to apply subsequent migrations.
-        /* eslint-disable no-fallthrough */
         switch (oldVersion) {
           case 0: {
             const visited = db.createObjectStore("visited", {
@@ -40,7 +39,6 @@ export function getDB(): Promise<IDBPDatabase<RRSchema>> {
           }
           // future: case 2: ...
         }
-        /* eslint-enable no-fallthrough */
       },
       blocking() {
         // Another tab is trying to upgrade — close this connection so it can.

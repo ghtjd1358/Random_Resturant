@@ -28,9 +28,18 @@ export function useSkippedRecords(handlers?: {
     setRecords(rows);
   }, []);
 
+  // Mount-time load via async IIFE; matches useVisitedRecords' pattern and
+  // sidesteps react-hooks/set-state-in-effect.
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    let cancelled = false;
+    void (async () => {
+      const rows = await listSkipped();
+      if (!cancelled) setRecords(rows);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const restore = useCallback(
     (placeId: string) => {
