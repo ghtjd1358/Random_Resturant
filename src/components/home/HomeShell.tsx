@@ -105,7 +105,9 @@ function HomeHeader({ issueNo }: { issueNo: string }) {
         <span className="eyebrow num-tabular">N° {issueNo}</span>
       </div>
 
-      {/* Title row: face mascot + wordmark + 一食 round seal */}
+      {/* Title row: face mascot + wordmark. The 一食 round seal that used to
+          sit on the right is removed — its red border read as a frame around
+          the giraffe and clashed with the editorial whitespace. */}
       <div className="relative mt-3 flex items-center gap-2">
         <div className="relative size-20 shrink-0">
           <Image
@@ -129,11 +131,6 @@ function HomeHeader({ issueNo }: { issueNo: string }) {
             랜덤<span className="text-shu">한</span>끼
           </h1>
         </div>
-
-        <span className="hanko-round shrink-0" aria-hidden>
-          <span className="hanko-round-kanji">一食</span>
-          <span className="hanko-round-romaji">ICHI·SHOKU</span>
-        </span>
       </div>
 
       <p className="mt-3 text-[13px] leading-relaxed text-sumi-mute break-keep">
