@@ -11,6 +11,11 @@ export type Subcategory =
   | "steak"
   | "seafood"
   | "fastfood"
+  | "italian"
+  | "chinese"
+  | "korean"
+  | "thai"
+  | "indian"
   // cafe
   | "all-cafe"
   | "coffee"
@@ -40,6 +45,13 @@ export const FOOD_SUBCATEGORIES: SubcategoryDef[] = [
   { key: "steak", label: "스테이크/야키니쿠", emoji: "🥩", includedTypes: ["steak_house", "barbecue_restaurant"] },
   { key: "seafood", label: "해산물", emoji: "🦐", includedTypes: ["seafood_restaurant"] },
   { key: "fastfood", label: "패스트푸드", emoji: "🍔", includedTypes: ["fast_food_restaurant", "hamburger_restaurant"] },
+  // 국적별 — Google Places가 별도 인덱싱하는 타입만 노출 (오코노미야끼·우동
+  // 같은 일식 세부 메뉴는 japanese_restaurant로 폴백되므로 의미 없음)
+  { key: "italian", label: "이탈리안", emoji: "🍝", includedTypes: ["italian_restaurant", "pizza_restaurant"] },
+  { key: "chinese", label: "중식", emoji: "🥟", includedTypes: ["chinese_restaurant"] },
+  { key: "korean", label: "한식", emoji: "🍚", includedTypes: ["korean_restaurant"] },
+  { key: "thai", label: "태국", emoji: "🌶️", includedTypes: ["thai_restaurant"] },
+  { key: "indian", label: "인도·카레", emoji: "🍛", includedTypes: ["indian_restaurant"] },
 ];
 
 export const CAFE_SUBCATEGORIES: SubcategoryDef[] = [

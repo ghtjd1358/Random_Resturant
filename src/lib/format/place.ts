@@ -55,6 +55,8 @@ export function decorEmojiFor(primaryType?: string, category?: Category): string
   if (t.includes("korean")) return "🍚";
   if (t.includes("japanese")) return "🍱";
   if (t.includes("chinese")) return "🥟";
+  if (t.includes("thai")) return "🌶️";
+  if (t.includes("indian")) return "🍛";
   if (category === "bar") return "🍶";
   return category === "cafe" ? "☕" : "🍽️";
 }
