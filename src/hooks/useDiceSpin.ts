@@ -13,11 +13,15 @@ const FOOD_EMOJIS = [
 const CAFE_EMOJIS = [
   "☕", "🍵", "🧋", "🧁", "🍰", "🎂", "🥐", "🥞", "🧇", "🍮", "🍩", "🍪",
 ];
+const BAR_EMOJIS = [
+  "🍶", "🍺", "🍻", "🍷", "🍸", "🍹", "🥂", "🥃", "🍾", "🪩",
+];
 
 // Kanji cycle sets used by the "rotating" dice style. Curated for legibility
 // at the dice button's display size (each glyph reads cleanly in Mincho).
 const FOOD_KANJI = ["食", "麺", "丼", "寿", "鮨", "肉", "魚", "鍋", "飯", "串", "天", "蕎"];
 const CAFE_KANJI = ["茶", "珈", "菓", "麭", "甘", "湯", "氷", "酒"];
+const BAR_KANJI = ["酒", "杯", "盃", "酎", "麦", "葡", "夜", "灯", "肴", "宴"];
 
 const SPIN_INTERVAL_MS = 90;
 const SPIN_MIN_MS = 2200;
@@ -67,10 +71,14 @@ export function useDiceSpin(
     mode === "kanji"
       ? category === "food"
         ? FOOD_KANJI
-        : CAFE_KANJI
+        : category === "cafe"
+          ? CAFE_KANJI
+          : BAR_KANJI
       : category === "food"
         ? FOOD_EMOJIS
-        : CAFE_EMOJIS;
+        : category === "cafe"
+          ? CAFE_EMOJIS
+          : BAR_EMOJIS;
   const controls = useAnimationControls();
   const spinningRef = useRef(false);
   const [glyph, setGlyph] = useState(

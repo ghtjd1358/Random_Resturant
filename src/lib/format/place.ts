@@ -47,10 +47,14 @@ export function decorEmojiFor(primaryType?: string, category?: Category): string
   if (t.includes("seafood")) return "🦐";
   if (t.includes("pizza")) return "🍕";
   if (t.includes("hamburger") || t.includes("fast_food")) return "🍔";
+  if (t.includes("wine_bar")) return "🍷";
+  if (t.includes("night_club")) return "🪩";
+  if (t.includes("pub")) return "🍺";
   if (t.includes("bar") || t.includes("izakaya")) return "🍶";
   if (t.includes("italian")) return "🍝";
   if (t.includes("korean")) return "🍚";
   if (t.includes("japanese")) return "🍱";
   if (t.includes("chinese")) return "🥟";
+  if (category === "bar") return "🍶";
   return category === "cafe" ? "☕" : "🍽️";
 }

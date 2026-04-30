@@ -41,11 +41,11 @@ export function HomeShell() {
     });
   }, []);
 
-  // Apply category shortcut from PWA manifest (?c=food|cafe)
+  // Apply category shortcut from PWA manifest (?c=food|cafe|bar)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const p = new URLSearchParams(window.location.search).get("c");
-    if (p === "food" || p === "cafe") setCategory(p);
+    if (p === "food" || p === "cafe" || p === "bar") setCategory(p);
   }, [setCategory]);
 
   return (

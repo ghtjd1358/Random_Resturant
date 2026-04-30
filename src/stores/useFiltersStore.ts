@@ -44,7 +44,12 @@ export const useFiltersStore = create<FiltersState>()(
       setCategory: (category) =>
         set({
           category,
-          subcategory: category === "food" ? "all-food" : "all-cafe",
+          subcategory:
+            category === "food"
+              ? "all-food"
+              : category === "cafe"
+                ? "all-cafe"
+                : "all-bar",
         }),
       setSubcategory: (subcategory) => set({ subcategory }),
       setRadius: (radius) => set({ radius }),

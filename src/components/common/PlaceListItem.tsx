@@ -1,6 +1,6 @@
 "use client";
 
-import { type LucideIcon, ExternalLink, Coffee, UtensilsCrossed } from "lucide-react";
+import { type LucideIcon, ExternalLink, Coffee, UtensilsCrossed, Wine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/lib/places/types";
 
@@ -14,6 +14,30 @@ interface Props {
   actions?: React.ReactNode;
 }
 
+const ICON_BY_CATEGORY: Record<Category, LucideIcon> = {
+  food: UtensilsCrossed,
+  cafe: Coffee,
+  bar: Wine,
+};
+
+// Accent rail / icon-tile color per category. shu (red) carries the lantern
+// vibe for bars without colliding with the matcha (cafe) and torii (food).
+const RAIL_BG: Record<Category, string> = {
+  food: "bg-torii",
+  cafe: "bg-matcha",
+  bar: "bg-shu",
+};
+const TILE_HALO: Record<Category, string> = {
+  food: "bg-torii/8",
+  cafe: "bg-matcha/10",
+  bar: "bg-shu/10",
+};
+const TILE: Record<Category, string> = {
+  food: "bg-torii/8 text-torii group-hover:bg-torii/12",
+  cafe: "bg-matcha/10 text-matcha-deep group-hover:bg-matcha/15",
+  bar: "bg-shu/10 text-shu group-hover:bg-shu/15",
+};
+
 /**
  * Shared tile for visited / skipped lists.
  * Name area is a button (opens map), right slot holds action buttons.
@@ -26,7 +50,7 @@ export function PlaceListItem({
   onOpen,
   actions,
 }: Props) {
-  const Icon = icon ?? (category === "food" ? UtensilsCrossed : Coffee);
+  const Icon = icon ?? ICON_BY_CATEGORY[category];
 
   return (
     <li
@@ -42,7 +66,7 @@ export function PlaceListItem({
         aria-hidden
         className={cn(
           "absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full opacity-0 transition-opacity group-hover:opacity-100",
-          category === "cafe" ? "bg-matcha" : "bg-torii",
+          RAIL_BG[category],
         )}
       />
 
@@ -58,15 +82,13 @@ export function PlaceListItem({
             aria-hidden
             className={cn(
               "absolute -inset-0.5 rounded-lg opacity-0 transition-opacity group-hover:opacity-100",
-              category === "cafe" ? "bg-matcha/10" : "bg-torii/8",
+              TILE_HALO[category],
             )}
           />
           <div
             className={cn(
               "relative rounded-lg p-2 transition-colors",
-              category === "cafe"
-                ? "bg-matcha/10 text-matcha-deep group-hover:bg-matcha/15"
-                : "bg-torii/8 text-torii group-hover:bg-torii/12",
+              TILE[category],
             )}
           >
             <Icon className="size-4" strokeWidth={2} />

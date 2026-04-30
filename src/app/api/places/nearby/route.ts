@@ -16,7 +16,7 @@ const BodySchema = z.object({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   radius: z.number().int().min(100).max(5000),
-  category: z.enum(["food", "cafe"]),
+  category: z.enum(["food", "cafe", "bar"]),
   subcategory: z.string().optional(),
   openNowOnly: z.boolean().optional(),
   regionCode: z.string().length(2).optional(),

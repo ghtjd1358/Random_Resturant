@@ -12,6 +12,7 @@ interface Props {
 const OPTIONS: { key: Category; label: string; kanji: string }[] = [
   { key: "food", label: "밥집", kanji: "食事" },
   { key: "cafe", label: "카페", kanji: "喫茶" },
+  { key: "bar", label: "술집", kanji: "酒場" },
 ];
 
 export function CategoryToggle({ value, onChange }: Props) {
@@ -19,7 +20,7 @@ export function CategoryToggle({ value, onChange }: Props) {
     <div
       role="radiogroup"
       aria-label="카테고리 선택"
-      className="grid grid-cols-2 gap-2"
+      className="grid grid-cols-3 gap-2"
     >
       {OPTIONS.map(({ key, label, kanji }) => {
         const active = value === key;

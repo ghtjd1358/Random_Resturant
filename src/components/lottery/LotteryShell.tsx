@@ -70,11 +70,11 @@ export function LotteryShell() {
     resetFilters();
   };
 
-  // Apply category shortcut from PWA manifest (?c=food|cafe), same as Home.
+  // Apply category shortcut from PWA manifest (?c=food|cafe|bar), same as Home.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const p = new URLSearchParams(window.location.search).get("c");
-    if (p === "food" || p === "cafe") setCategory(p);
+    if (p === "food" || p === "cafe" || p === "bar") setCategory(p);
   }, [setCategory]);
 
   const handleDraw = async () => {

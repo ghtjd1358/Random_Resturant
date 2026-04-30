@@ -25,6 +25,11 @@ const KANJI: Partial<Record<Subcategory, string>> = {
   coffee: "珈",
   dessert: "菓",
   bakery: "麭",
+  "all-bar": "全",
+  pub: "麦",
+  "wine-bar": "葡",
+  cocktail: "杯",
+  "night-club": "夜",
 };
 
 export function SubcategoryChips({ category, value, onChange }: Props) {

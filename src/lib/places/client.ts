@@ -47,6 +47,7 @@ const DETAILS_FIELDS = [
 const CATEGORY_TYPES: Record<Category, string[]> = {
   food: ["restaurant", "meal_takeaway", "meal_delivery"],
   cafe: ["cafe", "bakery", "coffee_shop"],
+  bar: ["bar", "pub", "wine_bar", "night_club"],
 };
 
 function apiKey(): string {

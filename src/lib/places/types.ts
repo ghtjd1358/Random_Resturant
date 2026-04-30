@@ -1,4 +1,4 @@
-export type Category = "food" | "cafe";
+export type Category = "food" | "cafe" | "bar";
 
 /** Fine-grained subcategories mapped to Google Places API `includedTypes`. */
 export type Subcategory =
@@ -15,7 +15,13 @@ export type Subcategory =
   | "all-cafe"
   | "coffee"
   | "dessert"
-  | "bakery";
+  | "bakery"
+  // bar
+  | "all-bar"
+  | "pub"
+  | "wine-bar"
+  | "cocktail"
+  | "night-club";
 
 export interface SubcategoryDef {
   key: Subcategory;
@@ -43,12 +49,24 @@ export const CAFE_SUBCATEGORIES: SubcategoryDef[] = [
   { key: "bakery", label: "베이커리", emoji: "🥐", includedTypes: ["bakery"] },
 ];
 
+export const BAR_SUBCATEGORIES: SubcategoryDef[] = [
+  { key: "all-bar", label: "전체", emoji: "🍻", includedTypes: [] },
+  { key: "pub", label: "펍", emoji: "🍺", includedTypes: ["pub"] },
+  { key: "wine-bar", label: "와인바", emoji: "🍷", includedTypes: ["wine_bar"] },
+  { key: "cocktail", label: "칵테일", emoji: "🍸", includedTypes: ["bar"] },
+  { key: "night-club", label: "클럽", emoji: "🪩", includedTypes: ["night_club"] },
+];
+
 export function subcategoriesFor(c: Category): SubcategoryDef[] {
-  return c === "food" ? FOOD_SUBCATEGORIES : CAFE_SUBCATEGORIES;
+  if (c === "food") return FOOD_SUBCATEGORIES;
+  if (c === "cafe") return CAFE_SUBCATEGORIES;
+  return BAR_SUBCATEGORIES;
 }
 
 export function findSubcategory(key: Subcategory): SubcategoryDef | undefined {
-  return [...FOOD_SUBCATEGORIES, ...CAFE_SUBCATEGORIES].find((s) => s.key === key);
+  return [...FOOD_SUBCATEGORIES, ...CAFE_SUBCATEGORIES, ...BAR_SUBCATEGORIES].find(
+    (s) => s.key === key,
+  );
 }
 
 export type PriceLevel =
